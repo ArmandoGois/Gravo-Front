@@ -95,8 +95,37 @@ The project uses layer-specific path aliases for clean imports:
 
 ### Prerequisites
 
-- Node.js 18+
-- npm, yarn, or pnpm
+- Node.js 22.17.0 (recommended via nvm)
+- pnpm (recommended)
+
+### Node Version Management
+
+This project uses [nvm](https://github.com/nvm-sh/nvm) to ensure consistent Node.js versions across all environments.
+
+#### Installing nvm
+
+**Linux/macOS:**
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+```
+
+**Windows:**
+Download and install [nvm-windows](https://github.com/coreybutler/nvm-windows/releases)
+
+#### Using nvm with this project
+
+```bash
+# Install the project's Node.js version
+nvm install
+
+# Use the project's Node.js version
+nvm use
+
+# Verify the version
+node -v  # Should output: v22.17.0
+```
+
+The `.nvmrc` file at the root of the project specifies the exact Node.js version (22.17.0) to use.
 
 ### Installation
 

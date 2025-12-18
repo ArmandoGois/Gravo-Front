@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "wix.vscode-import-cost",
+    "ms-vscode.vscode-typescript-next",
+    "dsznajder.es7-react-js-snippets",
+    "formulahendry.auto-rename-tag",
+    "yoavbls.pretty-ts-errors",
+    "github.copilot",
+    "github.copilot-chat"
+  ]
+}

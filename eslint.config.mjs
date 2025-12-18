@@ -4,7 +4,6 @@ import nextTs from "eslint-config-next/typescript";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
-import jsxA11y from "eslint-plugin-jsx-a11y";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 
@@ -38,7 +37,6 @@ const eslintConfig = defineConfig([
     plugins: {
       "@typescript-eslint": tseslint,
       "import": importPlugin,
-      "jsx-a11y": jsxA11y,
       "react": react,
       "react-hooks": reactHooks,
     },

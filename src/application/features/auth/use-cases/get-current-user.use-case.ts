@@ -12,6 +12,7 @@ export const getCurrentUserUseCase = async (): Promise<User | null> => {
 
     return user;
   } catch (error) {
+    console.error("Error fetching current user:", error);
     // If it fails, clear the state
     useAuthStore.getState().logout();
     return null;

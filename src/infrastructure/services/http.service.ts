@@ -23,13 +23,11 @@ class HttpService implements IHttpService {
 
   private setupInterceptors() {
     // Request interceptor
+    // You could add tokens from localStorage here if needed
+    // But with httpOnly cookies, the browser sends them automatically
     this.axiosInstance.interceptors.request.use(
-      (config) => {
-        // You could add tokens from localStorage here if needed
-        // But with httpOnly cookies, the browser sends them automatically
-        return config;
-      },
-      (error) => Promise.reject(error)
+      (config) => config,
+      (error) => Promise.reject(error),
     );
 
     // Response interceptor
@@ -57,7 +55,7 @@ class HttpService implements IHttpService {
         }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -72,7 +70,7 @@ class HttpService implements IHttpService {
   async get<T>(url: string, config?: RequestConfig): Promise<T> {
     const response = await this.axiosInstance.get<T>(
       url,
-      this.mapConfig(config)
+      this.mapConfig(config),
     );
     return response.data;
   }
@@ -80,12 +78,12 @@ class HttpService implements IHttpService {
   async post<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     const response = await this.axiosInstance.post<T>(
       url,
       data,
-      this.mapConfig(config)
+      this.mapConfig(config),
     );
     return response.data;
   }
@@ -93,12 +91,12 @@ class HttpService implements IHttpService {
   async put<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     const response = await this.axiosInstance.put<T>(
       url,
       data,
-      this.mapConfig(config)
+      this.mapConfig(config),
     );
     return response.data;
   }
@@ -106,12 +104,12 @@ class HttpService implements IHttpService {
   async patch<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     const response = await this.axiosInstance.patch<T>(
       url,
       data,
-      this.mapConfig(config)
+      this.mapConfig(config),
     );
     return response.data;
   }
@@ -119,7 +117,7 @@ class HttpService implements IHttpService {
   async delete<T>(url: string, config?: RequestConfig): Promise<T> {
     const response = await this.axiosInstance.delete<T>(
       url,
-      this.mapConfig(config)
+      this.mapConfig(config),
     );
     return response.data;
   }

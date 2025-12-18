@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     return nextResponse;
   } catch (error) {
+    console.error("Error refreshing token:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

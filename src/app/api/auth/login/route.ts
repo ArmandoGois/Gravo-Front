@@ -15,9 +15,9 @@ export async function POST(request: Request) {
 
     // Make the real request to your backend
     const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      process.env.NEXT_PUBLIC_GRAVO_API_URL || "http://localhost:3001/api";
 
-    const response = await fetch(`${backendUrl}/auth/login`, {
+    const response = await fetch(`${backendUrl}/v1/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

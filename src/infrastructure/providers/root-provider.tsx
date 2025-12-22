@@ -1,29 +1,35 @@
-'use client';
+"use client";
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from "react";
 
-import { getCurrentUserUseCase } from '@/application/features/auth/use-cases';
-import { useAuthStore } from '@/infrastructure/stores/auth.store';
+import { getCurrentUserUseCase } from "@/application/features/auth/use-cases";
+import { httpService } from "@/infrastructure/services/http.service";
+import { useAuthStore } from "@/infrastructure/stores/auth.store";
 
-import { QueryProvider } from './query-provider';
+import { QueryProvider } from "./query-provider";
 
 export const RootProvider = ({ children }: { children: ReactNode }) => {
-  const { setLoading } = useAuthStore();
+  const { setLoading, getAccessToken } = useAuthStore();
 
   useEffect(() => {
-    // Check if user is authenticated when loading the app
+    // Initialize auth on app load
     const initAuth = async () => {
       setLoading(true);
+
+      // Set token in HTTP service if it exists in store
+      const token = getAccessToken();
+      if (token) {
+        httpService.setAuthToken(token);
+      }
+
+      // Validate session
       await getCurrentUserUseCase();
+
       setLoading(false);
     };
 
     initAuth();
-  }, [setLoading]);
+  }, [setLoading, getAccessToken]);
 
-  return (
-    <QueryProvider>
-      {children}
-    </QueryProvider>
-  );
+  return <QueryProvider>{children}</QueryProvider>;
 };

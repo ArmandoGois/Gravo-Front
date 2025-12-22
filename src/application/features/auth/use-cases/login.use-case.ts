@@ -9,14 +9,24 @@ export const loginUseCase = async (
   credentials: UserCredentials
 ): Promise<AuthResponse> => {
   try {
-    // Call login endpoint (httpOnly cookies are set automatically)
+    // Call backend login endpoint directly
     const response = await httpService.post<AuthResponse>(
-      "/auth/login",
+      "/v1/auth/login",
       credentials
     );
 
-    // Update store with user information
+    // Store tokens
+    useAuthStore.getState().setTokens({
+      access_token: response.access_token,
+      refresh_token: response.refresh_token,
+      expires_in: response.expires_in,
+    });
+
+    // Update user
     useAuthStore.getState().setUser(response.user);
+
+    // Set token in HTTP service
+    httpService.setAuthToken(response.access_token);
 
     return response;
   } catch (error) {

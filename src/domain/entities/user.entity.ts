@@ -1,11 +1,13 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  name?: string;
   role?: string;
   avatar?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  credits?: number;
+  tier?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface UserCredentials {
@@ -14,6 +16,10 @@ export interface UserCredentials {
 }
 
 export interface AuthResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
   user: User;
   message?: string;
 }

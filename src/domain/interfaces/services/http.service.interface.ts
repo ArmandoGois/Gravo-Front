@@ -4,6 +4,8 @@ export interface IHttpService {
   put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
   patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
   delete<T>(url: string, config?: RequestConfig): Promise<T>;
+  setAuthToken(token: string): void;
+  clearAuthToken(): void;
 }
 
 export interface RequestConfig {

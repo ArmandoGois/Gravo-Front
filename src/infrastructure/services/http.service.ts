@@ -1,53 +1,96 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, {
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios";
 
 import type {
   IHttpService,
   RequestConfig,
 } from "@/domain/interfaces/services/http.service.interface";
+import { useAuthStore } from "@/infrastructure/stores/auth.store";
+
+// Extend Axios config to include retry flag
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 class HttpService implements IHttpService {
   private axiosInstance: AxiosInstance;
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
+      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",
       },
-      withCredentials: true, // Important for httpOnly cookies
     });
 
     this.setupInterceptors();
   }
+  setAuthToken(_token: string): void {
+    throw new Error("Method not implemented.");
+  }
+  clearAuthToken(): void {
+    throw new Error("Method not implemented.");
+  }
 
   private setupInterceptors() {
-    // Request interceptor
-    // You could add tokens from localStorage here if needed
-    // But with httpOnly cookies, the browser sends them automatically
+    // Request interceptor - Add Authorization header
     this.axiosInstance.interceptors.request.use(
-      (config) => config,
-      (error) => Promise.reject(error),
+      (config: ExtendedAxiosRequestConfig) => {
+        const token = useAuthStore.getState().getAccessToken();
+        if (token && !config._retry) {
+          // eslint-disable-next-line no-param-reassign
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
     );
 
-    // Response interceptor
+    // Response interceptor - Handle token refresh
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
-        const originalRequest = error.config;
+        const originalRequest: ExtendedAxiosRequestConfig = error.config;
 
         // If error is 401 and we haven't tried to refresh the token yet
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
-            // Try to refresh the token
-            await this.post("/auth/refresh");
-            // Retry the original request
+            const authStore = useAuthStore.getState();
+            const refreshToken = authStore.getRefreshToken();
+
+            if (!refreshToken) {
+              throw new Error("No refresh token available");
+            }
+
+            // Call backend refresh endpoint directly
+            const response = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/refresh`,
+              { refresh_token: refreshToken }
+            );
+
+            // Update tokens in store
+            authStore.setTokens({
+              access_token: response.data.access_token,
+              refresh_token: response.data.refresh_token,
+              expires_in: response.data.expires_in,
+            });
+
+            // Retry original request with new token
+            originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
             return this.axiosInstance(originalRequest);
           } catch (refreshError) {
-            // If refresh fails, redirect to login
-            if (typeof window !== "undefined") {
+            // If refresh fails, clear auth and redirect to login
+            useAuthStore.getState().logout();
+            if (
+              typeof window !== "undefined" &&
+              window.location.pathname !== "/login"
+            ) {
               window.location.href = "/login";
             }
             return Promise.reject(refreshError);
@@ -55,7 +98,7 @@ class HttpService implements IHttpService {
         }
 
         return Promise.reject(error);
-      },
+      }
     );
   }
 
@@ -70,7 +113,7 @@ class HttpService implements IHttpService {
   async get<T>(url: string, config?: RequestConfig): Promise<T> {
     const response = await this.axiosInstance.get<T>(
       url,
-      this.mapConfig(config),
+      this.mapConfig(config)
     );
     return response.data;
   }
@@ -78,12 +121,12 @@ class HttpService implements IHttpService {
   async post<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.post<T>(
       url,
       data,
-      this.mapConfig(config),
+      this.mapConfig(config)
     );
     return response.data;
   }
@@ -91,12 +134,12 @@ class HttpService implements IHttpService {
   async put<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.put<T>(
       url,
       data,
-      this.mapConfig(config),
+      this.mapConfig(config)
     );
     return response.data;
   }
@@ -104,12 +147,12 @@ class HttpService implements IHttpService {
   async patch<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.patch<T>(
       url,
       data,
-      this.mapConfig(config),
+      this.mapConfig(config)
     );
     return response.data;
   }
@@ -117,7 +160,7 @@ class HttpService implements IHttpService {
   async delete<T>(url: string, config?: RequestConfig): Promise<T> {
     const response = await this.axiosInstance.delete<T>(
       url,
-      this.mapConfig(config),
+      this.mapConfig(config)
     );
     return response.data;
   }

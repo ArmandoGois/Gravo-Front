@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   loginUseCase,
   logoutUseCase,
+  registerUseCase
 } from "@/application/features/auth/use-cases";
 import type { UserCredentials } from "@/domain/entities/user.entity";
 import { useAuthStore } from "@/infrastructure/stores/auth.store";
@@ -28,14 +29,25 @@ export const useAuth = () => {
     },
   });
 
+  const registerMutation = useMutation({
+    mutationFn: (data: UserCredentials) => registerUseCase(data),
+    onSuccess: () => {
+      // Automatically log in after registration
+      router.push("/dashboard");
+    },
+  });
+
   return {
     user,
     isAuthenticated,
     isLoading,
     login: loginMutation.mutate,
     logout: logoutMutation.mutate,
+    register: registerMutation.mutate,
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
+    isRegistrationLoading: registerMutation.isPending,
     loginError: loginMutation.error,
+    registrationError: registerMutation.error,
   };
 };

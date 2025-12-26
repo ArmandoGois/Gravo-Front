@@ -29,11 +29,15 @@ class HttpService implements IHttpService {
 
     this.setupInterceptors();
   }
-  setAuthToken(_token: string): void {
-    throw new Error("Method not implemented.");
+
+  setAuthToken(token: string): void {
+    this.axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${token}`;
   }
+
   clearAuthToken(): void {
-    throw new Error("Method not implemented.");
+    delete this.axiosInstance.defaults.headers.common["Authorization"];
   }
 
   private setupInterceptors() {

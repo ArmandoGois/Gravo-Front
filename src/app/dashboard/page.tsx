@@ -8,7 +8,7 @@ const DashboardPage = () => {
   const { user, logout, isLogoutLoading } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 p-8 dark:from-zinc-950 dark:to-black">
+    <div className="min-h-screen bg-linear-to-br from-zinc-50 to-zinc-100 p-8 dark:from-zinc-950 dark:to-black">
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">

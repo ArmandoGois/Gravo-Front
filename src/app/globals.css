@@ -3,7 +3,7 @@
 @theme {
   --color-background: oklch(100% 0 0);
   --color-foreground: oklch(9% 0 0);
-  --color-card: oklch(100% 0 0);
+  --color-card: oklch(100% 0.01 286);
   --color-card-foreground: oklch(9% 0 0);
   --color-popover: oklch(100% 0 0);
   --color-popover-foreground: oklch(9% 0 0);
@@ -21,13 +21,14 @@
   --color-input: oklch(90% 0 0);
   --color-ring: oklch(9% 0 0);
   --radius: 0.5rem;
+  --color-secondary-black: oklch(0.3558% 0.0017 106.49);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   @theme {
-    --color-background: oklch(4% 0 0);
-    --color-foreground: oklch(98% 0 0);
-    --color-card: oklch(4% 0 0);
+    --color-background: oklch(1% 0 265);
+    --color-foreground: oklch(14.5% 0 265);
+    --color-card: oklch(90% 0 0);
     --color-card-foreground: oklch(98% 0 0);
     --color-popover: oklch(4% 0 0);
     --color-popover-foreground: oklch(98% 0 0);
@@ -45,7 +46,7 @@
     --color-input: oklch(15% 0 0);
     --color-ring: oklch(83% 0 0);
   }
-}
+} */
 
 body {
   font-feature-settings: "rlig" 1, "calt" 1;

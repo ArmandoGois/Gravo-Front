@@ -24,13 +24,24 @@ import {
     InputGroup,
     InputGroupAddon,
     InputGroupInput
-} from '@/presentation/components/ui/input-group'; //
+} from '@/presentation/components/ui/input-group';
 import { useAuth } from '@/presentation/hooks/use-auth';
 
 
 const registrationSchema = z.object({
-    email: z.string().min(1, 'El email es requerido').email('Email inválido'),
-    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    email: z
+        .string()
+        .min(1, 'El email es requerido')
+        .email('Email inválido'),
+
+    password: z
+        .string()
+        .min(6, 'La contraseña debe tener al menos 6 caracteres')
+        .regex(/[A-Z]/, { message: 'Debe contener al menos una mayúscula' })
+        .regex(/[a-z]/, { message: 'Debe contener al menos una minúscula' })
+        .regex(/[0-9]/, { message: 'Debe contener al menos un número' })
+        .regex(/[\W_]/, { message: 'Debe contener al menos un carácter especial' }),
+
     confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas deben coincidir',
@@ -85,7 +96,6 @@ export const RegistrationForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            {/* Forzamos bg-white y eliminamos cualquier transparencia dark */}
                                             <InputGroup className="bg-white dark:bg-white border-white/30 transition-all h-12 shadow-sm  rounded-2xl">
                                                 <InputGroupAddon>
                                                     <MailIcon className="h-4 w-4 text-gray-500" />
@@ -94,7 +104,7 @@ export const RegistrationForm = () => {
                                                     {...field}
                                                     type="email"
                                                     placeholder="example@mail.com"
-                                                    className="text-black bg-white"
+                                                    className="text-foreground bg-white"
                                                 />
                                             </InputGroup>
                                         </FormControl>

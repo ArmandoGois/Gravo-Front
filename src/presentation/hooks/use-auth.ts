@@ -31,9 +31,9 @@ export const useAuth = () => {
 
   const registerMutation = useMutation({
     mutationFn: (data: UserCredentials) => registerUseCase(data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       // Automatically log in after registration
-      router.push("/dashboard");
+      loginMutation.mutate(variables);
     },
   });
 

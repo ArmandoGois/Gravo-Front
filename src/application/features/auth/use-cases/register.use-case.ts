@@ -6,7 +6,7 @@ export const registerUseCase = async (
     credentials: UserCredentials
 ): Promise<AuthResponse> => {
     try {
-        // Call backend login endpoint directly
+        // Call backend register endpoint directly
         const response = await httpService.post<AuthResponse>(
             "/v1/auth/register",
             credentials
@@ -24,6 +24,7 @@ export const registerUseCase = async (
 
         return response;
     } catch (error) {
+        console.error("Error in registerUseCase while registering user:", error);
         throw error;
     }
 };

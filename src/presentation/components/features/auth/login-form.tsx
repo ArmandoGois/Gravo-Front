@@ -18,17 +18,14 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
+
   FormMessage,
 } from '@/presentation/components/ui/form';
-import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../../ui/input-group';
 
-
-
-// Esquema de validación con Zod 
+// Zod schema to validate the login form
 const loginSchema = z.object({
   email: z
     .string()
@@ -64,7 +61,7 @@ export const LoginForm = () => {
       <CardHeader className="space-y-6 text-center">
         {/*Logo*/}
         <div className="flex justify-center">
-          <div className="flex items-center justify-center w-16 h-16  rounded-2xl bg-white/10">
+          <div className="flex items-center justify-center w-16 h-16  rounded-2xl bg-white/70 ">
             <Image
               src="/vector.svg"
               alt="Vector icon"
@@ -74,40 +71,42 @@ export const LoginForm = () => {
           </div>
         </div>
 
-        {/*Título*/}
+        {/*Title*/}
         <div className="space-y-6">
           <h1 className="text-2xl font-bold text-foreground">Sign in with email</h1>
         </div>
       </CardHeader>
       <CardContent className="pt-6 gap-12">
-        {/* Formulario */}
+        {/* Form */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-            {/* Campo Email */}
+            {/* Email */}
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel></FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                      <Input
+                    <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl">
+                      <InputGroupAddon>
+                        <MailIcon className="h-4 w-4 text-gray-500" />
+                      </InputGroupAddon>
+
+                      <InputGroupInput
+                        {...field}
                         type="email"
                         placeholder="example"
-                        className="pl-10 bg-white opacity-100 text-black"
-                        {...field}
+                        className="flex-1 text-black bg-white border-0 focus-visible:ring-0"
                       />
-                    </div>
+                    </InputGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/*Contraseña */}
+            {/* Password */}
             <FormField
               control={form.control}
               name="password"
@@ -135,12 +134,13 @@ export const LoginForm = () => {
                       </InputGroupAddon>
                     </InputGroup>
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
 
-            {/*Recuperar contraseña*/}
+            {/*Password recovery*/}
             <div className="flex justify-end">
               <Button
                 type="button"
@@ -150,14 +150,14 @@ export const LoginForm = () => {
               </Button>
             </div>
 
-            {/*Error de login */}
+            {/*Login error */}
             {loginError && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/50">
                 Error al iniciar sesión. Verifica tus credenciales.
               </div>
             )}
 
-            {/* Botón Get Started*/}
+            {/* Button Get Started*/}
             <Button
               type="submit"
               className="w-full h-18 text-base font-semibold bg-secondary-black text-primary-foreground rounded-4xl"

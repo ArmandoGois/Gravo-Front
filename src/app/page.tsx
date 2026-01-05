@@ -86,7 +86,7 @@ const Home = () => (
       </div>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-        <Button asChild size="lg">
+        <Button asChild variant="outline" size="lg">
           <Link href="/login">
             View Login Example
           </Link>
@@ -94,6 +94,11 @@ const Home = () => (
         <Button asChild variant="outline" size="lg">
           <Link href="/dashboard">
             Go to Dashboard
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/chathub">
+            Go to Chat Hub
           </Link>
         </Button>
       </div>

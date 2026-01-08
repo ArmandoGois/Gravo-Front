@@ -101,6 +101,11 @@ const Home = () => (
             Go to Dashboard
           </Link>
         </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/chathub">
+            Go to Chathub
+          </Link>
+        </Button>
       </div>
 
       <div className="text-center text-sm text-zinc-500 dark:text-zinc-400">

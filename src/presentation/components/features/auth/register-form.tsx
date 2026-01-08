@@ -36,11 +36,8 @@ const registrationSchema = z.object({
 
     password: z
         .string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .regex(/[A-Z]/, { message: 'Debe contener al menos una mayúscula' })
-        .regex(/[a-z]/, { message: 'Debe contener al menos una minúscula' })
-        .regex(/[0-9]/, { message: 'Debe contener al menos un número' })
-        .regex(/[\W_]/, { message: 'Debe contener al menos un carácter especial' }),
+        .min(6, 'La contraseña debe tener al menos 6 caracteres'),
+
 
     confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {

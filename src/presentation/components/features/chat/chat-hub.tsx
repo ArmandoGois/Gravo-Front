@@ -46,6 +46,7 @@ export const ChatHub = () => {
         //Simulate background
         <div className="min-h-screen w-full bg-linear-to-br bg-black flex items-center justify-center p-4 md:p-8 font-sans">
 
+            {/* Create newChat window */}
             <CreateChatModal
                 isOpen={isCreateChatOpen}
                 onClose={() => setIsCreateChatOpen(false)}

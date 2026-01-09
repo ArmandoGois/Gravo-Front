@@ -18,8 +18,8 @@ import {
   FormControl,
   FormField,
   FormItem,
-
-  FormMessage,
+  FormLabel,
+  FormMessage
 } from '@/presentation/components/ui/form';
 import { useAuth } from '@/presentation/hooks/use-auth';
 
@@ -101,7 +101,6 @@ export const LoginForm = () => {
                       />
                     </InputGroup>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -112,6 +111,7 @@ export const LoginForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel></FormLabel>
                   <FormControl>
                     <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl">
                       <InputGroupAddon>
@@ -139,7 +139,6 @@ export const LoginForm = () => {
               )}
             />
 
-
             {/*Password recovery*/}
             <div className="flex justify-end">
               <Button
@@ -160,7 +159,7 @@ export const LoginForm = () => {
             {/* Button Get Started*/}
             <Button
               type="submit"
-              className="w-full h-18 text-base font-semibold bg-secondary-black text-primary-foreground rounded-4xl"
+              className="w-full h-18 text-base font-semibold bg-black text-primary-foreground rounded-4xl"
               disabled={isLoginLoading}
             >
               {isLoginLoading ? 'Iniciando sesión...' : 'Get started'}

@@ -18,7 +18,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage
 } from '@/presentation/components/ui/form';
 import { useAuth } from '@/presentation/hooks/use-auth';
@@ -63,8 +62,8 @@ export const LoginForm = () => {
         <div className="flex justify-center">
           <div className="flex items-center justify-center w-16 h-16  rounded-2xl bg-white/70 ">
             <Image
-              src="/vector.svg"
-              alt="Vector icon"
+              src="/login-icon.svg"
+              alt="Login icon"
               width={48}
               height={48}
             />
@@ -96,11 +95,12 @@ export const LoginForm = () => {
                       <InputGroupInput
                         {...field}
                         type="email"
-                        placeholder="example"
+                        placeholder="your@email.com"
                         className="flex-1 text-black bg-white border-0 focus-visible:ring-0"
                       />
                     </InputGroup>
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -111,7 +111,6 @@ export const LoginForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel></FormLabel>
                   <FormControl>
                     <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl">
                       <InputGroupAddon>

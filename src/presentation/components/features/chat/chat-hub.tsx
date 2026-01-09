@@ -10,17 +10,23 @@ import {
     ArrowUp,
     Search,
     SquarePen,
-    Plus,
     ChevronDown,
     X,
     ChevronUp,
     Sun,
+    Bot,
+    Trash2,
     Moon,
-    Bell
+    Bell,
+    MessageSquare
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { useChatUIStore } from "@/infrastructure/stores/chat-ui.store";
+import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
+import { CreateChatModal } from "@/presentation/components/features/chat/chat-creator";
+import { ModelSelector } from "@/presentation/components/features/models/model-selector";
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
@@ -28,11 +34,23 @@ import { useAuth } from '@/presentation/hooks/use-auth';
 
 export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const [isCreateChatOpen, setIsCreateChatOpen] = useState(false);
+
     const { logout } = useAuth();
+
+    const { activeModels, removeModel } = useModelUIStore();
+
+    const { activeChats, removeChat } = useChatUIStore();
 
     return (
         //Simulate background
         <div className="min-h-screen w-full bg-linear-to-br flex items-center justify-center p-4 md:p-8 font-sans">
+
+            <CreateChatModal
+                isOpen={isCreateChatOpen}
+                onClose={() => setIsCreateChatOpen(false)}
+            />
 
             <div className="w-full max-w-[92%] flex flex-col gap-5">
 
@@ -146,30 +164,101 @@ export const ChatHub = () => {
                             </div>
 
 
-                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                                <h3 className="text-xs font-bold text-gray-700 tracking-widest uppercase pl-3 opacity-80">Today</h3>
-                                <div className="space-y-2">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="px-4 py-3 rounded-2xl text-sm text-gray-800 hover:bg-white/40 cursor-pointer transition-all font-medium flex items-center gap-3 group">
-                                            <div className="w-2 h-2 rounded-full bg-gray-400 group-hover:bg-black transition-colors" />
-                                            <span className="italic opacity-80 group-hover:opacity-100">Untitled Chat</span>
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
+
+                                {/* Render of Active Chats */}
+                                {activeChats.length === 0 && (
+                                    <p className="text-xs text-white italic pl-2">No active chats.</p>
+                                )}
+
+                                {activeChats.map(chat => (
+                                    <div key={chat.id} className="group flex items-center justify-between px-3 py-3 rounded-xl bg-white/40 hover:bg-white/70 cursor-pointer transition-all border border-transparent hover:border-white/50">
+                                        <div className="flex flex-col overflow-hidden">
+                                            <div className="flex items-center gap-2">
+                                                <MessageSquare size={14} className="text-gray-600" />
+                                                <span className="text-sm font-semibold text-gray-800 truncate">{chat.title}</span>
+                                            </div>
+                                            <span className="text-[10px] text-gray-500 pl-6 truncate">
+                                                {chat.models.length} models active
+                                            </span>
                                         </div>
-                                    ))}
-                                </div>
+
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); removeChat(chat.id); }}
+                                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 text-red-400 rounded-lg transition-all"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
                         </Card>
                     </aside>
 
+
+
+
                     {/* Main Content */}
                     <main className="flex-1 relative flex flex-col h-full rounded-[2.5rem] overflow-hidden">
 
-                        <div className="absolute top-0 right-0 flex items-center gap-3 z-30 p-2">
-                            <Button className="rounded-full bg-white/20 border border-white/30 text-white hover:bg-white/30 shadow-sm backdrop-blur-md px-6 h-11 gap-2 font-medium transition-all hover:scale-105">
-                                <SquarePen size={18} /> New chat
+                        {/* New Chat & Add Model */}
+                        <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
+
+                            {/* --- CONTENEDOR DE LA LISTA DE MODELOS --- */}
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
+
+                                {/* Mensaje vacío */}
+                                {activeModels.length === 0 && (
+                                    <p className="text-xs text-gray-500 italic pl-2 whitespace-nowrap">
+                                        No active models.
+                                    </p>
+                                )}
+
+                                {/* Mapeo de Modelos */}
+                                {activeModels.map((model) => (
+                                    <div
+                                        key={model.id}
+                                        // shrink-0: Evita que el elemento se encoja
+                                        // whitespace-nowrap: Evita que el texto salte de línea
+                                        className="shrink-0 group flex items-center justify-between px-3 py-2 rounded-full bg-white/40 hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md"
+                                    >
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <Bot size={14} className="text-blue-600 shrink-0" />
+                                            <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
+                                                {model.title}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeModel(model.id);
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* ----------------------------------------- */}
+
+                            {/* Separador visual opcional si quieres distinguir la lista de los botones fijos */}
+                            {activeModels.length > 0 && <div className="h-6 w-px bg-white/30 shrink-0 mx-1"></div>}
+
+                            {/* Botones Fijos (shrink-0 para que nunca se aplasten) */}
+                            <Button
+                                onClick={() => setIsCreateChatOpen(true)} // ABRIMOS EL MODAL
+                                variant="outline"
+                                className="rounded-full bg-white/20 border-white/40 text-white hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
+                            >
+                                <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
                             </Button>
-                            <Button className="rounded-full bg-white/20 border border-white/30 text-white hover:bg-white/30 shadow-sm backdrop-blur-md px-6 h-11 gap-2 font-medium transition-all hover:scale-105">
-                                <Plus size={18} /> Add model
-                            </Button>
+
+                            <div className="shrink-0">
+                                <ModelSelector />
+                            </div>
+
                         </div>
 
                         <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
@@ -263,7 +352,7 @@ export const ChatHub = () => {
                         </div>
                     </main>
                 </div>
-            </div>
+            </div >
         </div >
     );
 }

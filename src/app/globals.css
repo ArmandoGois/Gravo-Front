@@ -50,7 +50,3 @@
 body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
-
-.bg-custom-gray {
-  background-color: rgb(60, 60, 59);
-}

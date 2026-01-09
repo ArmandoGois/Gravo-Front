@@ -21,6 +21,7 @@
   --color-input: oklch(90% 0 0);
   --color-ring: oklch(9% 0 0);
   --radius: 0.5rem;
+  --color-secondary-black: oklch(0.3558% 0.0017 106.49);
 }
 
 /* @media (prefers-color-scheme: dark) {

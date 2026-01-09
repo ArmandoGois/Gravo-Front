@@ -4,7 +4,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 
 const Home = () => (
-  <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-black">
+  <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-black">
     <main className="flex w-full max-w-4xl flex-col gap-8 px-4 py-16">
       <div className="text-center">
         <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
@@ -86,14 +86,14 @@ const Home = () => (
       </div>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-        <Button asChild size="lg">
+        <Button asChild variant="outline" size="lg">
           <Link href="/login">
-            View Login Example
+            View Login
           </Link>
         </Button>
-        <Button asChild size="lg">
+        <Button asChild variant="outline" size="lg">
           <Link href="/register">
-            View Register Example
+            View Register
           </Link>
         </Button>
         <Button asChild variant="outline" size="lg">

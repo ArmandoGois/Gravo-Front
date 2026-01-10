@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+import { cn } from "@/lib/utils";
 import { Button } from '@/presentation/components/ui/button';
 import {
     Card,
@@ -28,7 +29,6 @@ import {
 } from '@/presentation/components/ui/input-group';
 import { useAuth } from '@/presentation/hooks/use-auth';
 
-
 //SCHEMA
 const registrationSchema = z.object({
     email: z
@@ -40,7 +40,9 @@ const registrationSchema = z.object({
         .string()
         .min(6, 'La contraseña debe tener al menos 6 caracteres'),
 
-    confirmPassword: z.string()
+    confirmPassword: z
+        .string()
+        .min(1, 'Debes confirmar la contraseña'),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas deben coincidir',
     path: ['confirmPassword'],
@@ -60,6 +62,7 @@ export const RegistrationForm = () => {
             password: '',
             confirmPassword: '',
         },
+        mode: 'onSubmit',
     });
 
     const onSubmit = (data: RegistrationFormValues) => {
@@ -92,12 +95,22 @@ export const RegistrationForm = () => {
                             <FormField
                                 control={form.control}
                                 name="email"
-                                render={({ field }) => (
+                                // Destructuring fieldState
+                                render={({ field, fieldState }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup className="bg-white dark:bg-white border-white/30 transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-primary/20">
+                                            {/* Conditional to render error*/}
+                                            <InputGroup className={cn(
+                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
+                                                fieldState.error
+                                                    ? "border-red-500 ring-2 ring-red-500/20" // Estilo de error
+                                                    : "border-white/30 focus-within:ring-primary/20" // Estilo normal
+                                            )}>
                                                 <InputGroupAddon>
-                                                    <MailIcon className="h-4 w-4 text-gray-500" />
+                                                    <MailIcon className={cn(
+                                                        "h-4 w-4",
+                                                        fieldState.error ? "text-red-500" : "text-gray-500"
+                                                    )} />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}
@@ -116,12 +129,20 @@ export const RegistrationForm = () => {
                             <FormField
                                 control={form.control}
                                 name="password"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-primary/20">
+                                            <InputGroup className={cn(
+                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
+                                                fieldState.error
+                                                    ? "border-red-500 ring-2 ring-red-500/20"
+                                                    : "border-white/30 focus-within:ring-primary/20"
+                                            )}>
                                                 <InputGroupAddon>
-                                                    <LockIcon className="h-4 w-4 text-gray-500" />
+                                                    <LockIcon className={cn(
+                                                        "h-4 w-4",
+                                                        fieldState.error ? "text-red-500" : "text-gray-500"
+                                                    )} />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}
@@ -152,12 +173,20 @@ export const RegistrationForm = () => {
                             <FormField
                                 control={form.control}
                                 name="confirmPassword"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-primary/20">
+                                            <InputGroup className={cn(
+                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
+                                                fieldState.error
+                                                    ? "border-red-500 ring-2 ring-red-500/20"
+                                                    : "border-white/30 focus-within:ring-primary/20"
+                                            )}>
                                                 <InputGroupAddon>
-                                                    <LockIcon className="h-4 w-4 text-gray-500" />
+                                                    <LockIcon className={cn(
+                                                        "h-4 w-4",
+                                                        fieldState.error ? "text-red-500" : "text-gray-500"
+                                                    )} />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}

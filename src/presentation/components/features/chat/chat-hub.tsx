@@ -2,7 +2,6 @@
 
 import {
     Image as ImageIcon,
-    LayoutTemplate,
     Settings,
     Paperclip,
     Mic,
@@ -19,7 +18,8 @@ import {
     Moon,
     Bell,
     MessageSquare,
-    PanelLeftOpen
+    PanelLeftOpen,
+    Monitor,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
@@ -49,6 +49,7 @@ export const ChatHub = () => {
 
     const [isAsideOpen, setAsideOpen] = useState(false);
 
+    const [isSearchActive, setIsSearchActive] = useState(false);
 
     const recommendedCards = useMemo(() => [
         {
@@ -367,34 +368,53 @@ export const ChatHub = () => {
                             <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-4 shadow-2xl border border-white/60">
 
                                 <div className="flex gap-3 mb-3 px-2">
-                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-200 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
+                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-400 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
                                         <ImageIcon size={14} /> Image
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-200 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
-                                        <LayoutTemplate size={14} /> Landing Page
+                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-400 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
+                                        <Monitor size={14} /> Landing Page
                                     </Button>
                                 </div>
 
                                 <Input
-                                    className="h-14 w-full  border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    className="h-14 w-full border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
                                     placeholder="Start a new message..."
                                 />
 
                                 <div className="flex justify-between items-center px-2 pt-2">
-                                    <div className="flex items-center gap-4 text-gray-400">
-                                        <Settings size={20} className="hover:text-gray-600 cursor-pointer transition-colors" />
-                                        <Paperclip size={20} className="hover:text-gray-600 cursor-pointer transition-colors" />
-                                        <Mic size={20} className="hover:text-gray-600 cursor-pointer transition-colors" />
+                                    <div className="flex items-center gap-8 text-gray-400">
 
-                                        <div className="h-5 w-px bg-gray-300 mx-2"></div>
-                                        <div className="flex items-center gap-2 text-gray-500 hover:text-gray-700 cursor-pointer bg-white/50 px-3 py-1 rounded-full">
-                                            <Globe size={14} /> <span className="text-[11px] font-bold uppercase tracking-wide">Search</span>
+                                        {/* Basic Tools */}
+                                        <div className="flex items-center gap-6">
+                                            <Settings size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Paperclip size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Mic size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                        </div>
+
+
+                                        <div
+                                            onClick={() => setIsSearchActive(!isSearchActive)}
+                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isSearchActive ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                                        >
+                                            <Globe size={18} className='text-black' />
+                                            <span className="text-sm font-medium text-black">Search</span>
+
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-black' : 'bg-gray-200 group-hover:bg-gray-300'}`}>
+                                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black">
+                                            <MessageSquare size={18} />
+                                            <span className="text-sm font-medium ">Memory (10)</span>
+                                            <ChevronDown size={14} />
                                         </div>
                                     </div>
 
                                     <Button size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-10 w-10 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
                                         <ArrowUp size={20} />
                                     </Button>
+
                                 </div>
                             </Card>
                         </div>

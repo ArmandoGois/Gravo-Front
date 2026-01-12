@@ -22,7 +22,7 @@ import {
     PanelLeftOpen
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import { useChatUIStore } from "@/infrastructure/stores/chat-ui.store";
 import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
@@ -32,19 +32,70 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useModels } from '@/presentation/hooks/use-models';
 
 export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [isCreateChatOpen, setIsCreateChatOpen] = useState(false);
 
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
-    const { activeModels, removeModel } = useModelUIStore();
+    console.log("Authenticated user in ChatHub:", user);
+
+    const { activeModels, addModel, removeModel } = useModelUIStore();
+
+    const { models: availableModels } = useModels();
 
     const { activeChats, removeChat } = useChatUIStore();
 
     const [isAsideOpen, setAsideOpen] = useState(false);
+
+
+    const recommendedCards = useMemo(() => [
+        {
+            title: 'Flagship models',
+            keywords: ['gpt-4', 'gemini', 'claude', 'opus'],
+            logos: [
+                { src: '/Gemini.svg', alt: 'Gemini' },
+                { src: '/Grok.svg', alt: 'Grok' },
+                { src: '/DeepSeek.svg', alt: 'DeepSeek' },
+                { src: '/Mistral.svg', alt: 'Mistral' }
+            ]
+        },
+        {
+            title: 'Best roleplay models',
+            keywords: ['mistral', 'llama', 'roleplay'],
+            logos: [{ src: '/Mistral.svg', alt: 'Mistral' }]
+        },
+        {
+            title: 'Best coding models',
+            keywords: ['deepseek', 'codellama', 'claude'],
+            logos: [{ src: '/DeepSeek.svg', alt: 'DeepSeek' }]
+        },
+        {
+            title: 'Reasoning models',
+            keywords: ['o1', 'reasoning', 'thinking'],
+            logos: [{ src: '/Gemini.svg', alt: 'Gemini' }]
+        }
+    ], []);
+
+    const handleCardClick = (keywords: string[]) => {
+        const modelsToAdd = availableModels.filter(model =>
+            keywords.some(keyword =>
+                model.id.toLowerCase().includes(keyword) ||
+                model.name?.toLowerCase().includes(keyword)
+            )
+        );
+
+        modelsToAdd.forEach(model => {
+            const isAlreadyActive = activeModels.some(m => m.id === model.id);
+            if (!isAlreadyActive) {
+                addModel(model);
+            }
+        });
+    };
+
 
 
     return (
@@ -106,8 +157,12 @@ export const ChatHub = () => {
                                     <Image src="/user_avatar.svg" alt="User" width={46} height={44} />
                                 </div>
                                 <div className="flex flex-col text-left leading-none">
-                                    <span className="text-[15px] font-bold text-gray-800">Name Lorem</span>
-                                    <span className="text-[15px] text-gray-500">lorem@ipsum.com</span>
+                                    <span className="text-[15px] font-bold text-gray-800">
+                                        User (Placeholder)
+                                    </span>
+                                    <span className="text-[15px] text-gray-500">
+                                        {user?.email || 'Loading...'}
+                                    </span>
                                 </div>
                                 {!isMenuOpen ? (
                                     <ChevronDown size={18} className="text-gray-400" />
@@ -282,47 +337,31 @@ export const ChatHub = () => {
                             </div>
 
                             {/* Recommended Models */}
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl">
-                                {[
-                                    { title: 'Flagship models' },
-                                    { title: 'Best roleplay models' },
-                                    { title: 'Best coding models' },
-                                    { title: 'Reasoning models' }
+                            {activeModels.length === 0 && (
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl animate-in fade-in zoom-in-95 duration-300">
+                                    {recommendedCards.map((card, idx) => (
+                                        <Card
+                                            key={idx}
+                                            onClick={() => handleCardClick(card.keywords)}
+                                            className="group h-40 rounded-4xl bg-white/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                        >
+                                            <CardHeader className="px-6 pt-6 pb-0">
+                                                <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
+                                                    {card.title}
+                                                </CardTitle>
+                                            </CardHeader>
 
-                                ].map((card, idx) => (
-
-                                    <Card key={idx} className="group h-40 rounded-4xl bg-white/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1">
-                                        <CardHeader className="px-6 pt-6 pb-0">
-                                            <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
-                                                {card.title}
-                                            </CardTitle>
-                                        </CardHeader>
-
-                                        <CardFooter className="px-6 pb-4 flex justify-end gap-2">
-                                            {[
-                                                { src: '/Gemini.svg', alt: 'Gemini' },
-                                                { src: '/Grok.svg', alt: 'Grok' },
-                                                { src: '/DeepSeek.svg', alt: 'DeepSeek' },
-                                                { src: '/Mistral.svg', alt: 'Mistral' }
-                                            ].map((logo, i) => (
-
-                                                <div
-                                                    key={i}
-                                                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform"
-                                                >
-                                                    <Image
-                                                        src={logo.src}
-                                                        alt={logo.alt}
-                                                        width={18}
-                                                        height={18}
-                                                        className="opacity-70 group-hover:opacity-100 transition-opacity"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </CardFooter>
-                                    </Card>
-                                ))}
-                            </div>
+                                            <CardFooter className="px-6 pb-4 flex justify-end gap-2">
+                                                {card.logos.map((logo, i) => (
+                                                    <div key={i} className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                        <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                                                    </div>
+                                                ))}
+                                            </CardFooter>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="w-full px-4 md:px-16 pb-6 z-40 flex justify-center shrink-0">

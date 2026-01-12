@@ -6,23 +6,23 @@ import type { AIModel } from "@/domain/entities/model.entity";
 export interface ChatSession {
     id: string;
     title: string;
-    models: AIModel[]; // Models selected
+    models: AIModel[];
     createdAt: Date;
 }
 
 interface ChatUIState {
     activeChats: ChatSession[];
-    addChat: (title: string, selectedModels: AIModel[]) => void;
+    addChat: (title: string, selectedModels: AIModel[], id?: string) => void;
     removeChat: (chatId: string) => void;
 }
 
 export const useChatUIStore = create<ChatUIState>((set) => ({
     activeChats: [],
 
-    addChat: (title, selectedModels) => set((state) => ({
+    addChat: (title, selectedModels, id) => set((state) => ({
         activeChats: [
             {
-                id: crypto.randomUUID(),
+                id: id || crypto.randomUUID(),
                 title: title || "Untitled Chat",
                 models: selectedModels,
                 createdAt: new Date(),

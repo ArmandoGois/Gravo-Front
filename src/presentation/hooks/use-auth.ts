@@ -18,7 +18,7 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: (credentials: UserCredentials) => loginUseCase(credentials),
     onSuccess: () => {
-      router.push("/dashboard");
+      router.push("/chathub");
     },
   });
 

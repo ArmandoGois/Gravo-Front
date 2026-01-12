@@ -18,7 +18,8 @@ import {
     Trash2,
     Moon,
     Bell,
-    MessageSquare
+    MessageSquare,
+    PanelLeftOpen
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
@@ -40,13 +41,14 @@ export const ChatHub = () => {
 
     const { logout, user } = useAuth();
 
-    console.log("Authenticated user in ChatHub:", user);
-
     const { activeModels, addModel, removeModel } = useModelUIStore();
 
     const { models: availableModels } = useModels();
 
     const { activeChats, removeChat } = useChatUIStore();
+
+    const [isAsideOpen, setAsideOpen] = useState(false);
+
 
     const recommendedCards = useMemo(() => [
         {
@@ -118,7 +120,7 @@ export const ChatHub = () => {
                                 height={40}
                                 className="object-contain"
                             />
-                            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold px-1 rounded-sm">IA</span>
+                            <span className="absolute -top-1 -right-7 bg-red-500 text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
                         </div>
                     </div>
 
@@ -202,25 +204,38 @@ export const ChatHub = () => {
                 <div className="w-full h-[85vh] flex gap-6 max-w-450 relative">
 
                     {/* Sidebar */}
-                    <aside className="hidden md:flex flex-col w-80 h-full shrink-0">
-                        <Card className="h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden p-5">
+                    <aside
+                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-80' : 'w-20'}`}
+                    >
+                        <Card className={`h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
 
-                            {/* Search Bar and Close Button */}
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="relative w-full">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
-                                    <Input
-                                        className="w-full bg-white/40 border-0 rounded-2xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
-                                        placeholder="Search rooms..."
-                                    />
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/40 text-gray-600 shrink-0">
-                                    <X size={18} />
+                            <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
+                                {isAsideOpen && (
+                                    <div className="relative w-full opacity-100 animate-in fade-in duration-300">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                                        <Input
+                                            className="w-full bg-white border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
+                                            placeholder="Search rooms..."
+                                        />
+                                    </div>
+                                )}
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setAsideOpen(!isAsideOpen)}
+                                    className={`h-10 w-10 rounded-full bg-white hover:bg-white/40 text-gray-600 shrink-0 shadow-sm`}
+                                >
+                                    {isAsideOpen ? (
+                                        <X size={20} />
+                                    ) : (
+                                        <PanelLeftOpen size={20} />
+                                    )}
                                 </Button>
                             </div>
 
 
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                 {/* Render of Active Chats */}
@@ -265,7 +280,7 @@ export const ChatHub = () => {
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
 
                                 {activeModels.length === 0 && (
-                                    <p className="text-xs text-gray-500 italic pl-2 whitespace-nowrap">
+                                    <p className="text-xs text-black italic pl-2 whitespace-nowrap">
                                         No active models.
                                     </p>
                                 )}
@@ -300,7 +315,7 @@ export const ChatHub = () => {
                             <Button
                                 onClick={() => setIsCreateChatOpen(true)}
                                 variant="outline"
-                                className="rounded-full bg-white/20 border-white/40 text-white hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
+                                className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
                             >
                                 <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
                             </Button>
@@ -311,7 +326,7 @@ export const ChatHub = () => {
 
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
+                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-4 scrollbar-hide">
 
                             {/* Welcome Headers */}
                             <div className="mb-12 space-y-2">
@@ -347,8 +362,7 @@ export const ChatHub = () => {
                             )}
                         </div>
 
-                        {/* Input area */}
-                        <div className="absolute bottom-6 left-0 right-0 px-4 md:px-16 z-40 flex justify-center">
+                        <div className="w-full px-4 md:px-16 pb-6 z-40 flex justify-center shrink-0">
 
                             <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-4 shadow-2xl border border-white/60">
 
@@ -362,8 +376,8 @@ export const ChatHub = () => {
                                 </div>
 
                                 <Input
-                                    className="h-14 w-full rounded-xl border-none bg-transparent px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
-                                    placeholder="Star a new message..."
+                                    className="h-14 w-full  border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    placeholder="Start a new message..."
                                 />
 
                                 <div className="flex justify-between items-center px-2 pt-2">

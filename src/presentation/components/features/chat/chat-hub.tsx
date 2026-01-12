@@ -24,28 +24,47 @@ import {
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
 
-import { useChatUIStore } from "@/infrastructure/stores/chat-ui.store";
+import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
-import { CreateChatModal } from "@/presentation/components/features/chat/chat-creator";
+import { CreateConversationModal } from "@/presentation/components/features/conversation/conversation-creator";
 import { ModelSelector } from "@/presentation/components/features/models/model-selector";
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useConversations } from "@/presentation/hooks/use-conversations";
+import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
+import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useModels } from '@/presentation/hooks/use-models';
+
 
 export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const [isCreateChatOpen, setIsCreateChatOpen] = useState(false);
+    const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
 
     const { logout, user } = useAuth();
+
+    const { createConversation, isCreating } = useCreateConversation(() => {
+        setIsCreateConversationOpen(false);
+    });
+
+    const { deleteConversation } = useDeleteConversation();
+
+    const handleCreateConversation = (title: string, modelId: string) => {
+        createConversation({
+            title,
+            model_id: modelId
+        });
+    };
 
     const { activeModels, addModel, removeModel } = useModelUIStore();
 
     const { models: availableModels } = useModels();
 
-    const { activeChats, removeChat } = useChatUIStore();
+    const { isLoading: isLoadingChats } = useConversations();
+
+    const { activeConversations } = useConversationUIStore();
 
     const [isAsideOpen, setAsideOpen] = useState(false);
 
@@ -101,10 +120,12 @@ export const ChatHub = () => {
         //Simulate background
         <div className="min-h-screen w-full bg-linear-to-br flex items-center justify-center p-4 md:p-8 font-sans">
 
-            {/* Create newChat window */}
-            <CreateChatModal
-                isOpen={isCreateChatOpen}
-                onClose={() => setIsCreateChatOpen(false)}
+            {/* Create newConversation window */}
+            <CreateConversationModal
+                isOpen={isCreateConversationOpen}
+                onClose={() => setIsCreateConversationOpen(false)}
+                onCreate={handleCreateConversation}
+                isLoading={isCreating}
             />
 
             <div className="w-full max-w-[92%] flex flex-col gap-5">
@@ -240,24 +261,43 @@ export const ChatHub = () => {
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                 {/* Render of Active Chats */}
-                                {activeChats.length === 0 && (
-                                    <p className="text-xs text-white italic pl-2">No active chats.</p>
+
+                                {isLoadingChats && activeConversations.length === 0 && (
+                                    <div className="flex flex-col gap-2 px-2 animate-pulse">
+                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
+                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
+                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
+                                        <p className="text-xs text-gray-500 text-center mt-2">Syncing history...</p>
+                                    </div>
                                 )}
 
-                                {activeChats.map(chat => (
-                                    <div key={chat.id} className="group flex items-center justify-between px-3 py-3 rounded-xl bg-white/40 hover:bg-white/70 cursor-pointer transition-all border border-transparent hover:border-white/50">
+                                {!isLoadingChats && activeConversations.length === 0 && (
+                                    <p className="text-xs text-gray-500 italic pl-2">No active conversations.</p>
+                                )}
+
+                                {activeConversations.length === 0 && (
+                                    <p className="text-xs text-white italic pl-2">No active Conversations.</p>
+                                )}
+
+                                {activeConversations.map(conversation => (
+                                    <div key={conversation.id} className="group flex items-center justify-between px-3 py-3 rounded-xl bg-white/40 hover:bg-white/70 cursor-pointer transition-all border border-transparent hover:border-white/50">
                                         <div className="flex flex-col overflow-hidden">
                                             <div className="flex items-center gap-2">
                                                 <MessageSquare size={14} className="text-gray-600" />
-                                                <span className="text-sm font-semibold text-gray-800 truncate">{chat.title}</span>
+                                                <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
                                             </div>
                                             <span className="text-[10px] text-gray-500 pl-6 truncate">
-                                                {chat.models.length} models active
+                                                {conversation.models.length} models active
                                             </span>
                                         </div>
 
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); removeChat(chat.id); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (confirm("Are you sure you want to delete this conversation?")) {
+                                                    deleteConversation(conversation.id);
+                                                }
+                                            }}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 text-red-400 rounded-lg transition-all"
                                         >
                                             <Trash2 size={14} />
@@ -274,7 +314,7 @@ export const ChatHub = () => {
                     {/* Main Content */}
                     <main className="flex-1 relative flex flex-col h-full rounded-[2.5rem] overflow-hidden">
 
-                        {/* New Chat & Add Model */}
+                        {/* New Conversation & Add Model */}
                         <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
 
                             {/* Models list */}
@@ -314,7 +354,7 @@ export const ChatHub = () => {
                             {activeModels.length > 0 && <div className="h-6 w-px bg-white/30 shrink-0 mx-1"></div>}
 
                             <Button
-                                onClick={() => setIsCreateChatOpen(true)}
+                                onClick={() => setIsCreateConversationOpen(true)}
                                 variant="outline"
                                 className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
                             >

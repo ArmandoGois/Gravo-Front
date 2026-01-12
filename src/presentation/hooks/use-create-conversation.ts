@@ -1,26 +1,26 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { createConversationUseCase } from "@/application/features/chat/use-cases/create-conversation.use-case";
+import { createConversationUseCase } from "@/application/features/conversations/use-cases/create-conversation.use-case";
 import { CreateConversationDto } from "@/domain/dtos/create-conversation.dto";
-import { useChatUIStore } from "@/infrastructure/stores/chat-ui.store";
+import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useModels } from "@/presentation/hooks/use-models";
 
-export const useCreateChat = (onSuccessCallback?: () => void) => {
-    const { addChat } = useChatUIStore();
+export const useCreateConversation = (onSuccessCallback?: () => void) => {
+    const { addConversation } = useConversationUIStore();
     const { models: availableModels } = useModels();
 
     const mutation = useMutation({
         mutationFn: (data: CreateConversationDto) => createConversationUseCase(data),
 
-        onSuccess: (newChatResponse, variables) => {
+        onSuccess: (newConversationResponse, variables) => {
             const selectedModel = availableModels.find(
                 m => m.id === variables.model_id
             );
             const modelsArray = selectedModel ? [selectedModel] : [];
-            addChat(
-                newChatResponse.title,
+            addConversation(
+                newConversationResponse.title,
                 modelsArray,
-                newChatResponse.id
+                newConversationResponse.id
             );
 
             if (onSuccessCallback) {
@@ -31,7 +31,7 @@ export const useCreateChat = (onSuccessCallback?: () => void) => {
     });
 
     return {
-        createChat: mutation.mutate,
+        createConversation: mutation.mutate,
         isCreating: mutation.isPending,
         error: mutation.error
     };

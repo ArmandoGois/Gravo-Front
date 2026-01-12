@@ -41,8 +41,6 @@ export const ChatHub = () => {
 
     const { logout, user } = useAuth();
 
-    console.log("Authenticated user in ChatHub:", user);
-
     const { activeModels, addModel, removeModel } = useModelUIStore();
 
     const { models: availableModels } = useModels();

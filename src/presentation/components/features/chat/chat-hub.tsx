@@ -54,7 +54,7 @@ export const ChatHub = () => {
 
             <div className="w-full max-w-[92%] flex flex-col gap-5">
 
-                {/* --- HEADER --- */}
+                {/* Header */}
                 <div className="relative z-50 w-full h-30 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
                     {/* Logo */}
                     <div className="flex items-center gap-2">
@@ -205,22 +205,19 @@ export const ChatHub = () => {
                         {/* New Chat & Add Model */}
                         <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
 
-                            {/* --- CONTENEDOR DE LA LISTA DE MODELOS --- */}
+                            {/* Models list */}
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
 
-                                {/* Mensaje vacío */}
                                 {activeModels.length === 0 && (
                                     <p className="text-xs text-gray-500 italic pl-2 whitespace-nowrap">
                                         No active models.
                                     </p>
                                 )}
 
-                                {/* Mapeo de Modelos */}
+                                {/* Models mapping */}
                                 {activeModels.map((model) => (
                                     <div
                                         key={model.id}
-                                        // shrink-0: Evita que el elemento se encoja
-                                        // whitespace-nowrap: Evita que el texto salte de línea
                                         className="shrink-0 group flex items-center justify-between px-3 py-2 rounded-full bg-white/40 hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md"
                                     >
                                         <div className="flex items-center gap-2 overflow-hidden">
@@ -241,14 +238,11 @@ export const ChatHub = () => {
                                     </div>
                                 ))}
                             </div>
-                            {/* ----------------------------------------- */}
 
-                            {/* Separador visual opcional si quieres distinguir la lista de los botones fijos */}
                             {activeModels.length > 0 && <div className="h-6 w-px bg-white/30 shrink-0 mx-1"></div>}
 
-                            {/* Botones Fijos (shrink-0 para que nunca se aplasten) */}
                             <Button
-                                onClick={() => setIsCreateChatOpen(true)} // ABRIMOS EL MODAL
+                                onClick={() => setIsCreateChatOpen(true)}
                                 variant="outline"
                                 className="rounded-full bg-white/20 border-white/40 text-white hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
                             >

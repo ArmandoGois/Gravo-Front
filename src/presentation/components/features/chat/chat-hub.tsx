@@ -18,7 +18,8 @@ import {
     Trash2,
     Moon,
     Bell,
-    MessageSquare
+    MessageSquare,
+    PanelLeftOpen
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -42,6 +43,9 @@ export const ChatHub = () => {
     const { activeModels, removeModel } = useModelUIStore();
 
     const { activeChats, removeChat } = useChatUIStore();
+
+    const [isAsideOpen, setAsideOpen] = useState(false);
+
 
     return (
         //Simulate background
@@ -67,7 +71,7 @@ export const ChatHub = () => {
                                 height={40}
                                 className="object-contain"
                             />
-                            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold px-1 rounded-sm">IA</span>
+                            <span className="absolute -top-1 -right-7 bg-red-500 text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
                         </div>
                     </div>
 
@@ -147,25 +151,38 @@ export const ChatHub = () => {
                 <div className="w-full h-[85vh] flex gap-6 max-w-450 relative">
 
                     {/* Sidebar */}
-                    <aside className="hidden md:flex flex-col w-80 h-full shrink-0">
-                        <Card className="h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden p-5">
+                    <aside
+                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-80' : 'w-20'}`}
+                    >
+                        <Card className={`h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
 
-                            {/* Search Bar and Close Button */}
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="relative w-full">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
-                                    <Input
-                                        className="w-full bg-white/40 border-0 rounded-2xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
-                                        placeholder="Search rooms..."
-                                    />
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/40 text-gray-600 shrink-0">
-                                    <X size={18} />
+                            <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
+                                {isAsideOpen && (
+                                    <div className="relative w-full opacity-100 animate-in fade-in duration-300">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                                        <Input
+                                            className="w-full bg-white border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
+                                            placeholder="Search rooms..."
+                                        />
+                                    </div>
+                                )}
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setAsideOpen(!isAsideOpen)}
+                                    className={`h-10 w-10 rounded-full bg-white hover:bg-white/40 text-gray-600 shrink-0 shadow-sm`}
+                                >
+                                    {isAsideOpen ? (
+                                        <X size={20} />
+                                    ) : (
+                                        <PanelLeftOpen size={20} />
+                                    )}
                                 </Button>
                             </div>
 
 
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                 {/* Render of Active Chats */}
@@ -323,7 +340,7 @@ export const ChatHub = () => {
                                 </div>
 
                                 <Input
-                                    className="h-14 w-full rounded-xl border-none bg-transparent px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    className="h-14 w-full  border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
                                     placeholder="Star a new message..."
                                 />
 

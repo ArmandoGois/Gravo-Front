@@ -227,7 +227,7 @@ export const ChatHub = () => {
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
 
                                 {activeModels.length === 0 && (
-                                    <p className="text-xs text-gray-500 italic pl-2 whitespace-nowrap">
+                                    <p className="text-xs text-black italic pl-2 whitespace-nowrap">
                                         No active models.
                                     </p>
                                 )}
@@ -262,7 +262,7 @@ export const ChatHub = () => {
                             <Button
                                 onClick={() => setIsCreateChatOpen(true)}
                                 variant="outline"
-                                className="rounded-full bg-white/20 border-white/40 text-white hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
+                                className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
                             >
                                 <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
                             </Button>
@@ -273,7 +273,7 @@ export const ChatHub = () => {
 
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
+                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-4 scrollbar-hide">
 
                             {/* Welcome Headers */}
                             <div className="mb-12 space-y-2">
@@ -325,8 +325,7 @@ export const ChatHub = () => {
                             </div>
                         </div>
 
-                        {/* Input area */}
-                        <div className="absolute bottom-6 left-0 right-0 px-4 md:px-16 z-40 flex justify-center">
+                        <div className="w-full px-4 md:px-16 pb-6 z-40 flex justify-center shrink-0">
 
                             <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-4 shadow-2xl border border-white/60">
 
@@ -341,7 +340,7 @@ export const ChatHub = () => {
 
                                 <Input
                                     className="h-14 w-full  border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
-                                    placeholder="Star a new message..."
+                                    placeholder="Start a new message..."
                                 />
 
                                 <div className="flex justify-between items-center px-2 pt-2">

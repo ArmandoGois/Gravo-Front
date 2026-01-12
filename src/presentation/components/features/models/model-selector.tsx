@@ -31,11 +31,11 @@ export const ModelSelector = () => {
             <Button
                 variant="outline"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`rounded-full bg-white/20 border-white/40 text-white hover:bg-white/30 px-5 h-10 gap-2 font-medium transition-all ${isOpen ? "bg-white/40 ring-2 ring-white/20" : ""}`}
+                className={`rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium transition-all ${isOpen ? "bg-white/40 ring-2 ring-white/20" : ""}`}
             >
                 <Plus size={16} />
                 Add model
-                <ChevronDown size={14} className={`text-white/70 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={14} className={`text-black/70 transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </Button>
 
             {/* Dropdown */}

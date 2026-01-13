@@ -20,11 +20,15 @@ import {
     MessageSquare,
     PanelLeftOpen,
     Monitor,
+    Loader2,
+    User,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
+import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
+import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
 import { CreateConversationModal } from "@/presentation/components/features/conversation/conversation-creator";
 import { ModelSelector } from "@/presentation/components/features/models/model-selector";
@@ -32,43 +36,75 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
 import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useModels } from '@/presentation/hooks/use-models';
 
 
-export const ChatHub = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+
+export const ChatHub = () => {
+    //Use States
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
+    const [isAsideOpen, setAsideOpen] = useState(false);
+    const [isSearchActive, setIsSearchActive] = useState(false);
+    const [memoryValue, setMemoryValue] = useState(10);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const { logout, user } = useAuth();
 
+    //Stores
+    const { activeModels, addModel, removeModel, setModels } = useModelUIStore();
+    const { activeConversations } = useConversationUIStore();
+    const { selectedConversationId, selectConversation, messages } = useMessageUIStore();
+
+    //Hooks for data fetching
+    const { models: availableModels } = useModels();
+    const { isLoading: isLoadingChats } = useConversations();
+    const { isLoading: isLoadingMessages } = useConversationMessages();
+
+    //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
         setIsCreateConversationOpen(false);
     });
-
     const { deleteConversation } = useDeleteConversation();
 
+    //Autoscroll to bottom on new messages
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
     const handleCreateConversation = (title: string, modelId: string) => {
-        createConversation({
-            title,
-            model_id: modelId
-        });
+        createConversation({ title, model_id: modelId });
     };
 
-    const { activeModels, addModel, removeModel } = useModelUIStore();
+    const handleConversationClick = (id: string) => {
+        if (selectedConversationId === id) return;
 
-    const { models: availableModels } = useModels();
+        selectConversation(id);
 
-    const { isLoading: isLoadingChats } = useConversations();
+        const currentConversation = activeConversations.find(c => c.id === id);
 
-    const { activeConversations } = useConversationUIStore();
+        if (currentConversation && currentConversation.models) {
+            setModels(currentConversation.models);
+        }
+    };
 
-    const [isAsideOpen, setAsideOpen] = useState(false);
+    const renderMessageContent = (content: string | MessageContentPayload) => {
+        if (typeof content === 'string') {
+            return content;
+        }
 
-    const [isSearchActive, setIsSearchActive] = useState(false);
+        if (content && typeof content === 'object' && 'text' in content) {
+            return content.text;
+        }
+
+        return JSON.stringify(content);
+    };
 
     const recommendedCards = useMemo(() => [
         {
@@ -114,10 +150,6 @@ export const ChatHub = () => {
         });
     };
 
-    const [memoryValue, setMemoryValue] = useState(10);
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-
     return (
         //Simulate background
         <div className="min-h-screen w-full bg-linear-to-br flex items-center justify-center p-4 md:p-8 font-sans">
@@ -135,7 +167,13 @@ export const ChatHub = () => {
                 {/* Header */}
                 <div className="relative z-50 w-full h-30 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
                     {/* Logo */}
-                    <div className="flex items-center gap-2">
+                    <div
+                        className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
+                        onClick={() => {
+                            selectConversation(null); // 1. Quita la vista de mensajes -> Muestra tarjetas
+                            setModels([]);            // 2. Limpia la barra de modelos
+                        }}
+                    >
                         <div className="relative w-10 h-10 flex items-center justify-center">
                             <Image
                                 src="/kromaticos_logo.svg"
@@ -282,23 +320,28 @@ export const ChatHub = () => {
                                 )}
 
                                 {activeConversations.map(conversation => (
-                                    <div key={conversation.id} className="group flex items-center justify-between px-3 py-3 rounded-xl bg-white/40 hover:bg-white/70 cursor-pointer transition-all border border-transparent hover:border-white/50">
-                                        <div className="flex flex-col overflow-hidden">
+                                    <div
+                                        key={conversation.id}
+                                        onClick={() => handleConversationClick(conversation.id)}
+                                        className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
+                                            ${selectedConversationId === conversation.id
+                                                ? 'bg-white shadow-md border-white/60'
+                                                : 'bg-white/40 hover:bg-white/70 hover:border-white/50'
+                                            }`}
+                                    >
+                                        <div className="flex flex-col overflow-hidden max-w-[80%]">
                                             <div className="flex items-center gap-2">
-                                                <MessageSquare size={14} className="text-gray-600" />
+                                                <MessageSquare size={14} className={selectedConversationId === conversation.id ? "text-blue-600" : "text-gray-600"} />
                                                 <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
                                             </div>
                                             <span className="text-[10px] text-gray-500 pl-6 truncate">
-                                                {conversation.models.length} models active
+                                                {conversation.models.length} models
                                             </span>
                                         </div>
-
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm("Are you sure you want to delete this conversation?")) {
-                                                    deleteConversation(conversation.id);
-                                                }
+                                                if (confirm("Delete conversation?")) deleteConversation(conversation.id);
                                             }}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 text-red-400 rounded-lg transition-all"
                                         >
@@ -369,41 +412,86 @@ export const ChatHub = () => {
 
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-4 scrollbar-hide">
 
-                            {/* Welcome Headers */}
-                            <div className="mb-12 space-y-2">
-                                <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
-                                <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
-                            </div>
+                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
 
-                            {/* Recommended Models */}
-                            {activeModels.length === 0 && (
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl animate-in fade-in zoom-in-95 duration-300">
-                                    {recommendedCards.map((card, idx) => (
-                                        <Card
-                                            key={idx}
-                                            onClick={() => handleCardClick(card.keywords)}
-                                            className="group h-40 rounded-4xl bg-white/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
-                                        >
-                                            <CardHeader className="px-6 pt-6 pb-0">
-                                                <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
-                                                    {card.title}
-                                                </CardTitle>
-                                            </CardHeader>
+                            {/* A: No chat selected -> Cards */}
+                            {!selectedConversationId ? (
+                                <>
+                                    <div className="mb-12 space-y-2">
+                                        <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
+                                        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
+                                    </div>
 
-                                            <CardFooter className="px-6 pb-4 flex justify-end gap-2">
-                                                {card.logos.map((logo, i) => (
-                                                    <div key={i} className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
-                                                        <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                                    {activeModels.length === 0 && (
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl animate-in fade-in zoom-in-95 duration-300">
+                                            {recommendedCards.map((card, idx) => (
+                                                <Card
+                                                    key={idx}
+                                                    onClick={() => handleCardClick(card.keywords)}
+                                                    className="group h-40 rounded-4xl bg-white/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                                >
+                                                    <CardHeader className="px-6 pt-6 pb-0">
+                                                        <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
+                                                            {card.title}
+                                                        </CardTitle>
+                                                    </CardHeader>
+
+                                                    <CardFooter className="px-6 pb-4 flex justify-end gap-2">
+                                                        {card.logos.map((logo, i) => (
+                                                            <div key={i} className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                                <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                                                            </div>
+                                                        ))}
+                                                    </CardFooter>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                /* B: chat selected -> messages */
+                                <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
+
+                                    {isLoadingMessages ? (
+                                        <div className="flex justify-center items-center h-40">
+                                            <Loader2 className="animate-spin text-white w-8 h-8" />
+                                        </div>
+                                    ) : messages.length === 0 ? (
+                                        <div className="text-center text-white/70 italic mt-10">
+                                            No messages yet. Start the conversation!
+                                        </div>
+                                    ) : (
+                                        messages.map((msg) => (
+                                            <div
+                                                key={msg.id}
+                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                            >
+                                                <div
+                                                    className={`max-w-[85%] rounded-3xl p-5 shadow-sm text-sm leading-relaxed
+                                                        ${msg.role === 'user'
+                                                            ? 'bg-black text-white rounded-tr-sm'
+                                                            : 'bg-white/90 text-gray-800 rounded-tl-sm'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                        {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
+                                                        <span>{msg.role}</span>
                                                     </div>
-                                                ))}
-                                            </CardFooter>
-                                        </Card>
-                                    ))}
+
+                                                    <div className="whitespace-pre-wrap">
+                                                        {renderMessageContent(msg.content)}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                    <div ref={messagesEndRef} />
                                 </div>
                             )}
                         </div>
+
+                        {/* Input Area */}
 
                         <div className="w-full px-4 md:px-16 pb-6 z-40 flex justify-center shrink-0">
 

@@ -1,10 +1,11 @@
-// @/infrastructure/stores/chat-ui.store.ts
+// @/infrastructure/stores/model-ui.store.ts
 import { create } from "zustand";
 
 import type { AIModel } from "@/domain/entities/model.entity";
 
+// Simplificamos: ActiveModel usa el mismo ID que el modelo real
 interface ActiveModel {
-    id: string;
+    id: string;        // Ahora esto será igual a model.id
     model: AIModel;
     title: string;
 }
@@ -12,16 +13,16 @@ interface ActiveModel {
 interface ModelUIState {
     activeModels: ActiveModel[];
     addModel: (model: AIModel) => void;
-    removeModel: (tabId: string) => void;
+    removeModel: (modelId: string) => void;
+    setModels: (models: AIModel[]) => void;
 }
 
 export const useModelUIStore = create<ModelUIState>((set) => ({
     activeModels: [],
 
     addModel: (modelToAddNew) => set((state) => {
-        // Check duplicates
         const alreadyExists = state.activeModels.some(
-            (item) => item.model.id === modelToAddNew.id
+            (item) => item.id === modelToAddNew.id
         );
 
         if (alreadyExists) {
@@ -32,7 +33,7 @@ export const useModelUIStore = create<ModelUIState>((set) => ({
             activeModels: [
                 ...state.activeModels,
                 {
-                    id: crypto.randomUUID(),
+                    id: modelToAddNew.id,
                     model: modelToAddNew,
                     title: modelToAddNew.name,
                 },
@@ -40,7 +41,18 @@ export const useModelUIStore = create<ModelUIState>((set) => ({
         };
     }),
 
-    removeModel: (tabId) => set((state) => ({
-        activeModels: state.activeModels.filter((item) => item.id !== tabId),
+    removeModel: (modelId) => set((state) => ({
+        activeModels: state.activeModels.filter((item) => item.id !== modelId),
     })),
+
+
+    setModels: (models) => set(() => {
+        const newActiveModels: ActiveModel[] = models.map(aiModel => ({
+            id: aiModel.id,
+            model: aiModel,
+            title: aiModel.name
+        }));
+
+        return { activeModels: newActiveModels };
+    }),
 }));

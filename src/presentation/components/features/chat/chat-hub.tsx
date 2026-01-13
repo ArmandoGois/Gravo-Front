@@ -114,6 +114,8 @@ export const ChatHub = () => {
         });
     };
 
+    const [memoryValue, setMemoryValue] = useState(10);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
 
     return (
@@ -444,10 +446,41 @@ export const ChatHub = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black">
-                                            <MessageSquare size={18} />
-                                            <span className="text-sm font-medium ">Memory (10)</span>
-                                            <ChevronDown size={14} />
+                                        <div className="relative " >
+                                            <div
+                                                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                                className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black "
+                                            >
+                                                <MessageSquare size={18} />
+                                                <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                                <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                            </div>
+
+                                            {isPopoverOpen && (
+                                                <div className="absolute bottom-full mb-2 left-0 w-100 p-4 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <span className="text-gray-700 font-medium">Chat memory</span>
+
+                                                        <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
+                                                            {memoryValue}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Slider*/}
+                                                    <input
+                                                        type="range"
+                                                        min="1"
+                                                        max="1000"
+                                                        value={memoryValue}
+                                                        onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                                    />
+
+                                                    <p className="mt-3 text-xs text-black leading-relaxed">
+                                                        Sends the last {memoryValue} messages from your conversation each request.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

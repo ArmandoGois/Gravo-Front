@@ -21,7 +21,6 @@ import {
     PanelLeftOpen,
     Monitor,
     Loader2,
-    User,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -170,8 +169,8 @@ export const ChatHub = () => {
                     <div
                         className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
                         onClick={() => {
-                            selectConversation(null); // 1. Quita la vista de mensajes -> Muestra tarjetas
-                            setModels([]);            // 2. Limpia la barra de modelos
+                            selectConversation(null);
+                            setModels([]);
                         }}
                     >
                         <div className="relative w-10 h-10 flex items-center justify-center">
@@ -375,7 +374,7 @@ export const ChatHub = () => {
                                 {activeModels.map((model) => (
                                     <div
                                         key={model.id}
-                                        className="shrink-0 group flex items-center justify-between px-3 py-2 rounded-full bg-white/40 hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md"
+                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-white hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md"
                                     >
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             <Bot size={14} className="text-blue-600 shrink-0" />
@@ -475,7 +474,7 @@ export const ChatHub = () => {
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                        {msg.role === 'user' ? <User size={12} /> : <Bot size={12} />}
+                                                        {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <Bot size={12} />}
                                                         <span>{msg.role}</span>
                                                     </div>
 

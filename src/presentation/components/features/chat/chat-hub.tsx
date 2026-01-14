@@ -151,7 +151,7 @@ export const ChatHub = () => {
 
     return (
         //Simulate background
-        <div className="min-h-screen w-full bg-linear-to-br flex items-center justify-center p-4 md:p-8 font-sans">
+        <div className="w-full h-full bg-linear-to-br flex items-center justify-center md:p-2 font-sans">
 
             {/* Create newConversation window */}
             <CreateConversationModal
@@ -161,10 +161,10 @@ export const ChatHub = () => {
                 isLoading={isCreating}
             />
 
-            <div className="w-full max-w-[92%] flex flex-col gap-5">
+            <div className="w-full max-w-full flex flex-col gap-5">
 
                 {/* Header */}
-                <div className="relative z-50 w-full h-30 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
+                <div className="relative z-50 w-full h-18 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
                     {/* Logo */}
                     <div
                         className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
@@ -177,8 +177,8 @@ export const ChatHub = () => {
                             <Image
                                 src="/kromaticos_logo.svg"
                                 alt="Kromaticos Logo"
-                                width={40}
-                                height={40}
+                                width={35}
+                                height={35}
                                 className="object-contain"
                             />
                             <span className="absolute -top-1 -right-7 bg-red-500 text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
@@ -186,7 +186,7 @@ export const ChatHub = () => {
                     </div>
 
                     {/* Nav Central */}
-                    <nav className="hidden lg:flex items-center bg-white rounded-full px-1 py-1 shadow-sm gap-1 h-15">
+                    <nav className="hidden lg:flex items-center bg-white rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
                         <Button variant="ghost" className="rounded-full bg-[#5C8CB3] text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
@@ -262,11 +262,11 @@ export const ChatHub = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="w-full h-[85vh] flex gap-6 max-w-450 relative">
+                <div className="w-full h-[85vh] flex gap-6 p-0 not-rounded relative">
 
                     {/* Sidebar */}
                     <aside
-                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-80' : 'w-20'}`}
+                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-65' : 'w-15'}`}
                     >
                         <Card className={`h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
 
@@ -356,7 +356,7 @@ export const ChatHub = () => {
 
 
                     {/* Main Content */}
-                    <main className="flex-1 relative flex flex-col h-full rounded-[2.5rem] overflow-hidden">
+                    <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden">
 
                         {/* New Conversation & Add Model */}
                         <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
@@ -417,13 +417,13 @@ export const ChatHub = () => {
                             {/* A: No chat selected -> Cards */}
                             {!selectedConversationId ? (
                                 <>
-                                    <div className="mb-12 space-y-2">
+                                    <div className="mb-12 space-y-2 mx-auto">
                                         <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
                                         <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
                                     </div>
 
                                     {activeModels.length === 0 && (
-                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
                                             {recommendedCards.map((card, idx) => (
                                                 <Card
                                                     key={idx}
@@ -492,9 +492,9 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-full px-4 md:px-16 pb-6 z-40 flex justify-center shrink-0">
+                        <div className="w-full h-42 px-4 md:px-16 pb-2 z-40 flex justify-center shrink-0">
 
-                            <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-4 shadow-2xl border border-white/60">
+                            <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
                                 <div className="flex gap-3 mb-3 px-2">
                                     <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-400 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">

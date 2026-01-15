@@ -4,6 +4,7 @@ export interface MessageContentPayload {
 }
 
 export interface Message {
+    model: string;
     id: string;
     conversation_id: string;
     role: "user" | "assistant";

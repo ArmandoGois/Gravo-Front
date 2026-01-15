@@ -1,6 +1,7 @@
 "use client";
 
-import { X, Check, Bot, Loader2 } from "lucide-react";
+import { X, Check, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
@@ -40,6 +41,17 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
         setTitle("");
         setSelectedModelId(null);
     };
+
+    const getModelIcon = (modelName: string) => {
+        const name = modelName.toLowerCase();
+        if (name.includes("gemini")) return "/Gemini.svg";
+        if (name.includes("deepseek")) return "/DeepSeek.svg";
+        if (name.includes("mistral")) return "/Mistral.svg";
+        if (name.includes("claude")) return "/ClaudeAI.svg";
+        if (name.includes("gpt")) return "/ChatGPT.svg";
+        return null;
+    };
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -88,8 +100,10 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                             ) : (
                                 models.map((model) => {
                                     const isSelected = selectedModelId === model.id;
+                                    const iconPath = getModelIcon(model.name);
 
                                     return (
+
                                         <div
                                             key={model.id}
                                             onClick={() => !isLoading && handleModelSelect(model.id)}
@@ -101,8 +115,16 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                                             `}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-1.5 rounded-md transition-colors ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
-                                                    <Bot size={16} />
+                                                <div className="mt-0.5 p-1.5 rounded-md bg-white border border-gray-100 shadow-sm group-hover:border-blue-200 group-hover:shadow-md transition-all flex items-center justify-center w-8 h-8">
+                                                    {iconPath && (
+                                                        <Image
+                                                            src={iconPath}
+                                                            alt={model.name}
+                                                            width={18}
+                                                            height={18}
+                                                            className="object-contain"
+                                                        />
+                                                    )}
                                                 </div>
                                                 <span className={`text-sm font-medium transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
                                                     {model.name}

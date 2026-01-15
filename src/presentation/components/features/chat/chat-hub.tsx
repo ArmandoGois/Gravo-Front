@@ -149,6 +149,16 @@ export const ChatHub = () => {
         });
     };
 
+    const getModelIcon = (modelName: string) => {
+        const name = modelName.toLowerCase();
+        if (name.includes("gemini")) return "/Gemini.svg";
+        if (name.includes("deepseek")) return "/DeepSeek.svg";
+        if (name.includes("mistral")) return "/Mistral.svg";
+        if (name.includes("claude")) return "/ClaudeAI.svg";
+        if (name.includes("gpt")) return "/ChatGPT.svg";
+        return null;
+    };
+
     return (
         //Simulate background
         <div className="w-full h-full bg-linear-to-br flex items-center justify-start md:p-1 pt-0 font-sans">
@@ -374,10 +384,18 @@ export const ChatHub = () => {
                                 {activeModels.map((model) => (
                                     <div
                                         key={model.id}
-                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-white hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md"
-                                    >
+                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-white hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <Bot size={14} className="text-blue-600 shrink-0" />
+                                            {getModelIcon(model.title) && (
+                                                <Image
+                                                    src={getModelIcon(model.title)}
+                                                    alt={model.title}
+                                                    width={14}
+                                                    height={14}
+                                                    className="shrink-0 object-contain"
+                                                />
+                                            )}
+
                                             <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
                                                 {model.title}
                                             </span>
@@ -387,8 +405,7 @@ export const ChatHub = () => {
                                                 e.stopPropagation();
                                                 removeModel(model.id);
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0"
-                                        >
+                                            className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0">
                                             <X size={12} />
                                         </button>
                                     </div>
@@ -400,8 +417,7 @@ export const ChatHub = () => {
                             <Button
                                 onClick={() => setIsCreateConversationOpen(true)}
                                 variant="outline"
-                                className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap"
-                            >
+                                className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
                                 <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
                             </Button>
 
@@ -476,8 +492,8 @@ export const ChatHub = () => {
                                                     <div
                                                         className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
                                                                 ${msg.role === 'user'
-                                                                ? 'bg-black text-white rounded-tr-sm'
-                                                                : 'bg-white/90 text-gray-800 rounded-tl-sm'
+                                                                ? 'bg-white backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl'
+                                                                : 'bg-white text-gray-800 rounded-tl-sm'
                                                             }`}>
 
                                                         <div className="whitespace-pre-wrap">
@@ -510,8 +526,7 @@ export const ChatHub = () => {
 
                                 <Input
                                     className="h-14 w-full border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
-                                    placeholder="Start a new message..."
-                                />
+                                    placeholder="Start a new message..." />
 
                                 <div className="flex justify-between items-center px-2 pt-2">
                                     <div className="flex h-auto items-center gap-8 pb-4 text-gray-400">
@@ -526,8 +541,7 @@ export const ChatHub = () => {
 
                                         <div
                                             onClick={() => setIsSearchActive(!isSearchActive)}
-                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isSearchActive ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
+                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isSearchActive ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
                                             <Globe size={18} className='text-black' />
                                             <span className="text-sm font-medium text-black">Search</span>
 

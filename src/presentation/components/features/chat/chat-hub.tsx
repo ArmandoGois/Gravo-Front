@@ -151,7 +151,7 @@ export const ChatHub = () => {
 
     return (
         //Simulate background
-        <div className="w-full h-full bg-linear-to-br flex items-center justify-center md:p-2 font-sans">
+        <div className="w-full h-full bg-linear-to-br flex items-center justify-start md:p-1 pt-0 font-sans">
 
             {/* Create newConversation window */}
             <CreateConversationModal
@@ -161,10 +161,10 @@ export const ChatHub = () => {
                 isLoading={isCreating}
             />
 
-            <div className="w-full max-w-full flex flex-col gap-5">
+            <div className="w-full max-w-full flex flex-col gap-1 pb-0 pt-1">
 
                 {/* Header */}
-                <div className="relative z-50 w-full h-18 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
+                <div className="relative z-50 w-full h-14 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6">
                     {/* Logo */}
                     <div
                         className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
@@ -198,7 +198,7 @@ export const ChatHub = () => {
 
                     {/* User Profile */}
                     <div className="flex items-center gap-3">
-                        <nav className="hidden lg:flex items-center bg-white rounded-full px-2.5 py-1 shadow-sm gap-3 h-15 w-fit">
+                        <nav className="hidden lg:flex items-center bg-white rounded-full px-2.5 py-1 shadow-sm gap-3 h-12 w-fit">
                             <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-white shadow-sm w-10 h-10 text-gray-600">
                                 <Bell size={20} />
                             </Button>
@@ -209,10 +209,10 @@ export const ChatHub = () => {
                         {/* Deployable Menu */}
                         <div className='relative'>
                             <div
-                                className="flex items-center bg-white rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-15"
+                                className="flex items-center bg-white rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-12"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                             >
-                                <div className="w-12 h-12 rounded-full overflow-hidden pl-1">
+                                <div className="w-12 h-12 rounded-full overflow-hidden pl-1 pt-0.5">
                                     <Image src="/user_avatar.svg" alt="User" width={46} height={44} />
                                 </div>
                                 <div className="flex flex-col text-left leading-none">
@@ -262,7 +262,7 @@ export const ChatHub = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="w-full h-[85vh] flex gap-6 p-0 not-rounded relative">
+                <div className="w-full h-[89.5vh] flex gap-6 p-0 pt-0 pb-1 not-rounded relative">
 
                     {/* Sidebar */}
                     <aside
@@ -285,7 +285,7 @@ export const ChatHub = () => {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setAsideOpen(!isAsideOpen)}
-                                    className={`h-10 w-10 rounded-full bg-white hover:bg-white/40 text-gray-600 shrink-0 shadow-sm`}
+                                    className={'h-10 w-10 rounded-full bg-white hover:bg-white/40 text-gray-600 shrink-0 shadow-sm'}
                                 >
                                     {isAsideOpen ? (
                                         <X size={20} />
@@ -464,22 +464,25 @@ export const ChatHub = () => {
                                         messages.map((msg) => (
                                             <div
                                                 key={msg.id}
-                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                            >
-                                                <div
-                                                    className={`max-w-[85%] rounded-3xl p-5 shadow-sm text-sm leading-relaxed
-                                                        ${msg.role === 'user'
-                                                            ? 'bg-black text-white rounded-tr-sm'
-                                                            : 'bg-white/90 text-gray-800 rounded-tl-sm'
-                                                        }`}
-                                                >
+                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+
+                                                <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+
                                                     <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                        {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <Bot size={12} />}
                                                         <span>{msg.role}</span>
+                                                        {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <Bot size={12} />}
                                                     </div>
 
-                                                    <div className="whitespace-pre-wrap">
-                                                        {renderMessageContent(msg.content)}
+                                                    <div
+                                                        className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
+                                                                ${msg.role === 'user'
+                                                                ? 'bg-black text-white rounded-tr-sm'
+                                                                : 'bg-white/90 text-gray-800 rounded-tl-sm'
+                                                            }`}>
+
+                                                        <div className="whitespace-pre-wrap">
+                                                            {renderMessageContent(msg.content)}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -492,7 +495,7 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-full h-42 px-4 md:px-16 pb-2 z-40 flex justify-center shrink-0">
+                        <div className="w-full h-36 px-4 md:px-16 pb-0 z-40 flex justify-center  shrink-0">
 
                             <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
@@ -511,13 +514,13 @@ export const ChatHub = () => {
                                 />
 
                                 <div className="flex justify-between items-center px-2 pt-2">
-                                    <div className="flex items-center gap-8 text-gray-400">
+                                    <div className="flex h-auto items-center gap-8 pb-4 text-gray-400">
 
                                         {/* Basic Tools */}
                                         <div className="flex items-center gap-6">
-                                            <Settings size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
-                                            <Paperclip size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
-                                            <Mic size={20} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Settings size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Paperclip size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Mic size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
                                         </div>
 
 
@@ -528,7 +531,7 @@ export const ChatHub = () => {
                                             <Globe size={18} className='text-black' />
                                             <span className="text-sm font-medium text-black">Search</span>
 
-                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-black' : 'bg-gray-200 group-hover:bg-gray-300'}`}>
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-black' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
                                                 <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                             </div>
                                         </div>
@@ -544,7 +547,7 @@ export const ChatHub = () => {
                                             </div>
 
                                             {isPopoverOpen && (
-                                                <div className="absolute bottom-full mb-2 left-0 w-100 p-4 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 ">
                                                     <div className="flex justify-between items-center mb-4">
                                                         <span className="text-gray-700 font-medium">Chat memory</span>
 
@@ -556,8 +559,8 @@ export const ChatHub = () => {
                                                     {/* Slider*/}
                                                     <input
                                                         type="range"
-                                                        min="1"
-                                                        max="1000"
+                                                        min="0"
+                                                        max="500"
                                                         value={memoryValue}
                                                         onChange={(e) => setMemoryValue(parseInt(e.target.value))}
                                                         className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
@@ -571,7 +574,7 @@ export const ChatHub = () => {
                                         </div>
                                     </div>
 
-                                    <Button size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-10 w-10 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+                                    <Button size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
                                         <ArrowUp size={20} />
                                     </Button>
 

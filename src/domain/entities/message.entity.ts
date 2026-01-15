@@ -4,14 +4,14 @@ export interface MessageContentPayload {
 }
 
 export interface Message {
-    model: string;
+    model?: string;
     id: string;
     conversation_id: string;
     role: "user" | "assistant";
     content: string | MessageContentPayload;
-    media_files: string[];
-    tokens_used: number | null;
-    cost: number | null;
-    generation_time_ms: number | null;
+    media_files?: string[];
+    tokens_used?: number | null;
+    cost?: number | null;
+    generation_time_ms?: number | null;
     created_at: string;
 }

@@ -1,4 +1,3 @@
-// Definimos la interfaz de respuesta del backend (DTO)
 export interface ConversationResponseDto {
     id: string;
     user_id: string;

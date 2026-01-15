@@ -16,12 +16,12 @@ export const useConversationMessages = () => {
         queryKey: ["messages", selectedConversationId],
         queryFn: () => getMessagesUseCase(selectedConversationId!),
 
-        enabled: !!selectedConversationId,
+        enabled: !!selectedConversationId && selectedConversationId !== "temp-new-chat",
         staleTime: 0,
     });
 
     useEffect(() => {
-        if (selectedConversationId) {
+        if (selectedConversationId && selectedConversationId !== "temp-new-chat") {
             setLoadingMessages(isLoading);
             if (data) {
                 setMessages(data);

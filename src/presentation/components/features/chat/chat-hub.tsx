@@ -40,6 +40,7 @@ import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useModels } from '@/presentation/hooks/use-models';
+import { useSendMessage } from "@/presentation/hooks/use-send-message";
 
 
 
@@ -52,13 +53,14 @@ export const ChatHub = () => {
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [memoryValue, setMemoryValue] = useState(10);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [inputValue, setInputValue] = useState("");
 
     const { logout, user } = useAuth();
 
     //Stores
     const { activeModels, addModel, removeModel, setModels } = useModelUIStore();
     const { activeConversations } = useConversationUIStore();
-    const { selectedConversationId, selectConversation, messages } = useMessageUIStore();
+    const { selectedConversationId, selectConversation, messages, setMessages } = useMessageUIStore();
 
     //Hooks for data fetching
     const { models: availableModels } = useModels();
@@ -70,6 +72,7 @@ export const ChatHub = () => {
         setIsCreateConversationOpen(false);
     });
     const { deleteConversation } = useDeleteConversation();
+    const { sendMessage, isSending } = useSendMessage();
 
     //Autoscroll to bottom on new messages
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -149,6 +152,42 @@ export const ChatHub = () => {
         });
     };
 
+    const handleSendMessage = () => {
+        if (!inputValue.trim()) return;
+        if (activeModels.length === 0) {
+            alert("Please select a model first"); // O usa un Toast
+            return;
+        }
+
+        const textToSend = inputValue;
+        setInputValue("");
+
+        const currentId = selectedConversationId || "temp-new-chat";
+
+        if (!selectedConversationId) {
+            selectConversation(currentId);
+        }
+
+        const tempUserMessage = {
+            id: crypto.randomUUID(),
+            role: "user" as const,
+            content: textToSend,
+            conversation_id: currentId,
+            created_at: new Date().toISOString()
+        };
+
+        setMessages([...messages, tempUserMessage]);
+
+        sendMessage(textToSend);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
     return (
         //Simulate background
         <div className="w-full h-full bg-linear-to-br flex items-center justify-start md:p-1 pt-0 font-sans">
@@ -171,6 +210,8 @@ export const ChatHub = () => {
                         onClick={() => {
                             selectConversation(null);
                             setModels([]);
+                            setIsSearchActive(false);
+                            setIsPopoverOpen(false);
                         }}
                     >
                         <div className="relative w-10 h-10 flex items-center justify-center">
@@ -509,6 +550,10 @@ export const ChatHub = () => {
                                 </div>
 
                                 <Input
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    disabled={isSending}
                                     className="h-14 w-full border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
                                     placeholder="Start a new message..."
                                 />
@@ -574,7 +619,9 @@ export const ChatHub = () => {
                                         </div>
                                     </div>
 
-                                    <Button size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+                                    <Button
+                                        onClick={handleSendMessage} disabled={isSending}
+                                        size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
                                         <ArrowUp size={20} />
                                     </Button>
 

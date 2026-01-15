@@ -8,9 +8,9 @@ export interface Message {
     conversation_id: string;
     role: "user" | "assistant";
     content: string | MessageContentPayload;
-    media_files: string[];
-    tokens_used: number | null;
-    cost: number | null;
-    generation_time_ms: number | null;
+    media_files?: string[];
+    tokens_used?: number | null;
+    cost?: number | null;
+    generation_time_ms?: number | null;
     created_at: string;
 }

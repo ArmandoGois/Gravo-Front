@@ -2,6 +2,7 @@ import axios, {
   type AxiosInstance,
   type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
+  AxiosError
 } from "axios";
 
 import type {
@@ -18,6 +19,9 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 class HttpService implements IHttpService {
   private axiosInstance: AxiosInstance;
 
+  private isRefreshing = false;
+  private refreshSubscribers: ((token: string) => void)[] = [];
+
   constructor() {
     this.axiosInstance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
@@ -28,6 +32,15 @@ class HttpService implements IHttpService {
     });
 
     this.setupInterceptors();
+  }
+
+  private onRefreshed(token: string) {
+    this.refreshSubscribers.forEach((callback) => callback(token));
+    this.refreshSubscribers = [];
+  }
+
+  private addSubscriber(callback: (token: string) => void) {
+    this.refreshSubscribers.push(callback);
   }
 
   setAuthToken(token: string): void {
@@ -41,11 +54,10 @@ class HttpService implements IHttpService {
   }
 
   private setupInterceptors() {
-    // Request interceptor - Add Authorization header
     this.axiosInstance.interceptors.request.use(
       (config: ExtendedAxiosRequestConfig) => {
         const token = useAuthStore.getState().getAccessToken();
-        if (token && !config._retry) {
+        if (token && !config.headers.Authorization) {
           // eslint-disable-next-line no-param-reassign
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -54,50 +66,77 @@ class HttpService implements IHttpService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor - Handle token refresh
     this.axiosInstance.interceptors.response.use(
       (response) => response,
-      async (error) => {
-        const originalRequest: ExtendedAxiosRequestConfig = error.config;
+      async (error: AxiosError) => {
+        const originalRequest = error.config as ExtendedAxiosRequestConfig;
 
-        // If error is 401 and we haven't tried to refresh the token yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // If there is no original request or it's already a retry, reject
+        if (!originalRequest || originalRequest._retry) {
+          return Promise.reject(error);
+        }
+
+        if (error.response?.status === 401) {
+          // CASE 1: Is already refreshing the token
+          // Push the request to the subscribers queue
+          if (this.isRefreshing) {
+            return new Promise((resolve) => {
+              this.addSubscriber((token: string) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(this.axiosInstance(originalRequest));
+              });
+            });
+          }
+
+          // CASE 2: We´re first in queue - refresh the token
           originalRequest._retry = true;
+          this.isRefreshing = true;
 
           try {
             const authStore = useAuthStore.getState();
             const refreshToken = authStore.getRefreshToken();
 
+            // If no refresh token, logout immediately
             if (!refreshToken) {
-              throw new Error("No refresh token available");
+              throw new Error("No refresh token stored");
             }
 
-            // Call backend refresh endpoint directly
+            // Call refresh token endpoint
             const response = await axios.post(
               `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/refresh`,
               { refresh_token: refreshToken }
             );
 
-            // Update tokens in store
+            const { access_token, refresh_token, expires_in } = response.data;
+
+            // Update tokens in the store
             authStore.setTokens({
-              access_token: response.data.access_token,
-              refresh_token: response.data.refresh_token,
-              expires_in: response.data.expires_in,
+              access_token,
+              refresh_token,
+              expires_in,
             });
 
-            // Retry original request with new token
-            originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
+            // Notify all the subscribers with the new token
+            this.onRefreshed(access_token);
+
+            // Retry the original request with the new token
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return this.axiosInstance(originalRequest);
+
           } catch (refreshError) {
-            // If refresh fails, clear auth and redirect to login
+            // If fails to refresh token, clear tokens from store
+            // And logout the user
+            this.refreshSubscribers = []; // Limpiar cola
             useAuthStore.getState().logout();
-            if (
-              typeof window !== "undefined" &&
-              window.location.pathname !== "/login"
-            ) {
+
+            if (typeof window !== "undefined" && window.location.pathname !== "/login") {
               window.location.href = "/login";
             }
+
             return Promise.reject(refreshError);
+          } finally {
+            // Free the refresh flag
+            this.isRefreshing = false;
           }
         }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus, ChevronDown } from "lucide-react";
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
 
@@ -9,16 +8,8 @@ import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
 import { Button } from "@/presentation/components/ui/button";
 import { useModels } from "@/presentation/hooks/use-models";
 
+import { ModelIcon } from "./model-icons";
 
-const getModelIcon = (modelName: string) => {
-    const name = modelName.toLowerCase();
-    if (name.includes("gemini")) return "/Gemini.svg";
-    if (name.includes("deepseek")) return "/DeepSeek.svg";
-    if (name.includes("mistral")) return "/Mistral.svg";
-    if (name.includes("claude")) return "/ClaudeAI.svg";
-    if (name.includes("gpt")) return "/ChatGPT.svg";
-    return null;
-};
 
 export const ModelSelector = () => {
     const { models, isLoading } = useModels();
@@ -68,37 +59,27 @@ export const ModelSelector = () => {
                                     Loading models...
                                 </div>
                             ) : models.length > 0 ? (
-                                models.map((model) => {
-                                    const iconPath = getModelIcon(model.name);
-
-                                    return (
-                                        <button
-                                            key={model.id}
-                                            onClick={() => {
-                                                addModel(model);
-                                                setIsOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-3 hover:bg-blue-50/80 transition-colors group border-l-2 border-transparent hover:border-blue-400 flex items-start gap-3"
-                                        >
-                                            <div className="mt-0.5 p-1.5 rounded-md bg-white border border-gray-100 shadow-sm group-hover:border-blue-200 group-hover:shadow-md transition-all flex items-center justify-center w-8 h-8">
-                                                {iconPath && (
-                                                    <Image
-                                                        src={iconPath}
-                                                        alt={model.name}
-                                                        width={18}
-                                                        height={18}
-                                                        className="object-contain"
-                                                    />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-700 group-hover:text-blue-700">
-                                                    {model.name}
-                                                </p>
-                                            </div>
-                                        </button>
-                                    );
-                                })
+                                models.map((model) => (
+                                    <button
+                                        key={model.id}
+                                        onClick={() => {
+                                            addModel(model);
+                                            setIsOpen(false);
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-blue-50/80 transition-colors group border-l-2 border-transparent hover:border-blue-400 flex items-start gap-3"
+                                    >
+                                        <div className="mt-0.5 p-1.5 rounded-md bg-white border border-gray-100 shadow-sm group-hover:border-blue-200 group-hover:shadow-md transition-all flex items-center justify-center w-8 h-8">
+                                            {model.id && (
+                                                <ModelIcon modelName={model.id} />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-700 group-hover:text-blue-700">
+                                                {model.name}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))
                             ) : (
                                 <div className="p-4 text-sm text-center text-gray-400">
                                     No models found.

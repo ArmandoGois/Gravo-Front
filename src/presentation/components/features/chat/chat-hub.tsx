@@ -13,7 +13,6 @@ import {
     X,
     ChevronUp,
     Sun,
-    Bot,
     Trash2,
     Moon,
     Bell,
@@ -41,6 +40,8 @@ import { useCreateConversation } from "@/presentation/hooks/use-create-conversat
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
+
+import { ModelIcon } from '../models/model-icons';
 
 
 
@@ -152,21 +153,11 @@ export const ChatHub = () => {
         });
     };
 
-    const getModelIcon = (modelName: string) => {
-        const name = modelName.toLowerCase();
-        if (name.includes("gemini")) return "/Gemini.svg";
-        if (name.includes("deepseek")) return "/DeepSeek.svg";
-        if (name.includes("mistral")) return "/Mistral.svg";
-        if (name.includes("claude")) return "/ClaudeAI.svg";
-        if (name.includes("gpt")) return "/ChatGPT.svg";
-        return null;
-    };
-
     const handleSendMessage = () => {
         if (!inputValue.trim()) return;
         if (activeModels.length === 0) {
-            alert("Please select a model first"); // O usa un Toast
-            return;
+            alert("Please select a model first");
+            return true;
         }
 
         const textToSend = inputValue;
@@ -427,16 +418,9 @@ export const ChatHub = () => {
                                         key={model.id}
                                         className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-white hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            {getModelIcon(model.title) && (
-                                                <Image
-                                                    src={getModelIcon(model.title)}
-                                                    alt={model.title}
-                                                    width={14}
-                                                    height={14}
-                                                    className="shrink-0 object-contain"
-                                                />
+                                            {model.id && (
+                                                <ModelIcon modelName={model.id} />
                                             )}
-
                                             <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
                                                 {model.title}
                                             </span>
@@ -518,32 +502,33 @@ export const ChatHub = () => {
                                             No messages yet. Start the conversation!
                                         </div>
                                     ) : (
-                                        messages.map((msg) => (
-                                            <div
-                                                key={msg.id}
-                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        activeModels.map((model) => (
+                                            messages.map((msg) => (
+                                                <div
+                                                    key={msg.id}
+                                                    className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
-                                                <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                                    <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
 
-                                                    <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                        <span>{msg.role}</span>
-                                                        {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <Bot size={12} />}
-                                                    </div>
+                                                        <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                            <span>{msg.role}</span>
+                                                            {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <ModelIcon modelName={model.id} />}
+                                                        </div>
 
-                                                    <div
-                                                        className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
+                                                        <div
+                                                            className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
                                                                 ${msg.role === 'user'
-                                                                ? 'bg-white backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl'
-                                                                : 'bg-white text-gray-800 rounded-tl-sm'
-                                                            }`}>
+                                                                    ? 'bg-white backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl'
+                                                                    : 'bg-white text-gray-800 rounded-tl-sm'
+                                                                }`}>
 
-                                                        <div className="whitespace-pre-wrap">
-                                                            {renderMessageContent(msg.content)}
+                                                            <div className="whitespace-pre-wrap">
+                                                                {renderMessageContent(msg.content)}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            ))))
                                     )}
                                     <div ref={messagesEndRef} />
                                 </div>
@@ -595,7 +580,7 @@ export const ChatHub = () => {
                                             </div>
                                         </div>
 
-                                        <div className="relative " >
+                                        <div className="relative" >
                                             <div
                                                 onClick={() => setIsPopoverOpen(!isPopoverOpen)}
                                                 className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black "
@@ -635,7 +620,7 @@ export const ChatHub = () => {
 
                                     <Button
                                         onClick={handleSendMessage} disabled={isSending}
-                                        size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+                                        size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 ">
                                         <ArrowUp size={20} />
                                     </Button>
 

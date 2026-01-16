@@ -3,9 +3,8 @@ import { create } from "zustand";
 
 import type { AIModel } from "@/domain/entities/model.entity";
 
-// Simplificamos: ActiveModel usa el mismo ID que el modelo real
 interface ActiveModel {
-    id: string;        // Ahora esto será igual a model.id
+    id: string;
     model: AIModel;
     title: string;
 }

@@ -56,6 +56,7 @@ export const ChatHub = () => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
+    const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
     const { logout, user } = useAuth();
 
@@ -386,7 +387,7 @@ export const ChatHub = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm("Delete conversation?")) deleteConversation(conversation.id);
+                                                setConversationToDelete(conversation.id);
                                             }}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 text-red-400 rounded-lg transition-all"
                                         >
@@ -398,7 +399,44 @@ export const ChatHub = () => {
                         </Card>
                     </aside>
 
+                    {conversationToDelete && (
+                        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
 
+                            <div
+                                className="bg-white/90 border border-white/50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-w-xs w-full text-center transform transition-all scale-100 m-4"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                                    <Trash2 size={24} />
+                                </div>
+
+                                <h3 className="text-lg font-bold text-gray-800 mb-2">Delete chat?</h3>
+                                <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                                    All messages in this conversation will be permanently deleted.
+                                </p>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setConversationToDelete(null)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (conversationToDelete) {
+                                                deleteConversation(conversationToDelete);
+                                                setConversationToDelete(null);
+                                            }
+                                        }}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
 
                     {/* Main Content */}

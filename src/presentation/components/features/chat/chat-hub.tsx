@@ -19,7 +19,7 @@ import {
     MessageSquare,
     PanelLeftOpen,
     Monitor,
-    Loader2,
+    Loader2
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -55,6 +55,7 @@ export const ChatHub = () => {
     const [memoryValue, setMemoryValue] = useState(10);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
+    const [showModelAlert, setShowModelAlert] = useState(false);
 
     const { logout, user } = useAuth();
 
@@ -156,8 +157,11 @@ export const ChatHub = () => {
     const handleSendMessage = () => {
         if (!inputValue.trim()) return;
         if (activeModels.length === 0) {
-            alert("Please select a model first");
-            return true;
+            setShowModelAlert(true);
+            setTimeout(() => {
+                setShowModelAlert(false);
+            }, 3000);
+            return;
         }
 
         const textToSend = inputValue;
@@ -617,7 +621,15 @@ export const ChatHub = () => {
                                             )}
                                         </div>
                                     </div>
-
+                                    {showModelAlert && (
+                                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <div className="flex items-center gap-2 bg-red-500/90 text-white px-4 py-2 rounded-full backdrop-blur-md border border-red-400">
+                                                <span className="text-xxs font-semibold whitespace-nowrap">
+                                                    Select a model first
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                     <Button
                                         onClick={handleSendMessage} disabled={isSending}
                                         size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 ">

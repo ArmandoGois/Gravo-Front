@@ -1,4 +1,4 @@
 export interface CreateConversationDto {
     title: string;
-    model_id: string;
+    model_id: string[];
 }

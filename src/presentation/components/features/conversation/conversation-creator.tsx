@@ -12,7 +12,8 @@ import { ModelIcon } from "../models/model-icons";
 interface CreateConversationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (title: string, modelId: string) => void;
+    // Updated: Now accepts an array of model IDs
+    onCreate: (title: string, modelIds: string[]) => void;
     isLoading: boolean;
 }
 
@@ -21,26 +22,31 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
 
     const [title, setTitle] = useState("");
 
-    // Temporally store selected model ID (as we only allow one selection)
-    const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+    // 1. STATE CHANGE: Store an array of IDs instead of a single string
+    const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
 
     if (!isOpen) return null;
 
+    // 2. LOGIC CHANGE: Toggle logic (Add if missing, remove if present)
     const handleModelSelect = (id: string) => {
-        if (selectedModelId === id) {
-            setSelectedModelId(null);
-        } else {
-            setSelectedModelId(id);
-        }
+        setSelectedModelIds(prev => {
+            if (prev.includes(id)) {
+                // If exists, remove it
+                return prev.filter(modelId => modelId !== id);
+            } else {
+                // If doesn't exist, add it
+                return [...prev, id];
+            }
+        });
     };
 
     const handleCreate = () => {
-        if (!selectedModelId) return;
+        if (selectedModelIds.length === 0) return;
 
-        onCreate(title, selectedModelId);
+        onCreate(title, selectedModelIds);
 
         setTitle("");
-        setSelectedModelId(null);
+        setSelectedModelIds([]);
     };
 
     return (
@@ -74,10 +80,13 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                     <div className="space-y-2">
                         <div className="flex justify-between items-end">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                Select Model
+                                Select Models
                             </label>
-                            <span className={`text-xs font-medium ${selectedModelId ? "text-blue-600" : "text-amber-600"}`}>
-                                {selectedModelId ? "1 selected" : "Select one model"}
+                            {/* 3. UI CHANGE: Dynamic counter */}
+                            <span className={`text-xs font-medium ${selectedModelIds.length > 0 ? "text-blue-600" : "text-amber-600"}`}>
+                                {selectedModelIds.length > 0
+                                    ? `${selectedModelIds.length} selected`
+                                    : "Select at least one"}
                             </span>
                         </div>
 
@@ -89,10 +98,10 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                                 </div>
                             ) : (
                                 models.map((model) => {
-                                    const isSelected = selectedModelId === model.id;
+                                    // 4. UI CHANGE: Check inclusion in array
+                                    const isSelected = selectedModelIds.includes(model.id);
 
                                     return (
-
                                         <div
                                             key={model.id}
                                             onClick={() => !isLoading && handleModelSelect(model.id)}
@@ -104,7 +113,11 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                                             `}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="mt-0.5 p-1.5 rounded-md bg-white border border-gray-100 shadow-sm group-hover:border-blue-200 group-hover:shadow-md transition-all flex items-center justify-center w-8 h-8">
+                                                <div className={`mt-0.5 p-1.5 rounded-md border transition-all flex items-center justify-center w-8 h-8
+                                                    ${isSelected
+                                                        ? 'bg-white border-blue-200 shadow-sm'
+                                                        : 'bg-white border-gray-100 shadow-sm group-hover:border-blue-200'}`
+                                                }>
                                                     {model.id && (
                                                         <ModelIcon modelName={model.id} />
                                                     )}
@@ -133,8 +146,8 @@ export const CreateConversationModal = ({ isOpen, onClose, onCreate, isLoading }
                         <Button
                             className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-2"
                             onClick={handleCreate}
-
-                            disabled={isLoading || !selectedModelId || !title.trim()}
+                            // 5. VALIDATION: Check array length
+                            disabled={isLoading || selectedModelIds.length === 0 || !title.trim()}
                         >
                             {isLoading && <Loader2 className="animate-spin" size={16} />}
                             {isLoading ? "Creating..." : "Create Conversation"}

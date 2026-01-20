@@ -1,7 +1,9 @@
+import { AIModel } from "./model.entity";
+
 export interface Conversation {
     id: string;
-    user_id: string;
+    user_id: string | null;
     title: string;
-    model_id: string;
-    created_at: string;
+    models: AIModel[];
+    createdAt: Date;
 }

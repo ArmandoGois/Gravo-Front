@@ -1,33 +1,49 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { createConversationUseCase } from "@/application/features/conversations/use-cases/create-conversation.use-case";
 import { CreateConversationDto } from "@/domain/dtos/create-conversation.dto";
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
+import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
+import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
 import { useModels } from "@/presentation/hooks/use-models";
 
 export const useCreateConversation = (onSuccessCallback?: () => void) => {
+    const queryClient = useQueryClient();
     const { addConversation } = useConversationUIStore();
     const { models: availableModels } = useModels();
+    const { setModels } = useModelUIStore();
+    const { selectConversation } = useMessageUIStore();
 
     const mutation = useMutation({
         mutationFn: (data: CreateConversationDto) => createConversationUseCase(data),
 
         onSuccess: (newConversationResponse, variables) => {
-            const selectedModel = availableModels.find(
-                m => m.id === variables.model_id
+
+            const selectedModels = availableModels.filter(model =>
+                variables.model_id.includes(model.id)
             );
-            const modelsArray = selectedModel ? [selectedModel] : [];
+
             addConversation(
                 newConversationResponse.title,
-                modelsArray,
+                selectedModels,
                 newConversationResponse.id
             );
+
+            if (selectedModels.length > 0) {
+                setModels(selectedModels);
+            }
+
+            selectConversation(newConversationResponse.id);
+
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
 
             if (onSuccessCallback) {
                 onSuccessCallback();
             }
         },
-        // ... onError
+        onError: (error) => {
+            console.error("Error creating conversation:", error);
+        }
     });
 
     return {

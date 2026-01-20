@@ -1,5 +1,8 @@
 import { ConversationResponseDto } from "@/domain/dtos/conversation-response.dto";
+import { Conversation } from "@/domain/entities/conversation.entity";
 import { httpService } from "@/infrastructure/services/http.service";
+
+import { getModelsUseCase } from "../../models/use-cases/get-models.use-case";
 
 interface GetConversationsParams {
     limit?: number;
@@ -7,9 +10,11 @@ interface GetConversationsParams {
     archived?: boolean;
 }
 
+const availableModels = await getModelsUseCase();
+
 export const getConversationsUseCase = async (
     params: GetConversationsParams = {}
-): Promise<ConversationResponseDto[]> => {
+): Promise<Conversation[]> => {
     try {
         const queryParams = new URLSearchParams({
             limit: (params.limit || 50).toString(),
@@ -21,7 +26,23 @@ export const getConversationsUseCase = async (
             `/v1/conversations?${queryParams.toString()}`
         );
 
-        return response;
+        const conversations: Conversation[] = response.map((dto) => {
+
+            const backendModelIds = dto.model_id || (dto.model_id ? [dto.model_id] : []);
+
+            const resolvedModels = availableModels.filter(m =>
+                backendModelIds.includes(m.id)
+            );
+
+            return {
+                id: dto.id,
+                title: dto.title,
+                models: resolvedModels,
+                createdAt: new Date(dto.created_at),
+                user_id: dto.user_id,
+            };
+        });
+        return conversations;
     } catch (error) {
         console.error("Error fetching conversations:", error);
         return [];

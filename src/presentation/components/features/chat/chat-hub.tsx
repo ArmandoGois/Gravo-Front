@@ -19,7 +19,8 @@ import {
     MessageSquare,
     PanelLeftOpen,
     Monitor,
-    Loader2
+    Loader2,
+    Bot
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -83,10 +84,10 @@ export const ChatHub = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const handleCreateConversation = (title: string, modelId: string) => {
-        createConversation({ title, model_id: modelId });
-    };
 
+    const handleCreateConversation = (title: string, modelIds: string[]) => {
+        createConversation({ title, model_id: modelIds });
+    };
     const handleConversationClick = (id: string) => {
         if (selectedConversationId === id) return;
 
@@ -544,33 +545,43 @@ export const ChatHub = () => {
                                             No messages yet. Start the conversation!
                                         </div>
                                     ) : (
-                                        activeModels.map((model) => (
-                                            messages.map((msg) => (
-                                                <div
-                                                    key={msg.id}
-                                                    className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        messages.map((msg) => (
+                                            < div
+                                                key={msg.id}
+                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                            >
+                                                <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
 
-                                                    <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                                    <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                        <span>{msg.role}</span>
+                                                        {msg.role === 'user' ? (
+                                                            <Image src="/user_avatar.svg" alt="User" width={30} height={30} />
+                                                        ) : (
+                                                            /* NOTE: When we have the model on every message, we can use it here TODO: Gustavo, add the logic for it
+            
+                                                            */
+                                                            activeModels.length > 0 && activeModels[0].id ? (
+                                                                <ModelIcon modelName={activeModels[0].id} />
+                                                            ) : (
+                                                                <Bot size={12} />
+                                                            )
+                                                        )}
+                                                    </div>
 
-                                                        <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                            <span>{msg.role}</span>
-                                                            {msg.role === 'user' ? <Image src="/user_avatar.svg" alt="User" width={30} height={30} /> : <ModelIcon modelName={model.id} />}
-                                                        </div>
-
-                                                        <div
-                                                            className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
-                                                                ${msg.role === 'user'
-                                                                    ? 'bg-white backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl'
-                                                                    : 'bg-white text-gray-800 rounded-tl-sm'
-                                                                }`}>
-
-                                                            <div className="whitespace-pre-wrap">
-                                                                {renderMessageContent(msg.content)}
-                                                            </div>
+                                                    <div
+                                                        className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
+                                                            ${msg.role === 'user'
+                                                                ? 'bg-black text-white rounded-tr-sm'
+                                                                : 'bg-white text-gray-800 rounded-tl-sm'
+                                                            }`}
+                                                    >
+                                                        <div className="whitespace-pre-wrap">
+                                                            {renderMessageContent(msg.content)}
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ))))
+                                            </div>
+                                        ))
                                     )}
                                     <div ref={messagesEndRef} />
                                 </div>

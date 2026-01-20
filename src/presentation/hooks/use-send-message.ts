@@ -18,7 +18,7 @@ export const useSendMessage = () => {
             if (activeModels.length === 0) throw new Error("No model selected");
 
             // Adjust, if there are multiple models, we pick the first one for now
-            const modelId = activeModels[0].id;
+            const modelId = activeModels.map(model => model.id);
 
             const idToSend = (selectedConversationId === "temp-new-chat")
                 ? null
@@ -27,19 +27,28 @@ export const useSendMessage = () => {
             return sendChatCompletionUseCase(modelId, content, idToSend);
 
         },
-        onSuccess: (aiMessage) => {
-            setMessages([...messages, aiMessage]);
+        onSuccess: (newMessages) => {
+            if (!newMessages || newMessages.length === 0) return;
+
+            setMessages([...messages, ...newMessages]);
 
             if (!selectedConversationId || selectedConversationId === "temp-new-chat") {
-                if (aiMessage.conversation_id) {
-                    // A. Change temporal id for real id
-                    selectConversation(aiMessage.conversation_id);
 
-                    // Update the messages with the correct conversation_id
-                    const updatedMessages = [...messages, aiMessage].map(m => ({
+                //Take the conversation_id from the first message
+                const firstMessage = newMessages[0];
+
+                if (firstMessage?.conversation_id) {
+                    const realId = firstMessage.conversation_id;
+
+                    // Change selected conversation to the real one
+                    selectConversation(realId);
+
+                    // Update messages to have the correct conversation_id
+                    const updatedMessages = [...messages, ...newMessages].map(m => ({
                         ...m,
-                        conversation_id: aiMessage.conversation_id
+                        conversation_id: realId
                     }));
+
                     setMessages(updatedMessages);
 
                     // Refresh conversations list

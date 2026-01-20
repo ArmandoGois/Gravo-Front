@@ -26,6 +26,18 @@ export interface ChatRequestDto {
     conversation_id?: string | null;
 }
 
+export interface IndividualModelResponse {
+    model: string;
+    choices: {
+        index: number;
+        message: {
+            role: "assistant";
+            content: string;
+        };
+        finish_reason: string;
+    }[];
+}
+
 export interface ChatCompletionResponse { //Simplified response interface
     id: string;
     object: string;
@@ -39,5 +51,8 @@ export interface ChatCompletionResponse { //Simplified response interface
         };
         finish_reason?: string;
     }>;
+
+    responses?: IndividualModelResponse[];
+
     conversation_id: string;
 }

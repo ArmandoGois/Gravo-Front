@@ -201,6 +201,19 @@ export const ChatHub = () => {
         }
     };
 
+    const getMessageModelDetails = (messageModelId?: string) => {
+        if (messageModelId) {
+            const found = availableModels.find(m => m.id === messageModelId);
+            if (found) return found;
+        }
+        if (activeModels.length > 0) {
+            return activeModels[0];
+        }
+
+        // 3. Fallback final
+        return null;
+    };
+
     return (
         //Simulate background
         <div className="w-full h-full bg-linear-to-br flex items-start justify-start md:p-1 pt-0 font-sans">
@@ -563,14 +576,24 @@ export const ChatHub = () => {
                                                         {msg.role === 'user' ? (
                                                             <Image src="/user_avatar.svg" alt="User" width={30} height={30} />
                                                         ) : (
-                                                            /* NOTE: When we have the model on every message, we can use it here TODO: Gustavo, add the logic for it
-            
-                                                            */
-                                                            activeModels.length > 0 && activeModels[0].id ? (
-                                                                <ModelIcon modelName={activeModels[0].id} />
-                                                            ) : (
-                                                                <Bot size={12} />
-                                                            )
+                                                            (() => {
+                                                                const modelDetails = getMessageModelDetails(msg.model);
+
+                                                                return (
+                                                                    <>
+                                                                        {modelDetails ? (
+                                                                            <div className="w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                                <ModelIcon modelName={modelDetails.id} />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Bot size={14} />
+                                                                        )}
+                                                                        <span>
+                                                                            {modelDetails ? modelDetails.id : "Assistant"}
+                                                                        </span>
+                                                                    </>
+                                                                );
+                                                            })()
                                                         )}
                                                     </div>
 

@@ -209,14 +209,12 @@ export const ChatHub = () => {
         if (activeModels.length > 0) {
             return activeModels[0];
         }
-
-        // 3. Fallback final
         return null;
     };
 
     return (
         //Simulate background
-        <div className="w-full h-full bg-linear-to-br flex items-start justify-start md:p-1 pt-0 font-sans">
+        <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-1 font-sans">
 
             {/* Create newConversation window */}
             <CreateConversationModal
@@ -226,7 +224,7 @@ export const ChatHub = () => {
                 isLoading={isCreating}
             />
 
-            <div className="w-full max-w-full flex flex-col gap-1 pb-0 pt-0">
+            <div className="w-full h-full max-w-full flex flex-col gap-1 pt-2">
 
                 {/* Header */}
                 <div className="relative z-50 w-full h-14 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
@@ -329,7 +327,7 @@ export const ChatHub = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="w-full h-[89.5vh] flex gap-6 p-0 pt-0 pb-1 not-rounded relative">
+                <div className="w-full h-[92vh] flex gap-6 p-0 pt-0 pb-1 not-rounded relative">
 
                     {/* Sidebar */}
                     <aside

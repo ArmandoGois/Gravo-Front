@@ -203,8 +203,6 @@ export const ChatHub = () => {
         if (activeModels.length > 0) {
             return activeModels[0];
         }
-
-        // 3. Fallback final
         return null;
     };
 

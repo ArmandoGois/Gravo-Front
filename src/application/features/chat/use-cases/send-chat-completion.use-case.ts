@@ -51,6 +51,8 @@ export const sendChatCompletionUseCase = async (
             });
         }
 
+        // Ask Armando
+
         return response.choices.map((choice, index) => ({
             id: `${response.id}-${index}`,
             role: "assistant",

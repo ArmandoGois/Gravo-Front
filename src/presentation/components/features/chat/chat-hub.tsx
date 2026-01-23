@@ -20,7 +20,9 @@ import {
     PanelLeftOpen,
     Monitor,
     Loader2,
-    Bot
+    Bot,
+    MoreVertical,
+    Pencil
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -41,6 +43,7 @@ import { useCreateConversation } from "@/presentation/hooks/use-create-conversat
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
+import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
 import { ModelIcon } from '../models/model-icons';
 
@@ -59,6 +62,11 @@ export const ChatHub = () => {
     const [showModelAlert, setShowModelAlert] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+    const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
+    const [newTitleInput, setNewTitleInput] = useState("");
+
     const { logout, user } = useAuth();
 
     //Stores
@@ -74,6 +82,10 @@ export const ChatHub = () => {
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
         setIsCreateConversationOpen(false);
+    });
+    const { updateConversation, isUpdating } = useUpdateConversation(() => {
+        setIsRenameModalOpen(false); // Cerrar modal al terminar
+        setNewTitleInput("");
     });
     const { deleteConversation } = useDeleteConversation();
     const { sendMessage, isSending } = useSendMessage();
@@ -212,6 +224,25 @@ export const ChatHub = () => {
         return null;
     };
 
+    const openRenameModal = (id: string, currentTitle: string) => {
+        setConversationToRename({ id, title: currentTitle });
+        setNewTitleInput(currentTitle);
+        setIsRenameModalOpen(true);
+        setActiveMenuId(null);
+    };
+
+    const handleRenameSubmit = () => {
+        if (conversationToRename && newTitleInput.trim()) {
+            updateConversation({ id: conversationToRename.id, title: newTitleInput });
+        }
+    };
+
+    useEffect(() => {
+        const handleClickOutside = () => setActiveMenuId(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, []);
+
     return (
         //Simulate background
         <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-1 font-sans">
@@ -223,6 +254,42 @@ export const ChatHub = () => {
                 onCreate={handleCreateConversation}
                 isLoading={isCreating}
             />
+
+            {/* Menu for rename and delete */}
+            {isRenameModalOpen && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div
+                        className="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm m-4 border border-white/50"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Rename Chat</h3>
+                        <Input
+                            value={newTitleInput}
+                            onChange={(e) => setNewTitleInput(e.target.value)}
+                            className="mb-6 bg-gray-50 border-gray-200"
+                            placeholder="Enter new chat name..."
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
+                        />
+                        <div className="flex gap-3">
+                            <Button
+                                variant="ghost"
+                                className="flex-1 rounded-xl"
+                                onClick={() => setIsRenameModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 rounded-xl bg-black text-white hover:bg-gray-800"
+                                onClick={handleRenameSubmit}
+                                disabled={isUpdating}
+                            >
+                                {isUpdating ? 'Saving...' : 'Save'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="w-full h-full max-w-full flex flex-col gap-1 pt-2">
 
@@ -402,15 +469,50 @@ export const ChatHub = () => {
                                                 {conversation.models.length} models
                                             </span>
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setConversationToDelete(conversation.id);
-                                            }}
-                                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-100 text-red-400 rounded-lg transition-all"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <div className="relative">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Evitar seleccionar el chat
+                                                    // Toggle del menú
+                                                    setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
+                                                }}
+                                                className={`p-1.5 rounded-lg transition-all 
+                                                    ${activeMenuId === conversation.id
+                                                        ? 'bg-gray-200 opacity-100'
+                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-gray-500'}`}
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+
+                                            {/* Floating Menu*/}
+                                            {activeMenuId === conversation.id && (
+                                                <div
+                                                    className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <button
+                                                        onClick={() => openRenameModal(conversation.id, conversation.title)}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
+                                                    >
+                                                        <Pencil size={14} />
+                                                        Rename
+                                                    </button>
+
+                                                    <div className="h-px bg-gray-100 my-1" />
+
+                                                    <button
+                                                        onClick={() => {
+                                                            setConversationToDelete(conversation.id);
+                                                            setActiveMenuId(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

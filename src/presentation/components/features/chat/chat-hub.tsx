@@ -85,7 +85,7 @@ export const ChatHub = () => {
         setIsCreateConversationOpen(false);
     });
     const { updateConversation, isUpdating } = useUpdateConversation(() => {
-        setIsRenameModalOpen(false); // Cerrar modal al terminar
+        setIsRenameModalOpen(false);
         setNewTitleInput("");
     });
     const { deleteConversation } = useDeleteConversation();
@@ -473,8 +473,7 @@ export const ChatHub = () => {
                                         <div className="relative">
                                             <button
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Evitar seleccionar el chat
-                                                    // Toggle del menú
+                                                    e.stopPropagation();
                                                     setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
                                                 }}
                                                 className={`p-1.5 rounded-lg transition-all 
@@ -767,7 +766,7 @@ export const ChatHub = () => {
                                             <Globe size={18} className='text-black' />
                                             <span className="text-sm font-medium text-black">Search</span>
 
-                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-secondar' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-secondary-blue' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
                                                 <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                             </div>
                                         </div>
@@ -799,7 +798,7 @@ export const ChatHub = () => {
                                                         max="500"
                                                         value={memoryValue}
                                                         onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondar"
+                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
                                                     />
 
                                                     <p className="mt-3 text-xs text-black leading-relaxed">

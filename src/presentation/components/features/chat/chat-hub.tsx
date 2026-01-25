@@ -58,6 +58,7 @@ export const ChatHub = () => {
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+    const [isImageMode, setIsImageMode] = useState(false);
 
     const { logout, user } = useAuth();
 
@@ -227,7 +228,7 @@ export const ChatHub = () => {
             <div className="w-full h-full max-w-full flex flex-col gap-1 pt-2">
 
                 {/* Header */}
-                <div className="relative z-50 w-full h-14 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
+                <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
                     {/* Logo */}
                     <div
                         className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
@@ -246,14 +247,14 @@ export const ChatHub = () => {
                                 height={35}
                                 className="object-contain"
                             />
-                            <span className="absolute -top-1 -right-7 bg-red-500 text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
+                            <span className="absolute -top-1 -right-7 bg-destructive text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
                         </div>
                     </div>
 
                     {/* Nav Central */}
-                    <nav className="hidden lg:flex items-center bg-white rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
+                    <nav className="hidden lg:flex items-center bg-background rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
-                        <Button variant="ghost" className="rounded-full bg-[#5C8CB3] text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
+                        <Button variant="ghost" className="rounded-full bg-secondary-blue text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
                         <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
@@ -263,18 +264,18 @@ export const ChatHub = () => {
 
                     {/* User Profile */}
                     <div className="flex items-center gap-3">
-                        <nav className="hidden lg:flex items-center bg-white rounded-full px-2.5 py-1 shadow-sm gap-3 h-12 w-fit">
-                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-white shadow-sm w-10 h-10 text-gray-600">
+                        <nav className="hidden lg:flex items-center bg-background rounded-full px-2.5 py-1 shadow-sm gap-3 h-12 w-fit">
+                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
                                 <Bell size={20} />
                             </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-white shadow-sm w-10 h-10 text-gray-600">
+                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
                                 <Search size={20} />
                             </Button>
                         </nav>
                         {/* Deployable Menu */}
                         <div className='relative'>
                             <div
-                                className="flex items-center bg-white rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-12"
+                                className="flex items-center bg-background rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-12"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                             >
                                 <div className="w-12 h-12 rounded-full overflow-hidden pl-1 pt-0.5">
@@ -294,7 +295,7 @@ export const ChatHub = () => {
                                     <ChevronUp size={18} className="text-gray-400" />
                                 )}
                                 {isMenuOpen && (
-                                    <div className="absolute top-full right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                    <div className="absolute top-full right-0 mt-2 w-36 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                                         <ul className="flex flex-col gap-0.5">
                                             {['Credits', 'Keys', 'Activity', 'Settings', 'Enterprise'].map((item) => (
                                                 <li key={item} className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
@@ -312,7 +313,7 @@ export const ChatHub = () => {
                                         <div className="h-px bg-gray-100 my-1.5 mx-1" />
 
                                         <div className="bg-gray-100 p-0.5 rounded-lg flex items-center justify-between">
-                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md bg-white shadow-sm transition-all">
+                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md bg-background shadow-sm transition-all">
                                                 <Sun size={14} className="text-gray-900" />
                                             </button>
                                             <button className="flex-1 flex items-center justify-center py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all">
@@ -333,14 +334,14 @@ export const ChatHub = () => {
                     <aside
                         className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-65' : 'w-15'}`}
                     >
-                        <Card className={`h-full w-full flex flex-col bg-white/20 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
+                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
 
                             <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
                                 {isAsideOpen && (
                                     <div className="relative w-full opacity-100 animate-in fade-in duration-300">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
                                         <Input
-                                            className="w-full bg-white border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
+                                            className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
                                             placeholder="Search rooms..."
                                         />
                                     </div>
@@ -350,7 +351,7 @@ export const ChatHub = () => {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setAsideOpen(!isAsideOpen)}
-                                    className={'h-10 w-10 rounded-full bg-white hover:bg-white/40 text-gray-600 shrink-0 shadow-sm'}
+                                    className={'h-10 w-10 rounded-full bg-background hover:bg-background/40 text-gray-600 shrink-0 shadow-sm'}
                                 >
                                     {isAsideOpen ? (
                                         <X size={20} />
@@ -368,9 +369,9 @@ export const ChatHub = () => {
 
                                 {isLoadingChats && activeConversations.length === 0 && (
                                     <div className="flex flex-col gap-2 px-2 animate-pulse">
-                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
-                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
-                                        <div className="h-10 bg-white/30 rounded-xl w-full"></div>
+                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
+                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
+                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
                                         <p className="text-xs text-gray-500 text-center mt-2">Syncing history...</p>
                                     </div>
                                 )}
@@ -389,8 +390,8 @@ export const ChatHub = () => {
                                         onClick={() => handleConversationClick(conversation.id)}
                                         className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
                                             ${selectedConversationId === conversation.id
-                                                ? 'bg-white shadow-md border-white/60'
-                                                : 'bg-white/40 hover:bg-white/70 hover:border-white/50'
+                                                ? 'bg-background shadow-md border-white/60'
+                                                : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
                                             }`}
                                     >
                                         <div className="flex flex-col overflow-hidden max-w-[80%]">
@@ -421,7 +422,7 @@ export const ChatHub = () => {
                         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
 
                             <div
-                                className="bg-white/90 border border-white/50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-w-xs w-full text-center transform transition-all scale-100 m-4"
+                                className="bg-background/90 border border-white/50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-w-xs w-full text-center transform transition-all scale-100 m-4"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
@@ -447,7 +448,7 @@ export const ChatHub = () => {
                                                 setConversationToDelete(null);
                                             }
                                         }}
-                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-destructive hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
                                     >
                                         Delete
                                     </button>
@@ -476,7 +477,7 @@ export const ChatHub = () => {
                                 {activeModels.map((model) => (
                                     <div
                                         key={model.id}
-                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-white hover:bg-white/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
+                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             {model.id && (
                                                 <ModelIcon modelName={model.id} />
@@ -497,12 +498,12 @@ export const ChatHub = () => {
                                 ))}
                             </div>
 
-                            {activeModels.length > 0 && <div className="h-6 w-px bg-white/30 shrink-0 mx-1"></div>}
+                            {activeModels.length > 0 && <div className="h-6 w-px bg-background/30 shrink-0 mx-1"></div>}
 
                             <Button
                                 onClick={() => setIsCreateConversationOpen(true)}
                                 variant="outline"
-                                className="rounded-full bg-white border-white/40 text-black hover:bg-white/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                className="rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
                                 <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
                             </Button>
 
@@ -529,7 +530,7 @@ export const ChatHub = () => {
                                                 <Card
                                                     key={idx}
                                                     onClick={() => handleCardClick(card.keywords)}
-                                                    className="group h-40 rounded-4xl bg-white/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                                    className="group h-40 rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
                                                 >
                                                     <CardHeader className="px-6 pt-6 pb-0">
                                                         <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
@@ -539,7 +540,7 @@ export const ChatHub = () => {
 
                                                     <CardFooter className="px-6 pb-4 flex justify-end gap-2">
                                                         {card.logos.map((logo, i) => (
-                                                            <div key={i} className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                            <div key={i} className="w-8 h-8 rounded-full bg-background flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
                                                                 <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                                                             </div>
                                                         ))}
@@ -580,7 +581,7 @@ export const ChatHub = () => {
                                                                 return (
                                                                     <>
                                                                         {modelDetails ? (
-                                                                            <div className="w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                            <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
                                                                                 <ModelIcon modelName={modelDetails.id} />
                                                                             </div>
                                                                         ) : (
@@ -599,7 +600,7 @@ export const ChatHub = () => {
                                                         className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
                                                             ${msg.role === 'user'
                                                                 ? 'bg-black text-white rounded-tr-sm'
-                                                                : 'bg-white text-gray-800 rounded-tl-sm'
+                                                                : 'bg-background text-gray-800 rounded-tl-sm'
                                                             }`}
                                                     >
                                                         <div className="whitespace-pre-wrap">
@@ -622,10 +623,19 @@ export const ChatHub = () => {
                             <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
                                 <div className="flex gap-3 mb-3 px-2">
-                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-400 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
-                                        <ImageIcon size={14} /> Image
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setIsImageMode(!isImageMode)}
+
+                                        className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
+                                            ? 'bg-secondary-blue text-white hover:bg-secondary-blue'
+                                            : 'bg-background/80 border-border text-gray-600 hover:bg-blue-200'
+                                            }`}>
+                                        <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
+                                        Image
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-white/80 border border-gray-400 text-gray-600 text-xs font-bold gap-2 hover:bg-white shadow-sm">
+                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-background/80 border border-border text-gray-600 text-xs font-bold gap-2 hover:bg-background shadow-sm">
                                         <Monitor size={14} /> Landing Page
                                     </Button>
                                 </div>
@@ -635,7 +645,7 @@ export const ChatHub = () => {
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     disabled={isSending}
-                                    className="h-14 w-full border-none bg-white px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
                                     placeholder="Start a new message..." />
 
                                 <div className="flex justify-between items-center px-2 pt-2">
@@ -655,8 +665,8 @@ export const ChatHub = () => {
                                             <Globe size={18} className='text-black' />
                                             <span className="text-sm font-medium text-black">Search</span>
 
-                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-black' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
-                                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-secondar' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
+                                                <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                             </div>
                                         </div>
 
@@ -671,7 +681,7 @@ export const ChatHub = () => {
                                             </div>
 
                                             {isPopoverOpen && (
-                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
                                                     <div className="flex justify-between items-center mb-4">
                                                         <span className="text-gray-700 font-medium">Chat memory</span>
 
@@ -687,7 +697,7 @@ export const ChatHub = () => {
                                                         max="500"
                                                         value={memoryValue}
                                                         onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondar"
                                                     />
 
                                                     <p className="mt-3 text-xs text-black leading-relaxed">
@@ -699,7 +709,7 @@ export const ChatHub = () => {
                                     </div>
                                     {showModelAlert && (
                                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                            <div className="flex items-center gap-2 bg-red-500/90 text-white px-4 py-2 rounded-full backdrop-blur-md border border-red-400">
+                                            <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
                                                 <span className="text-xxs font-semibold whitespace-nowrap">
                                                     Select a model first
                                                 </span>
@@ -708,7 +718,7 @@ export const ChatHub = () => {
                                     )}
                                     <Button
                                         onClick={handleSendMessage} disabled={isSending}
-                                        size="icon" className="bg-[#1a1a1a] hover:bg-black text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 ">
+                                        size="icon" className="bg-secondary-blue hover:bg-secondary-blue text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 ">
                                         <ArrowUp size={20} />
                                     </Button>
 

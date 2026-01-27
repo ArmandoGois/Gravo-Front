@@ -845,7 +845,7 @@ export const ChatHub = () => {
 
                         <div className="w-full h-36 px-4 md:px-16 pb-0 z-40 flex justify-center  shrink-0">
 
-                            <Card className="w-full max-w-5xl bg-[#F3F4F6]/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
+                            <Card className="w-full max-w-5xl bg-background/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
                                 <div className="flex gap-3 mb-3 px-2">
                                     <Button
@@ -870,7 +870,7 @@ export const ChatHub = () => {
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     disabled={isBusy}
-                                    className="..."
+                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
                                     placeholder={isImageMode ? "Describe the image you want to generate..." : "Start a new message..."}
                                 />
 
@@ -946,11 +946,12 @@ export const ChatHub = () => {
                                         onClick={handleSendMessage}
                                         disabled={isBusy}
                                         size="icon"
-                                        className="..."
+                                        className="bg-secondary-blue hover:bg-secondary-blue text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 "
                                     >
                                         {isBusy ? (
                                             <Loader2 className="animate-spin" size={20} />
                                         ) : (
+
                                             <ArrowUp size={20} />
                                         )}
                                     </Button>

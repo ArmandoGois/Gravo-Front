@@ -71,7 +71,7 @@ export const ChatHub = () => {
     const { logout, user } = useAuth();
 
     //Stores
-    const { activeModels, addModel, removeModel, setModels } = useModelUIStore();
+    const { activeModels, addModel, removeModel, setModels, removeAllModels } = useModelUIStore();
     const { activeConversations } = useConversationUIStore();
     const { selectedConversationId, selectConversation, messages, setMessages } = useMessageUIStore();
 
@@ -292,7 +292,7 @@ export const ChatHub = () => {
                 </div>
             )}
 
-            <div className="w-full h-full max-w-full flex flex-col gap-1 pt-2">
+            <div className="w-full h-full max-w-full flex flex-col gap-3 pt-2">
 
                 {/* Header */}
                 <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
@@ -727,8 +727,16 @@ export const ChatHub = () => {
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => setIsImageMode(!isImageMode)}
-
+                                        onClick={() => {
+                                            const newMode = !isImageMode;
+                                            setIsImageMode(newMode);
+                                            if (newMode) {
+                                                removeAllModels();
+                                                handleCardClick(['gemini-3-pro-image-preview']);
+                                            } else {
+                                                removeModel('gemini-3-pro-image-preview');
+                                            }
+                                        }}
                                         className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
                                             ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
                                             : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'

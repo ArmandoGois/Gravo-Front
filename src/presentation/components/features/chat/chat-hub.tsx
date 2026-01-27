@@ -41,6 +41,7 @@ import { useConversationMessages } from "@/presentation/hooks/use-conversation-m
 import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
+import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
@@ -88,6 +89,8 @@ export const ChatHub = () => {
     });
     const { deleteConversation } = useDeleteConversation();
     const { sendMessage, isSending } = useSendMessage();
+    const { generateImage, isGenerating } = useGenerateImage();
+    const isBusy = isSending || isGenerating;
 
     //Autoscroll to bottom on new messages
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -212,7 +215,18 @@ export const ChatHub = () => {
 
         setMessages([...messages, tempUserMessage]);
 
-        sendMessage(textToSend);
+        if (isImageMode) {
+            const imageModelId = activeModels[0].id;
+
+            generateImage({
+                prompt: textToSend,
+                modelId: imageModelId,
+                conversationId: currentId
+            });
+
+        } else {
+            sendMessage(textToSend);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -299,7 +313,7 @@ export const ChatHub = () => {
         }
 
         // Case 3: Image mode active, but no image model selected
-        if (selectedConversationId && hasImageModel) {
+        if (selectedConversationId && hasImageModel && !isImageMode) {
             activeImageModels.forEach(m => removeModel(m.id));
             triggerAlert("Cannot add image generation to existing chats yet.");
             return;
@@ -811,9 +825,10 @@ export const ChatHub = () => {
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    disabled={isSending}
-                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
-                                    placeholder="Start a new message..." />
+                                    disabled={isBusy}
+                                    className="..."
+                                    placeholder={isImageMode ? "Describe the image you want to generate..." : "Start a new message..."}
+                                />
 
                                 <div className="flex justify-between items-center px-2 pt-2">
                                     <div className="flex h-auto items-center gap-8 pb-4 text-gray-400">
@@ -884,9 +899,16 @@ export const ChatHub = () => {
                                         </div>
                                     )}
                                     <Button
-                                        onClick={handleSendMessage} disabled={isSending}
-                                        size="icon" className="bg-secondary-blue hover:bg-secondary-blue text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 ">
-                                        <ArrowUp size={20} />
+                                        onClick={handleSendMessage}
+                                        disabled={isBusy} // Usamos isBusy
+                                        size="icon"
+                                        className="..."
+                                    >
+                                        {isBusy ? (
+                                            <Loader2 className="animate-spin" size={20} /> // Feedback de carga
+                                        ) : (
+                                            <ArrowUp size={20} />
+                                        )}
                                     </Button>
 
                                 </div>

@@ -340,7 +340,7 @@ export const ChatHub = () => {
                         className="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm m-4 border border-white/50"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Rename Chat</h3>
+                        <h3 className="text-lg font-bold text-font-gray mb-4">Rename Chat</h3>
                         <Input
                             value={newTitleInput}
                             onChange={(e) => setNewTitleInput(e.target.value)}
@@ -369,7 +369,7 @@ export const ChatHub = () => {
                 </div>
             )}
 
-            <div className="w-full h-full max-w-full flex flex-col gap-1 pt-2">
+            <div className="w-full h-full max-w-full flex flex-col gap-3 pt-2">
 
                 {/* Header */}
                 <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
@@ -397,12 +397,12 @@ export const ChatHub = () => {
 
                     {/* Nav Central */}
                     <nav className="hidden lg:flex items-center bg-background rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
-                        <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
                         <Button variant="ghost" className="rounded-full bg-secondary-blue text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
-                        <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
-                        <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
-                        <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
-                        <Button variant="ghost" className="rounded-full text-gray-500 hover:text-gray-900 h-9 px-4 text-sm font-medium">Docs</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Docs</Button>
 
                     </nav>
 
@@ -429,7 +429,7 @@ export const ChatHub = () => {
                                     <span className="text-[15px] font-bold text-gray-800">
                                         User (Placeholder)
                                     </span>
-                                    <span className="text-[15px] text-gray-500">
+                                    <span className="text-[15px] text-font-gray">
                                         {user?.email || 'Loading...'}
                                     </span>
                                 </div>
@@ -483,7 +483,7 @@ export const ChatHub = () => {
                             <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
                                 {isAsideOpen && (
                                     <div className="relative w-full opacity-100 animate-in fade-in duration-300">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
                                         <Input
                                             className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
                                             placeholder="Search rooms..."
@@ -516,12 +516,12 @@ export const ChatHub = () => {
                                         <div className="h-10 bg-background/30 rounded-xl w-full"></div>
                                         <div className="h-10 bg-background/30 rounded-xl w-full"></div>
                                         <div className="h-10 bg-background/30 rounded-xl w-full"></div>
-                                        <p className="text-xs text-gray-500 text-center mt-2">Syncing history...</p>
+                                        <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
                                     </div>
                                 )}
 
                                 {!isLoadingChats && activeConversations.length === 0 && (
-                                    <p className="text-xs text-gray-500 italic pl-2">No active conversations.</p>
+                                    <p className="text-xs text-font-gray italic pl-2">No active conversations.</p>
                                 )}
 
                                 {activeConversations.length === 0 && (
@@ -543,7 +543,7 @@ export const ChatHub = () => {
                                                 <MessageSquare size={14} className={selectedConversationId === conversation.id ? "text-blue-600" : "text-gray-600"} />
                                                 <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
                                             </div>
-                                            <span className="text-[10px] text-gray-500 pl-6 truncate">
+                                            <span className="text-[10px] text-font-gray pl-6 truncate">
                                                 {conversation.models.length} models
                                             </span>
                                         </div>
@@ -556,7 +556,7 @@ export const ChatHub = () => {
                                                 className={`p-1.5 rounded-lg transition-all 
                                                     ${activeMenuId === conversation.id
                                                         ? 'bg-gray-200 opacity-100'
-                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-gray-500'}`}
+                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
                                             >
                                                 <MoreVertical size={16} />
                                             </button>
@@ -608,7 +608,7 @@ export const ChatHub = () => {
                                 </div>
 
                                 <h3 className="text-lg font-bold text-gray-800 mb-2">Delete chat?</h3>
-                                <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                                <p className="text-sm text-font-gray mb-6 leading-relaxed">
                                     All messages in this conversation will be permanently deleted.
                                 </p>
 
@@ -810,8 +810,8 @@ export const ChatHub = () => {
                                         onClick={handleToggleImageMode}
 
                                         className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
-                                            ? 'bg-secondary-blue text-white hover:bg-secondary-blue'
-                                            : 'bg-background/80 border-border text-gray-600 hover:bg-blue-200'
+                                            ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                            : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
                                             }`}>
                                         <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
                                         Image
@@ -900,12 +900,12 @@ export const ChatHub = () => {
                                     )}
                                     <Button
                                         onClick={handleSendMessage}
-                                        disabled={isBusy} // Usamos isBusy
+                                        disabled={isBusy}
                                         size="icon"
                                         className="..."
                                     >
                                         {isBusy ? (
-                                            <Loader2 className="animate-spin" size={20} /> // Feedback de carga
+                                            <Loader2 className="animate-spin" size={20} />
                                         ) : (
                                             <ArrowUp size={20} />
                                         )}

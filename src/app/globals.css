@@ -24,6 +24,7 @@
   --color-secondary-black: oklch(0.3558% 0.0017 106.49);
   --color-secondary-blue: oklch(61.5% 0.083 251.5);
   --color-secondary-gray: oklch(53.5% 0.003 237.2);
+  --color-font-gray: oklch(53.5% 0.003 237.2);
 }
 
 /* @media (prefers-color-scheme: dark) {

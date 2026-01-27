@@ -14,6 +14,7 @@ interface ModelUIState {
     addModel: (model: AIModel) => void;
     removeModel: (modelId: string) => void;
     setModels: (models: AIModel[]) => void;
+    removeAllModels: () => void;
 }
 
 export const useModelUIStore = create<ModelUIState>((set) => ({
@@ -44,6 +45,7 @@ export const useModelUIStore = create<ModelUIState>((set) => ({
         activeModels: state.activeModels.filter((item) => item.id !== modelId),
     })),
 
+    removeAllModels: () => set({ activeModels: [] }),
 
     setModels: (models) => set(() => {
         const newActiveModels: ActiveModel[] = models.map(aiModel => ({

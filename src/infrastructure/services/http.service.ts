@@ -25,7 +25,7 @@ class HttpService implements IHttpService {
   constructor() {
     this.axiosInstance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
-      timeout: 10000,
+      timeout: 60000,
       headers: {
         "Content-Type": "application/json",
       },

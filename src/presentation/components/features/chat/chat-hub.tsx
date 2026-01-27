@@ -49,7 +49,6 @@ import { useUpdateConversation } from '@/presentation/hooks/use-update-conversat
 import { ModelIcon } from '../models/model-icons';
 
 const MessageRenderer = ({ content }: { content: string | MessageContentPayload }) => {
-    // 1. Extraer el string puro (igual que hacíamos antes)
     let text = "";
     if (typeof content === 'string') {
         text = content;
@@ -59,23 +58,18 @@ const MessageRenderer = ({ content }: { content: string | MessageContentPayload 
         return <>{JSON.stringify(content)}</>;
     }
 
-    // 2. Regex para detectar formato de imagen Markdown: ![alt](url)
     const imageRegex = /!\[(.*?)\]\((.*?)\)/;
     const match = text.match(imageRegex);
 
-    // 3. Si encontramos una imagen, renderizamos bonito
     if (match) {
         const [fullMatch, altText, imageUrl] = match;
         const textPart = text.replace(fullMatch, "").trim();
 
         return (
             <div className="flex flex-col gap-3">
-                {/* Si hay texto antes de la imagen (ej: "Aquí está tu imagen:"), lo mostramos */}
                 {textPart && <p className="whitespace-pre-wrap">{textPart}</p>}
 
-                {/* Renderizamos la imagen */}
                 <div className="relative mt-2 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
-                    {/* Usamos <img> estándar para evitar configurar dominios en next.config.js por ahora */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={imageUrl}
@@ -88,7 +82,6 @@ const MessageRenderer = ({ content }: { content: string | MessageContentPayload 
         );
     }
 
-    // 4. Si no es imagen, devolvemos el texto normal
     return <div className="whitespace-pre-wrap">{text}</div>;
 };
 
@@ -102,9 +95,10 @@ export const ChatHub = () => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState("Select a model first"); // New: default alert message
+    const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
@@ -365,6 +359,10 @@ export const ChatHub = () => {
 
     }, [isImageModel, availableModels, activeModels, isImageMode, selectedConversationId, removeModel, setModels]);
 
+    const filteredConversations = activeConversations.filter((conversation) =>
+        conversation.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         //Simulate background
         <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-1 font-sans">
@@ -381,7 +379,7 @@ export const ChatHub = () => {
             {isRenameModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
                     <div
-                        className="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm m-4 border border-white/50"
+                        className="bg-background p-6 rounded-3xl shadow-2xl w-full max-w-sm m-4 border border-white/50"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3 className="text-lg font-bold text-font-gray mb-4">Rename Chat</h3>
@@ -529,6 +527,9 @@ export const ChatHub = () => {
                                     <div className="relative w-full opacity-100 animate-in fade-in duration-300">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
                                         <Input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
                                             className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
                                             placeholder="Search rooms..."
                                         />
@@ -554,16 +555,13 @@ export const ChatHub = () => {
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                 {/* Render of Active Chats */}
-
                                 {isLoadingChats && activeConversations.length === 0 && (
                                     <div className="flex flex-col gap-2 px-2 animate-pulse">
-                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
-                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
-                                        <div className="h-10 bg-background/30 rounded-xl w-full"></div>
                                         <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
                                     </div>
                                 )}
 
+                                {/* Empty State */}
                                 {!isLoadingChats && activeConversations.length === 0 && (
                                     <p className="text-xs text-font-gray italic pl-2">No active conversations.</p>
                                 )}
@@ -572,12 +570,12 @@ export const ChatHub = () => {
                                     <p className="text-xs text-white italic pl-2">No active Conversations.</p>
                                 )}
 
-                                {activeConversations.map(conversation => (
+                                {filteredConversations.map(conversation => (
                                     <div
                                         key={conversation.id}
                                         onClick={() => handleConversationClick(conversation.id)}
                                         className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
-                                            ${selectedConversationId === conversation.id
+                ${selectedConversationId === conversation.id
                                                 ? 'bg-background shadow-md border-white/60'
                                                 : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
                                             }`}

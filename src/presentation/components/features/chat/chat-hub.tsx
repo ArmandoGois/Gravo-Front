@@ -48,6 +48,50 @@ import { useUpdateConversation } from '@/presentation/hooks/use-update-conversat
 
 import { ModelIcon } from '../models/model-icons';
 
+const MessageRenderer = ({ content }: { content: string | MessageContentPayload }) => {
+    // 1. Extraer el string puro (igual que hacíamos antes)
+    let text = "";
+    if (typeof content === 'string') {
+        text = content;
+    } else if (content && typeof content === 'object' && 'text' in content) {
+        text = content.text;
+    } else {
+        return <>{JSON.stringify(content)}</>;
+    }
+
+    // 2. Regex para detectar formato de imagen Markdown: ![alt](url)
+    const imageRegex = /!\[(.*?)\]\((.*?)\)/;
+    const match = text.match(imageRegex);
+
+    // 3. Si encontramos una imagen, renderizamos bonito
+    if (match) {
+        const [fullMatch, altText, imageUrl] = match;
+        const textPart = text.replace(fullMatch, "").trim();
+
+        return (
+            <div className="flex flex-col gap-3">
+                {/* Si hay texto antes de la imagen (ej: "Aquí está tu imagen:"), lo mostramos */}
+                {textPart && <p className="whitespace-pre-wrap">{textPart}</p>}
+
+                {/* Renderizamos la imagen */}
+                <div className="relative mt-2 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                    {/* Usamos <img> estándar para evitar configurar dominios en next.config.js por ahora */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={imageUrl}
+                        alt={altText || "Generated Image"}
+                        className="w-full h-auto max-h-125 object-contain"
+                        loading="lazy"
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    // 4. Si no es imagen, devolvemos el texto normal
+    return <div className="whitespace-pre-wrap">{text}</div>;
+};
+
 export const ChatHub = () => {
     //Use States
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -130,17 +174,17 @@ export const ChatHub = () => {
         }
     };
 
-    const renderMessageContent = (content: string | MessageContentPayload) => {
-        if (typeof content === 'string') {
-            return content;
-        }
+    // const renderMessageContent = (content: string | MessageContentPayload) => {
+    //     if (typeof content === 'string') {
+    //         return content;
+    //     }
 
-        if (content && typeof content === 'object' && 'text' in content) {
-            return content.text;
-        }
+    //     if (content && typeof content === 'object' && 'text' in content) {
+    //         return content.text;
+    //     }
 
-        return JSON.stringify(content);
-    };
+    //     return JSON.stringify(content);
+    // };
 
     const recommendedCards = useMemo(() => [
         {
@@ -785,7 +829,7 @@ export const ChatHub = () => {
                                                             }`}
                                                     >
                                                         <div className="whitespace-pre-wrap">
-                                                            {renderMessageContent(msg.content)}
+                                                            <MessageRenderer content={msg.content} />
                                                         </div>
                                                     </div>
                                                 </div>

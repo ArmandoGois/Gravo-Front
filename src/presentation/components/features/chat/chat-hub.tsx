@@ -25,7 +25,7 @@ import {
     Pencil
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 
 import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
@@ -47,9 +47,6 @@ import { useUpdateConversation } from '@/presentation/hooks/use-update-conversat
 
 import { ModelIcon } from '../models/model-icons';
 
-
-
-
 export const ChatHub = () => {
     //Use States
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -60,6 +57,7 @@ export const ChatHub = () => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("Select a model first"); // New: default alert message
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
 
@@ -103,17 +101,27 @@ export const ChatHub = () => {
         }
     }, [messages]);
 
+    const isImageModel = useCallback((modelId: string) => {
+        const model = availableModels.find(m => m.id === modelId);
+        return model?.type === 'image';
+    }, [availableModels]);
 
     const handleCreateConversation = (title: string, modelIds: string[]) => {
         createConversation({ title, model_id: modelIds });
     };
-    const handleConversationClick = (id: string) => {
+    const handleConversationClick = (id: string) => { // Updated
         if (selectedConversationId === id) return;
+
+        if (isImageMode) {
+            setIsImageMode(false);
+            activeModels.forEach(m => {
+                if (isImageModel(m.id)) removeModel(m.id);
+            });
+        }
 
         selectConversation(id);
 
         const currentConversation = activeConversations.find(c => c.id === id);
-
         if (currentConversation && currentConversation.models) {
             setModels(currentConversation.models);
         }
@@ -243,6 +251,61 @@ export const ChatHub = () => {
         window.addEventListener('click', handleClickOutside);
         return () => window.removeEventListener('click', handleClickOutside);
     }, []);
+
+    const handleToggleImageMode = () => {
+        const newMode = !isImageMode;
+        setIsImageMode(newMode);
+
+        if (newMode) {
+            selectConversation(null);
+            const defaultImageModel = availableModels.find(m => m.type === 'image');
+
+            if (defaultImageModel) {
+                setModels([defaultImageModel]);
+            } else {
+                console.warn("No image generation models found in the API.");
+            }
+        } else {
+            setModels([]);
+        }
+    };
+
+    // Control models based on isImageMode and other conditions
+    useEffect(() => {
+        const activeImageModels = activeModels.filter(m => isImageModel(m.id));
+        const hasImageModel = activeImageModels.length > 0;
+
+        const triggerAlert = (msg: string) => {
+            setAlertMessage(msg);
+            setShowModelAlert(true);
+            setTimeout(() => setShowModelAlert(false), 3000);
+        };
+        //  Case 1: Image mode off, but image model active
+        if (!isImageMode && hasImageModel) {
+            activeImageModels.forEach(m => removeModel(m.id));
+            triggerAlert("Use the 'Image' button to activate generation mode.");
+            return;
+        }
+
+        //  Case 2: Image mode active, but there are multiple models (Prohibited mix)
+        if (isImageMode && activeModels.length > 1 && hasImageModel) {
+            const survivorId = activeImageModels[0].id;
+            const fullSurvivorModel = availableModels.find(m => m.id === survivorId);
+
+            if (fullSurvivorModel) setModels([fullSurvivorModel]);
+
+            triggerAlert("Image generation does not support multiple models.");
+            return;
+        }
+
+        // Case 3: Image mode active, but no image model selected
+        if (selectedConversationId && hasImageModel) {
+            activeImageModels.forEach(m => removeModel(m.id));
+            triggerAlert("Cannot add image generation to existing chats yet.");
+            return;
+        }
+
+    }, [isImageModel, availableModels, activeModels, isImageMode, selectedConversationId, removeModel, setModels]);
 
     return (
         //Simulate background
@@ -591,6 +654,9 @@ export const ChatHub = () => {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 removeModel(model.id);
+                                                if (isImageModel(model.id)) {
+                                                    setIsImageMode(false);
+                                                }
                                             }}
                                             className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0">
                                             <X size={12} />
@@ -727,7 +793,7 @@ export const ChatHub = () => {
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        onClick={() => setIsImageMode(!isImageMode)}
+                                        onClick={handleToggleImageMode}
 
                                         className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
                                             ? 'bg-secondary-blue text-white hover:bg-secondary-blue'
@@ -812,7 +878,7 @@ export const ChatHub = () => {
                                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                             <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
                                                 <span className="text-xxs font-semibold whitespace-nowrap">
-                                                    Select a model first
+                                                    {alertMessage}
                                                 </span>
                                             </div>
                                         </div>

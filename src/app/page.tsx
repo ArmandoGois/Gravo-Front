@@ -96,6 +96,11 @@ const Home = () => (
             View Register
           </Link>
         </Button>
+        <Button asChild size="lg">
+          <Link href="/register">
+            View Register Example
+          </Link>
+        </Button>
         <Button asChild variant="outline" size="lg">
           <Link href="/dashboard">
             Go to Dashboard

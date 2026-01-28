@@ -533,7 +533,7 @@ export const ChatHub = () => {
                                     >
                                         <div className="flex flex-col overflow-hidden max-w-[80%]">
                                             <div className="flex items-center gap-2">
-                                                <MessageSquare size={14} className={selectedConversationId === conversation.id ? "text-blue-600" : "text-gray-600"} />
+
                                                 <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
                                             </div>
                                             <span className="text-[10px] text-font-gray pl-6 truncate">

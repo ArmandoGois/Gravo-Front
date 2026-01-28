@@ -27,11 +27,12 @@ import {
 import Image from 'next/image';
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 
-import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
 import { CreateConversationModal } from "@/presentation/components/features/conversation/conversation-creator";
+import { MarkdownRenderer } from '@/presentation/components/features/message/markdown-renderer';
+import { ModelIcon } from '@/presentation/components/features/models/model-icons';
 import { ModelSelector } from "@/presentation/components/features/models/model-selector";
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
@@ -46,44 +47,6 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
-import { ModelIcon } from '../models/model-icons';
-
-const MessageRenderer = ({ content }: { content: string | MessageContentPayload }) => {
-    let text = "";
-    if (typeof content === 'string') {
-        text = content;
-    } else if (content && typeof content === 'object' && 'text' in content) {
-        text = content.text;
-    } else {
-        return <>{JSON.stringify(content)}</>;
-    }
-
-    const imageRegex = /!\[(.*?)\]\((.*?)\)/;
-    const match = text.match(imageRegex);
-
-    if (match) {
-        const [fullMatch, altText, imageUrl] = match;
-        const textPart = text.replace(fullMatch, "").trim();
-
-        return (
-            <div className="flex flex-col gap-3">
-                {textPart && <p className="whitespace-pre-wrap">{textPart}</p>}
-
-                <div className="relative mt-2 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={imageUrl}
-                        alt={altText || "Generated Image"}
-                        className="w-full h-auto max-h-125 object-contain"
-                        loading="lazy"
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    return <div className="whitespace-pre-wrap">{text}</div>;
-};
 
 export const ChatHub = () => {
     //Use States
@@ -167,18 +130,6 @@ export const ChatHub = () => {
             setModels(currentConversation.models);
         }
     };
-
-    // const renderMessageContent = (content: string | MessageContentPayload) => {
-    //     if (typeof content === 'string') {
-    //         return content;
-    //     }
-
-    //     if (content && typeof content === 'object' && 'text' in content) {
-    //         return content.text;
-    //     }
-
-    //     return JSON.stringify(content);
-    // };
 
     const recommendedCards = useMemo(() => [
         {
@@ -827,7 +778,7 @@ export const ChatHub = () => {
                                                             }`}
                                                     >
                                                         <div className="whitespace-pre-wrap">
-                                                            <MessageRenderer content={msg.content} />
+                                                            <MarkdownRenderer content={msg.content} />
                                                         </div>
                                                     </div>
                                                 </div>

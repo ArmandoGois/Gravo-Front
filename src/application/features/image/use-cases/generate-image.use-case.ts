@@ -24,12 +24,12 @@ export const generateImageUseCase = async (
         }
 
         const contentPayload: MessageContentPayload = {
-            type: "text",
-            text: `Here is your generated image:\n\n![Generated Image](${imageData.url})`
+            type: "image",
+            text: imageData.url
         };
 
         return {
-            id: crypto.randomUUID(), // ID temporal o el que venga del backend
+            id: crypto.randomUUID(),
             role: "assistant",
             content: contentPayload,
             model: params.model,

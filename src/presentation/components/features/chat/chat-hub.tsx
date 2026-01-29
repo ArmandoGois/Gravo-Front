@@ -24,14 +24,20 @@ import {
     MoreVertical,
     Pencil
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
+const TextMessage = dynamic(
+    () => import('@/presentation/components/features/message/text-message').then(mod => mod.TextMessage),
+    { ssr: false, loading: () => <span className="opacity-50">Loading message...</span> }
+);
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 
+import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
 import { CreateConversationModal } from "@/presentation/components/features/conversation/conversation-creator";
-import { MarkdownRenderer } from '@/presentation/components/features/message/markdown-renderer';
+import { ImageMessage } from '@/presentation/components/features/message/image-message';
 import { ModelIcon } from '@/presentation/components/features/models/model-icons';
 import { ModelSelector } from "@/presentation/components/features/models/model-selector";
 import { Button } from '@/presentation/components/ui/button';
@@ -46,6 +52,7 @@ import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
+
 
 
 export const ChatHub = () => {
@@ -271,6 +278,21 @@ export const ChatHub = () => {
         } else {
             setModels([]);
         }
+    };
+
+    const isImageMessage = (content: string | MessageContentPayload): boolean => {
+        // 1. PRIORIDAD: Verificación Explícita (La forma correcta)
+        if (typeof content === 'object' && content !== null) {
+            // Si el objeto ya dice que es imagen, confiamos ciegamente
+            if (content.type === 'image') return true;
+        }
+
+        // 2. FALLBACK: Detección por texto (Solo si viene como string o tipo 'text')
+        const text = typeof content === 'string' ? content : content.text;
+
+        // Solo detectamos si es formato Markdown explícito ![...](...)
+        // Ya NO detectamos URL sueltas (http://...) para evitar falsos positivos
+        return /^\s*!\[(.*?)\]\((.*?)\)\s*$/.test(text);
     };
 
     // Control models based on isImageMode and other conditions
@@ -774,12 +796,15 @@ export const ChatHub = () => {
                                                         className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
                                                             ${msg.role === 'user'
                                                                 ? 'bg-black text-white rounded-tr-sm'
-                                                                : 'bg-background text-gray-800 rounded-tl-sm'
+                                                                : 'bg-background text-gray-900 rounded-tl-sm'
                                                             }`}
                                                     >
-                                                        <div className="whitespace-pre-wrap">
-                                                            <MarkdownRenderer content={msg.content} />
-                                                        </div>
+                                                        {/* 5. Selector Condicional */}
+                                                        {isImageMessage(msg.content) ? (
+                                                            <ImageMessage content={msg.content} />
+                                                        ) : (
+                                                            <TextMessage content={msg.content} />
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

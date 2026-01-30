@@ -1,0 +1,941 @@
+'use client';
+
+import {
+    Image as ImageIcon,
+    Settings,
+    Paperclip,
+    Mic,
+    Globe,
+    ArrowUp,
+    Search,
+    SquarePen,
+    ChevronDown,
+    X,
+    ChevronUp,
+    Sun,
+    Trash2,
+    Moon,
+    Bell,
+    MessageSquare,
+    PanelLeftOpen,
+    Monitor,
+    Loader2,
+    Bot,
+    MoreVertical,
+    Pencil
+} from 'lucide-react';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+const TextMessage = dynamic(
+    () => import('@/presentation/components/features/message/text-message').then(mod => mod.TextMessage),
+    { ssr: false, loading: () => <span className="opacity-50">Loading message...</span> }
+);
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+
+import { MessageContentPayload } from '@/domain/entities/message.entity';
+import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
+import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
+import { useModelUIStore } from "@/infrastructure/stores/model-ui.store";
+import { CreateConversationModal } from "@/presentation/components/features/conversation/conversation-creator";
+import { ImageMessage } from '@/presentation/components/features/message/image-message';
+import { ModelIcon } from '@/presentation/components/features/models/model-icons';
+import { ModelSelector } from "@/presentation/components/features/models/model-selector";
+import { Button } from '@/presentation/components/ui/button';
+import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
+import { Input } from '@/presentation/components/ui/input';
+import { useAuth } from '@/presentation/hooks/use-auth';
+import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
+import { useConversations } from "@/presentation/hooks/use-conversations";
+import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
+import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
+import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
+import { useModels } from '@/presentation/hooks/use-models';
+import { useSendMessage } from "@/presentation/hooks/use-send-message";
+import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
+
+
+
+export const ChatHub = () => {
+    //Use States
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
+    const [isAsideOpen, setAsideOpen] = useState(false);
+    const [isSearchActive, setIsSearchActive] = useState(false);
+    const [memoryValue, setMemoryValue] = useState(10);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [inputValue, setInputValue] = useState("");
+    const [showModelAlert, setShowModelAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
+    const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+    const [isImageMode, setIsImageMode] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+    const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
+    const [newTitleInput, setNewTitleInput] = useState("");
+
+    const { logout, user } = useAuth();
+
+    //Stores
+    const { activeModels, addModel, removeModel, setModels } = useModelUIStore();
+    const { activeConversations } = useConversationUIStore();
+    const { selectedConversationId, selectConversation, messages, setMessages } = useMessageUIStore();
+
+    //Hooks for data fetching
+    const { models: availableModels } = useModels();
+    const { isLoading: isLoadingChats } = useConversations();
+    const { isLoading: isLoadingMessages } = useConversationMessages();
+
+    //Hooks for actions   
+    const { createConversation, isCreating } = useCreateConversation(() => {
+        setIsCreateConversationOpen(false);
+    });
+    const { updateConversation, isUpdating } = useUpdateConversation(() => {
+        setIsRenameModalOpen(false);
+        setNewTitleInput("");
+    });
+    const { deleteConversation } = useDeleteConversation();
+    const { sendMessage, isSending } = useSendMessage();
+    const { generateImage, isGenerating } = useGenerateImage();
+    const isBusy = isSending || isGenerating;
+
+    //Autoscroll to bottom on new messages
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            requestAnimationFrame(() => {
+                messagesEndRef.current?.scrollIntoView({
+                    behavior: 'auto'
+                });
+            });
+        }
+    }, [messages]);
+
+    const isImageModel = useCallback((modelId: string) => {
+        const model = availableModels.find(m => m.id === modelId);
+        return model?.type === 'image';
+    }, [availableModels]);
+
+    const handleCreateConversation = (title: string, modelIds: string[]) => {
+        createConversation({ title, model_id: modelIds });
+    };
+    const handleConversationClick = (id: string) => { // Updated
+        if (selectedConversationId === id) return;
+
+        if (isImageMode) {
+            setIsImageMode(false);
+            activeModels.forEach(m => {
+                if (isImageModel(m.id)) removeModel(m.id);
+            });
+        }
+
+        selectConversation(id);
+
+        const currentConversation = activeConversations.find(c => c.id === id);
+        if (currentConversation && currentConversation.models) {
+            setModels(currentConversation.models);
+        }
+    };
+
+    const recommendedCards = useMemo(() => [
+        {
+            title: 'Flagship models',
+            keywords: ['gpt-4', 'gemini', 'claude', 'opus'],
+            logos: [
+                { src: '/Gemini.svg', alt: 'Gemini' },
+                { src: '/Grok.svg', alt: 'Grok' },
+                { src: '/DeepSeek.svg', alt: 'DeepSeek' },
+                { src: '/Mistral.svg', alt: 'Mistral' }
+            ]
+        },
+        {
+            title: 'Best roleplay models',
+            keywords: ['mistral', 'llama', 'roleplay'],
+            logos: [{ src: '/Mistral.svg', alt: 'Mistral' }]
+        },
+        {
+            title: 'Best coding models',
+            keywords: ['deepseek', 'codellama', 'claude'],
+            logos: [{ src: '/DeepSeek.svg', alt: 'DeepSeek' }]
+        },
+        {
+            title: 'Reasoning models',
+            keywords: ['o1', 'reasoning', 'thinking'],
+            logos: [{ src: '/Gemini.svg', alt: 'Gemini' }]
+        }
+    ], []);
+
+    const handleCardClick = (keywords: string[]) => {
+        const modelsToAdd = availableModels.filter(model =>
+            keywords.some(keyword =>
+                model.id.toLowerCase().includes(keyword) ||
+                model.name?.toLowerCase().includes(keyword)
+            )
+        );
+
+        modelsToAdd.forEach(model => {
+            const isAlreadyActive = activeModels.some(m => m.id === model.id);
+            if (!isAlreadyActive) {
+                addModel(model);
+            }
+        });
+    };
+
+    const handleSendMessage = () => {
+        if (!inputValue.trim()) return;
+        if (activeModels.length === 0) {
+            setShowModelAlert(true);
+            setTimeout(() => {
+                setShowModelAlert(false);
+            }, 3000);
+            return;
+        }
+
+        const textToSend = inputValue;
+        setInputValue("");
+
+        const currentId = selectedConversationId || "temp-new-chat";
+
+        if (!selectedConversationId) {
+            selectConversation(currentId);
+        }
+
+        const tempUserMessage = {
+            id: crypto.randomUUID(),
+            role: "user" as const,
+            content: textToSend,
+            conversation_id: currentId,
+            created_at: new Date().toISOString()
+        };
+
+        setMessages([...messages, tempUserMessage]);
+
+        if (isImageMode) {
+            const imageModelId = activeModels[0].id;
+
+            generateImage({
+                prompt: textToSend,
+                modelId: imageModelId,
+                conversationId: currentId
+            });
+
+        } else {
+            sendMessage(textToSend);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const getMessageModelDetails = (messageModelId?: string) => {
+        if (messageModelId) {
+            const found = availableModels.find(m => m.id === messageModelId);
+            if (found) return found;
+        }
+        if (activeModels.length > 0) {
+            return activeModels[0];
+        }
+        return null;
+    };
+
+    const openRenameModal = (id: string, currentTitle: string) => {
+        setConversationToRename({ id, title: currentTitle });
+        setNewTitleInput(currentTitle);
+        setIsRenameModalOpen(true);
+        setActiveMenuId(null);
+    };
+
+    const handleRenameSubmit = () => {
+        if (conversationToRename && newTitleInput.trim()) {
+            updateConversation({ id: conversationToRename.id, title: newTitleInput });
+        }
+    };
+
+    useEffect(() => {
+        const handleClickOutside = () => setActiveMenuId(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const handleToggleImageMode = () => {
+        const newMode = !isImageMode;
+        setIsImageMode(newMode);
+
+        if (newMode) {
+            selectConversation(null);
+            const defaultImageModel = availableModels.find(m => m.type === 'image');
+
+            if (defaultImageModel) {
+                setModels([defaultImageModel]);
+            } else {
+                console.warn("No image generation models found in the API.");
+            }
+        } else {
+            setModels([]);
+        }
+    };
+
+    const isImageMessage = (content: string | MessageContentPayload): boolean => {
+        // 1. PRIORIDAD: Verificación Explícita (La forma correcta)
+        if (typeof content === 'object' && content !== null) {
+            // Si el objeto ya dice que es imagen, confiamos ciegamente
+            if (content.type === 'image') return true;
+        }
+
+        // 2. FALLBACK: Detección por texto (Solo si viene como string o tipo 'text')
+        const text = typeof content === 'string' ? content : content.text;
+
+        // Solo detectamos si es formato Markdown explícito ![...](...)
+        // Ya NO detectamos URL sueltas (http://...) para evitar falsos positivos
+        return /^\s*!\[(.*?)\]\((.*?)\)\s*$/.test(text);
+    };
+
+    // Control models based on isImageMode and other conditions
+    useEffect(() => {
+        const activeImageModels = activeModels.filter(m => isImageModel(m.id));
+        const hasImageModel = activeImageModels.length > 0;
+
+        const triggerAlert = (msg: string) => {
+            setAlertMessage(msg);
+            setShowModelAlert(true);
+            setTimeout(() => setShowModelAlert(false), 3000);
+        };
+        //  Case 1: Image mode off, but image model active
+        if (!isImageMode && hasImageModel) {
+            activeImageModels.forEach(m => removeModel(m.id));
+            triggerAlert("Use the 'Image' button to activate generation mode.");
+            return;
+        }
+
+        //  Case 2: Image mode active, but there are multiple models (Prohibited mix)
+        if (isImageMode && activeModels.length > 1 && hasImageModel) {
+            const survivorId = activeImageModels[0].id;
+            const fullSurvivorModel = availableModels.find(m => m.id === survivorId);
+
+            if (fullSurvivorModel) setModels([fullSurvivorModel]);
+
+            triggerAlert("Image generation does not support multiple models.");
+            return;
+        }
+
+        // Case 3: Image mode active, but no image model selected
+        if (selectedConversationId && hasImageModel && !isImageMode) {
+            activeImageModels.forEach(m => removeModel(m.id));
+            triggerAlert("Cannot add image generation to existing chats yet.");
+            return;
+        }
+
+    }, [isImageModel, availableModels, activeModels, isImageMode, selectedConversationId, removeModel, setModels]);
+
+    const filteredConversations = activeConversations.filter((conversation) =>
+        conversation.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        //Simulate background
+        <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-1 font-sans">
+
+            {/* Create newConversation window */}
+            <CreateConversationModal
+                isOpen={isCreateConversationOpen}
+                onClose={() => setIsCreateConversationOpen(false)}
+                onCreate={handleCreateConversation}
+                isLoading={isCreating}
+            />
+
+            {/* Menu for rename and delete */}
+            {isRenameModalOpen && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div
+                        className="bg-background p-6 rounded-3xl shadow-2xl w-full max-w-sm m-4 border border-white/50"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold text-font-gray mb-4">Rename Chat</h3>
+                        <Input
+                            value={newTitleInput}
+                            onChange={(e) => setNewTitleInput(e.target.value)}
+                            className="mb-6 bg-gray-50 border-gray-200"
+                            placeholder="Enter new chat name..."
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
+                        />
+                        <div className="flex gap-3">
+                            <Button
+                                variant="ghost"
+                                className="flex-1 rounded-xl"
+                                onClick={() => setIsRenameModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 rounded-xl bg-black text-white hover:bg-gray-800"
+                                onClick={handleRenameSubmit}
+                                disabled={isUpdating}
+                            >
+                                {isUpdating ? 'Saving...' : 'Save'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="w-full h-full max-w-full flex flex-col gap-3 pt-2">
+
+                {/* Header */}
+                <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
+                    {/* Logo */}
+                    <div
+                        className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
+                        onClick={() => {
+                            selectConversation(null);
+                            setModels([]);
+                            setIsSearchActive(false);
+                            setIsPopoverOpen(false);
+                        }}
+                    >
+                        <div className="relative w-10 h-10 flex items-center justify-center">
+                            <Image
+                                src="/kromaticos_logo.svg"
+                                alt="Kromaticos Logo"
+                                width={35}
+                                height={35}
+                                className="object-contain"
+                            />
+                            <span className="absolute -top-1 -right-7 bg-destructive text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
+                        </div>
+                    </div>
+
+                    {/* Nav Central */}
+                    <nav className="hidden lg:flex items-center bg-background rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
+                        <Button variant="ghost" className="rounded-full bg-secondary-blue text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
+                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Docs</Button>
+
+                    </nav>
+
+                    {/* User Profile */}
+                    <div className="flex items-center gap-3">
+                        <nav className="hidden lg:flex items-center bg-background rounded-full px-2.5 py-1 shadow-sm gap-3 h-12 w-fit">
+                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
+                                <Bell size={20} />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
+                                <Search size={20} />
+                            </Button>
+                        </nav>
+                        {/* Deployable Menu */}
+                        <div className='relative'>
+                            <div
+                                className="flex items-center bg-background rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-12"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            >
+                                <div className="w-12 h-12 rounded-full overflow-hidden pl-1 pt-0.5">
+                                    <Image src="/user_avatar.svg" alt="User" width={46} height={44} />
+                                </div>
+                                <div className="flex flex-col text-left leading-none">
+                                    <span className="text-[15px] font-bold text-gray-800">
+                                        User (Placeholder)
+                                    </span>
+                                    <span className="text-[15px] text-font-gray">
+                                        {user?.email || 'Loading...'}
+                                    </span>
+                                </div>
+                                {!isMenuOpen ? (
+                                    <ChevronDown size={18} className="text-gray-400" />
+                                ) : (
+                                    <ChevronUp size={18} className="text-gray-400" />
+                                )}
+                                {isMenuOpen && (
+                                    <div className="absolute top-full right-0 mt-2 w-36 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                        <ul className="flex flex-col gap-0.5">
+                                            {['Credits', 'Keys', 'Activity', 'Settings', 'Enterprise'].map((item) => (
+                                                <li key={item} className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
+                                                    {item}
+                                                </li>
+                                            ))}
+
+                                            <li
+                                                onClick={() => logout()}
+                                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
+                                                Sign out
+                                            </li>
+                                        </ul>
+
+                                        <div className="h-px bg-gray-100 my-1.5 mx-1" />
+
+                                        <div className="bg-gray-100 p-0.5 rounded-lg flex items-center justify-between">
+                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md bg-background shadow-sm transition-all">
+                                                <Sun size={14} className="text-gray-900" />
+                                            </button>
+                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all">
+                                                <Moon size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Card */}
+                <div className="w-full h-[92vh] flex gap-6 p-0 pt-0 pb-1 not-rounded relative">
+
+                    {/* Sidebar */}
+                    <aside
+                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-65' : 'w-15'}`}
+                    >
+                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
+
+                            <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
+                                {isAsideOpen && (
+                                    <div className="relative w-full opacity-100 animate-in fade-in duration-300">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
+                                        <Input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
+                                            placeholder="Search rooms..."
+                                        />
+                                    </div>
+                                )}
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setAsideOpen(!isAsideOpen)}
+                                    className={'h-10 w-10 rounded-full bg-background hover:bg-background/40 text-gray-600 shrink-0 shadow-sm'}
+                                >
+                                    {isAsideOpen ? (
+                                        <X size={20} />
+                                    ) : (
+                                        <PanelLeftOpen size={20} />
+                                    )}
+                                </Button>
+                            </div>
+
+
+                            <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
+
+                                {/* Render of Active Chats */}
+                                {isLoadingChats && activeConversations.length === 0 && (
+                                    <div className="flex flex-col gap-2 px-2 animate-pulse">
+                                        <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
+                                    </div>
+                                )}
+
+                                {/* Empty State */}
+                                {!isLoadingChats && activeConversations.length === 0 && (
+                                    <p className="text-xs text-font-gray italic pl-2">No active conversations.</p>
+                                )}
+
+                                {activeConversations.length === 0 && (
+                                    <p className="text-xs text-white italic pl-2">No active Conversations.</p>
+                                )}
+
+                                {filteredConversations.map(conversation => (
+                                    <div
+                                        key={conversation.id}
+                                        onClick={() => handleConversationClick(conversation.id)}
+                                        className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
+                ${selectedConversationId === conversation.id
+                                                ? 'bg-background shadow-md border-white/60'
+                                                : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
+                                            }`}
+                                    >
+                                        <div className="flex flex-col overflow-hidden max-w-[80%]">
+                                            <div className="flex items-center gap-2">
+
+                                                <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
+                                            </div>
+                                            <span className="text-[10px] text-font-gray pl-6 truncate">
+                                                {conversation.models.length} models
+                                            </span>
+                                        </div>
+                                        <div className="relative">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
+                                                }}
+                                                className={`p-1.5 rounded-lg transition-all 
+                                                    ${activeMenuId === conversation.id
+                                                        ? 'bg-gray-200 opacity-100'
+                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+
+                                            {/* Floating Menu*/}
+                                            {activeMenuId === conversation.id && (
+                                                <div
+                                                    className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <button
+                                                        onClick={() => openRenameModal(conversation.id, conversation.title)}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
+                                                    >
+                                                        <Pencil size={14} />
+                                                        Rename
+                                                    </button>
+
+                                                    <div className="h-px bg-gray-100 my-1" />
+
+                                                    <button
+                                                        onClick={() => {
+                                                            setConversationToDelete(conversation.id);
+                                                            setActiveMenuId(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    </aside>
+
+                    {conversationToDelete && (
+                        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+
+                            <div
+                                className="bg-background/90 border border-white/50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-w-xs w-full text-center transform transition-all scale-100 m-4"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                                    <Trash2 size={24} />
+                                </div>
+
+                                <h3 className="text-lg font-bold text-gray-800 mb-2">Delete chat?</h3>
+                                <p className="text-sm text-font-gray mb-6 leading-relaxed">
+                                    All messages in this conversation will be permanently deleted.
+                                </p>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setConversationToDelete(null)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (conversationToDelete) {
+                                                deleteConversation(conversationToDelete);
+                                                setConversationToDelete(null);
+                                            }
+                                        }}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-destructive hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+
+                    {/* Main Content */}
+                    <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden">
+
+                        {/* New Conversation & Add Model */}
+                        <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
+
+                            {/* Models list */}
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
+
+                                <div className={activeModels.length === 0 ? 'block' : 'hidden'}>
+                                    <p className="text-xs text-black italic pl-2 whitespace-nowrap">
+                                        No active models.
+                                    </p>
+                                </div>
+
+                                {/* Models mapping */}
+                                {activeModels.map((model) => (
+                                    <div
+                                        key={model.id}
+                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            {model.id && (
+                                                <ModelIcon modelName={model.id} />
+                                            )}
+                                            <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
+                                                {model.title}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeModel(model.id);
+                                                if (isImageModel(model.id)) {
+                                                    setIsImageMode(false);
+                                                }
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0">
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {activeModels.length > 0 && <div className="h-6 w-px bg-background/30 shrink-0 mx-1"></div>}
+
+                            <Button
+                                onClick={() => setIsCreateConversationOpen(true)}
+                                variant="outline"
+                                className="rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
+                            </Button>
+
+                            <div className="shrink-0">
+                                <ModelSelector />
+                            </div>
+
+                        </div>
+
+
+                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
+
+                            {/* A: No chat selected -> Cards */}
+                            {!selectedConversationId ? (
+                                <>
+                                    <div className="mb-12 space-y-2 mx-auto">
+                                        <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
+                                        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
+                                    </div>
+
+                                    {activeModels.length === 0 && (
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
+                                            {recommendedCards.map((card, idx) => (
+                                                <Card
+                                                    key={idx}
+                                                    onClick={() => handleCardClick(card.keywords)}
+                                                    className="group h-40 rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                                >
+                                                    <CardHeader className="px-6 pt-6 pb-0">
+                                                        <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
+                                                            {card.title}
+                                                        </CardTitle>
+                                                    </CardHeader>
+
+                                                    <CardFooter className="px-6 pb-4 flex justify-end gap-2">
+                                                        {card.logos.map((logo, i) => (
+                                                            <div key={i} className="w-8 h-8 rounded-full bg-background flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                                <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                                                            </div>
+                                                        ))}
+                                                    </CardFooter>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                /* B: chat selected -> messages */
+                                <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
+
+                                    {isLoadingMessages ? (
+                                        <div className="flex justify-center items-center h-40">
+                                            <Loader2 className="animate-spin text-white w-8 h-8" />
+                                        </div>
+                                    ) : messages.length === 0 ? (
+                                        <div className="text-center text-white/70 italic mt-10">
+                                            No messages yet. Start the conversation!
+                                        </div>
+                                    ) : (
+                                        messages.map((msg) => (
+                                            < div
+                                                key={msg.id}
+                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                            >
+                                                <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+
+                                                    <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                        <span>{msg.role}</span>
+                                                        {msg.role === 'user' ? (
+                                                            <Image src="/user_avatar.svg" alt="User" width={30} height={30} />
+                                                        ) : (
+                                                            (() => {
+                                                                const modelDetails = getMessageModelDetails(msg.model);
+
+                                                                return (
+                                                                    <>
+                                                                        {modelDetails ? (
+                                                                            <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                                <ModelIcon modelName={modelDetails.id} />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Bot size={14} />
+                                                                        )}
+                                                                        <span>
+                                                                            {modelDetails ? modelDetails.id : "Assistant"}
+                                                                        </span>
+                                                                    </>
+                                                                );
+                                                            })()
+                                                        )}
+                                                    </div>
+
+                                                    <div
+                                                        className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
+                                                            ${msg.role === 'user'
+                                                                ? 'bg-black text-white rounded-tr-sm'
+                                                                : 'bg-background text-gray-900 rounded-tl-sm'
+                                                            }`}
+                                                    >
+                                                        {/* 5. Selector Condicional */}
+                                                        {isImageMessage(msg.content) ? (
+                                                            <ImageMessage content={msg.content} />
+                                                        ) : (
+                                                            <TextMessage content={msg.content} />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Input Area */}
+
+                        <div className="w-full h-36 px-4 md:px-16 pb-0 z-40 flex justify-center  shrink-0">
+
+                            <Card className="w-full max-w-5xl bg-background/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
+
+                                <div className="flex gap-3 mb-3 px-2">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={handleToggleImageMode}
+
+                                        className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
+                                            ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                            : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                            }`}>
+                                        <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
+                                        Image
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-background/80 border border-border text-gray-600 text-xs font-bold gap-2 hover:bg-background shadow-sm">
+                                        <Monitor size={14} /> Landing Page
+                                    </Button>
+                                </div>
+
+                                <Input
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    disabled={isBusy}
+                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    placeholder={isImageMode ? "Describe the image you want to generate..." : "Start a new message..."}
+                                />
+
+                                <div className="flex justify-between items-center px-2 pt-2">
+                                    <div className="flex h-auto items-center gap-8 pb-4 text-gray-400">
+
+                                        {/* Basic Tools */}
+                                        <div className="flex items-center gap-6">
+                                            <Settings size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Paperclip size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                            <Mic size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+                                        </div>
+
+
+                                        <div
+                                            onClick={() => setIsSearchActive(!isSearchActive)}
+                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isSearchActive ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
+                                            <Globe size={18} className='text-black' />
+                                            <span className="text-sm font-medium text-black">Search</span>
+
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-secondary-blue' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
+                                                <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative" >
+                                            <div
+                                                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                                className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black "
+                                            >
+                                                <MessageSquare size={18} />
+                                                <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                                <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                            </div>
+
+                                            {isPopoverOpen && (
+                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <span className="text-gray-700 font-medium">Chat memory</span>
+
+                                                        <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
+                                                            {memoryValue}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Slider*/}
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="500"
+                                                        value={memoryValue}
+                                                        onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                                    />
+
+                                                    <p className="mt-3 text-xs text-black leading-relaxed">
+                                                        Sends the last {memoryValue} messages from your conversation each request.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {showModelAlert && (
+                                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
+                                                <span className="text-xxs font-semibold whitespace-nowrap">
+                                                    {alertMessage}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <Button
+                                        onClick={handleSendMessage}
+                                        disabled={isBusy}
+                                        size="icon"
+                                        className="bg-secondary-blue hover:bg-secondary-blue text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 "
+                                    >
+                                        {isBusy ? (
+                                            <Loader2 className="animate-spin" size={20} />
+                                        ) : (
+
+                                            <ArrowUp size={20} />
+                                        )}
+                                    </Button>
+
+                                </div>
+                            </Card>
+                        </div>
+                    </main>
+                </div>
+            </div >
+        </div >
+    );
+}

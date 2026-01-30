@@ -2,8 +2,8 @@
 
 @theme {
   --color-background: oklch(100% 0 0);
-  --color-foreground: oklch(9% 0 0);
-  --color-card: oklch(100% 0.01 286);
+  --color-foreground: oklch(0% 0 0);
+  --color-card: oklch(90% 0 0);
   --color-card-foreground: oklch(9% 0 0);
   --color-popover: oklch(100% 0 0);
   --color-popover-foreground: oklch(9% 0 0);
@@ -17,11 +17,14 @@
   --color-accent-foreground: oklch(9% 0 0);
   --color-destructive: oklch(60% 0.22 29);
   --color-destructive-foreground: oklch(98% 0 0);
-  --color-border: oklch(90% 0 0);
+  --color-border: oklch(70.7% 0.022 261.325);
   --color-input: oklch(90% 0 0);
   --color-ring: oklch(9% 0 0);
   --radius: 0.5rem;
   --color-secondary-black: oklch(0.3558% 0.0017 106.49);
+  --color-secondary-blue: oklch(61.5% 0.083 251.5);
+  --color-secondary-gray: oklch(53.5% 0.003 237.2);
+  --color-font-gray: oklch(53.5% 0.003 237.2);
 }
 
 /* @media (prefers-color-scheme: dark) {

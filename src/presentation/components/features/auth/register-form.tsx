@@ -1,13 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MailIcon, LockIcon, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { MailIcon, LockIcon, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
-import { cn } from "@/lib/utils";
 import { Button } from '@/presentation/components/ui/button';
 import {
     Card,
@@ -19,8 +18,7 @@ import {
     Form,
     FormControl,
     FormField,
-    FormItem,
-    FormMessage
+    FormItem
 } from '@/presentation/components/ui/form';
 import {
     InputGroup,
@@ -29,7 +27,7 @@ import {
 } from '@/presentation/components/ui/input-group';
 import { useAuth } from '@/presentation/hooks/use-auth';
 
-//SCHEMA
+
 const registrationSchema = z.object({
     email: z
         .string()
@@ -40,9 +38,8 @@ const registrationSchema = z.object({
         .string()
         .min(6, 'La contraseña debe tener al menos 6 caracteres'),
 
-    confirmPassword: z
-        .string()
-        .min(1, 'Debes confirmar la contraseña'),
+
+    confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas deben coincidir',
     path: ['confirmPassword'],
@@ -62,17 +59,15 @@ export const RegistrationForm = () => {
             password: '',
             confirmPassword: '',
         },
-        mode: 'onSubmit',
     });
 
     const onSubmit = (data: RegistrationFormValues) => {
         registerUser({ email: data.email, password: data.password });
     };
 
-
     return (
         <div className="relative inline-block">
-            <Card className="w-120 h-auto min-h-140 rounded-4xl relative shadow-lg bg-white/70 backdrop-blur-md border border-white/20 pb-4">
+            <Card className="w-120 h-140.75 rounded-4xl relative shadow-lg bg-white/70 backdrop-blur-md border border-white/20">
                 <CardHeader className="space-y-6 text-center">
                     <div className="flex justify-center">
                         <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-sm">
@@ -91,26 +86,16 @@ export const RegistrationForm = () => {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-                            {/* --- MailField --- */}
+                            {/*MailField*/}
                             <FormField
                                 control={form.control}
                                 name="email"
-                                // Destructuring fieldState
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            {/* Conditional to render error*/}
-                                            <InputGroup className={cn(
-                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
-                                                fieldState.error
-                                                    ? "border-red-500 ring-2 ring-red-500/20" // Estilo de error
-                                                    : "border-white/30 focus-within:ring-primary/20" // Estilo normal
-                                            )}>
+                                            <InputGroup className="bg-white dark:bg-white border-white/30 transition-all h-12 shadow-sm  rounded-2xl">
                                                 <InputGroupAddon>
-                                                    <MailIcon className={cn(
-                                                        "h-4 w-4",
-                                                        fieldState.error ? "text-red-500" : "text-gray-500"
-                                                    )} />
+                                                    <MailIcon className="h-4 w-4 text-gray-500" />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}
@@ -120,29 +105,20 @@ export const RegistrationForm = () => {
                                                 />
                                             </InputGroup>
                                         </FormControl>
-                                        <FormMessage className="ml-1 text-xs font-medium text-red-500" />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* --- PasswordField --- */}
+                            {/*PasswordField*/}
                             <FormField
                                 control={form.control}
                                 name="password"
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup className={cn(
-                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
-                                                fieldState.error
-                                                    ? "border-red-500 ring-2 ring-red-500/20"
-                                                    : "border-white/30 focus-within:ring-primary/20"
-                                            )}>
+                                            <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl">
                                                 <InputGroupAddon>
-                                                    <LockIcon className={cn(
-                                                        "h-4 w-4",
-                                                        fieldState.error ? "text-red-500" : "text-gray-500"
-                                                    )} />
+                                                    <LockIcon className="h-4 w-4 text-gray-500" />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}
@@ -153,10 +129,7 @@ export const RegistrationForm = () => {
                                                 <InputGroupAddon align="inline-end">
                                                     <button
                                                         type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setShowPassword(!showPassword);
-                                                        }}
+                                                        onClick={() => setShowPassword(!showPassword)}
                                                         className="mr-2 text-gray-500 hover:text-gray-700 transition-colors"
                                                     >
                                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -164,29 +137,20 @@ export const RegistrationForm = () => {
                                                 </InputGroupAddon>
                                             </InputGroup>
                                         </FormControl>
-                                        <FormMessage className="ml-1 text-xs font-medium text-red-500" />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* --- ConfirmPasswordField --- */}
+                            {/*ConfirmPasswordField*/}
                             <FormField
                                 control={form.control}
                                 name="confirmPassword"
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup className={cn(
-                                                "bg-white dark:bg-white transition-all h-12 shadow-sm rounded-2xl focus-within:ring-2",
-                                                fieldState.error
-                                                    ? "border-red-500 ring-2 ring-red-500/20"
-                                                    : "border-white/30 focus-within:ring-primary/20"
-                                            )}>
+                                            <InputGroup className="bg-white dark:bg-white border-white/30 h-12 shadow-sm rounded-2xl">
                                                 <InputGroupAddon>
-                                                    <LockIcon className={cn(
-                                                        "h-4 w-4",
-                                                        fieldState.error ? "text-red-500" : "text-gray-500"
-                                                    )} />
+                                                    <LockIcon className="h-4 w-4 text-gray-500" />
                                                 </InputGroupAddon>
                                                 <InputGroupInput
                                                     {...field}
@@ -197,10 +161,7 @@ export const RegistrationForm = () => {
                                                 <InputGroupAddon align="inline-end">
                                                     <button
                                                         type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setShowConfirmPassword(!showConfirmPassword);
-                                                        }}
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                         className="mr-2 text-gray-500 hover:text-gray-700 transition-colors"
                                                     >
                                                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -208,22 +169,32 @@ export const RegistrationForm = () => {
                                                 </InputGroupAddon>
                                             </InputGroup>
                                         </FormControl>
-                                        <FormMessage className="ml-1 text-xs font-medium text-red-500" />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* --- General Error --- */}
-                            {registrationError && (
-                                <div className="flex items-center gap-3 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100 animate-in fade-in slide-in-from-top-1">
-                                    <AlertCircle size={18} className="shrink-0" />
-                                    <span className="font-medium">Error al registrarse. Verifica tus credenciales.</span>
-                                </div>
-                            )}
+                            {/* Errors */}
+                            {
+                                (form.formState.errors.email || form.formState.errors.password || form.formState.errors.confirmPassword) && (
+                                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/20">
+                                        {form.formState.errors.email?.message ||
+                                            form.formState.errors.password?.message ||
+                                            form.formState.errors.confirmPassword?.message}
+                                    </div>
+                                )
+                            }
+
+                            {
+                                registrationError && (
+                                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                                        Error al registrarse. Verifica tus credenciales.
+                                    </div>
+                                )
+                            }
 
                             <Button
                                 type="submit"
-                                className="w-full rounded-4xl h-12 text-lg font-semibold mt-2 shadow-lg shadow-blue-500/20"
+                                className="w-full rounded-4xl h-12 text-lg font-semibold"
                                 disabled={isRegistrationLoading}
                             >
                                 {isRegistrationLoading ? 'Signing Up...' : 'Sign Up!'}

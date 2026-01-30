@@ -18,7 +18,7 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: (credentials: UserCredentials) => loginUseCase(credentials),
     onSuccess: () => {
-      router.push("/dashboard");
+      router.push("/chathub");
     },
   });
 
@@ -31,9 +31,9 @@ export const useAuth = () => {
 
   const registerMutation = useMutation({
     mutationFn: (data: UserCredentials) => registerUseCase(data),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       // Automatically log in after registration
-      loginMutation.mutate(variables);
+      router.push("/chathub");
     },
   });
 

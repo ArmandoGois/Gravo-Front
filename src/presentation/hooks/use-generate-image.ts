@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { generateImageVariationUseCase } from "@/application/features/image/use-cases/generate-image-upload.use-case";
 import { generateImageUseCase } from "@/application/features/image/use-cases/generate-image.use-case";
 import { GenerateImageRequestDto } from "@/domain/dtos/image-generation.dto";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
@@ -8,7 +9,7 @@ interface GenerateImageMutationParams {
     prompt: string;
     modelId: string;
     conversationId?: string | null;
-    reference_images?: string[];
+    reference_images?: (string | File)[];
 }
 
 export const useGenerateImage = () => {
@@ -28,17 +29,21 @@ export const useGenerateImage = () => {
                 n: 1
             };
 
-            return generateImageUseCase(payload);
+            const hasImages = params.reference_images && params.reference_images.length > 0;
+
+            if (hasImages) {
+                return generateImageVariationUseCase(payload);
+            } else {
+                return generateImageUseCase(payload);
+            }
         },
 
         onSuccess: (aiMessage) => {
             setMessages([...messages, aiMessage]);
-
             if (selectedConversationId) {
                 queryClient.invalidateQueries({ queryKey: ["messages", selectedConversationId] });
             }
         },
-
         onError: (error) => {
             console.error("Failed to generate image", error);
         }

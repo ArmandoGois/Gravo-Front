@@ -4,7 +4,7 @@ export interface GenerateImageRequestDto {
     n?: number;            // Default: 1
     size?: string;         // Default: "2K"
     aspect_ratio?: string; // Default: "1:1"
-    reference_images?: string[];
+    reference_images?: (string | File)[];
     // Optional conversation ID to associate the image generation with a specific conversation
     conversation_id?: string | null;
 }

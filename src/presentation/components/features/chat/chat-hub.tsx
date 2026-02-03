@@ -188,16 +188,14 @@ export const ChatHub = () => {
         });
     };
 
-    const handleSendMessage = async () => { // Nota el async
-        // 1. Validación Básica
+    const handleSendMessage = async () => {
         if (!inputValue.trim() && selectedFiles.length === 0) return;
 
-        // 2. Validación de Regla de Negocio: No imágenes en chat normal
         if (!isImageMode && selectedFiles.length > 0) {
             setAlertMessage("Images are only allowed in Image Mode.");
             setShowModelAlert(true);
             setTimeout(() => setShowModelAlert(false), 3000);
-            return; // Detenemos el envío
+            return;
         }
 
         if (activeModels.length === 0) {
@@ -208,13 +206,11 @@ export const ChatHub = () => {
         }
 
         const textToSend = inputValue;
-        const filesToSend = [...selectedFiles]; // Copia de los archivos
+        const filesToSend = [...selectedFiles];
 
-        // 3. LIMPIEZA INMEDIATA DE UI (Para sensación de rapidez)
         setInputValue("");
         setSelectedFiles([]);
         setImagePreviews([]);
-        // Nota: Revocamos URLs en el useEffect, así que aquí solo vaciamos el array
 
         const currentId = selectedConversationId || "temp-new-chat";
 
@@ -222,29 +218,25 @@ export const ChatHub = () => {
             selectConversation(currentId);
         }
 
-        // Crear mensaje temporal para la UI
         const tempUserMessage = {
             id: crypto.randomUUID(),
             role: "user" as const,
-            content: textToSend, // Podrías añadir lógica aquí para mostrar miniaturas en el chat si quisieras
+            content: textToSend,
             conversation_id: currentId,
             created_at: new Date().toISOString()
         };
 
         setMessages([...messages, tempUserMessage]);
 
-        // 4. LÓGICA DE ENVÍO
         if (isImageMode) {
             const imageModelId = activeModels[0].id;
 
-            // Convertir imágenes a Base64 si hay archivos
             let referenceImages: string[] = [];
             if (filesToSend.length > 0) {
                 try {
                     referenceImages = await Promise.all(filesToSend.map(fileToBase64));
                 } catch (error) {
                     console.error("Error converting images", error);
-                    // Manejar error si falla la conversión
                 }
             }
 
@@ -256,7 +248,6 @@ export const ChatHub = () => {
             });
 
         } else {
-            // Chat normal (sin imágenes)
             sendMessage(textToSend);
         }
     };

@@ -332,7 +332,7 @@ export const ChatHub = () => {
 
     return (
         //Simulate background
-        <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-1 font-sans">
+        <div className="w-full h-full bg-linear-to-br flex items-start justify-start pt-2 font-sans">
 
             {/* Create newConversation window */}
             <CreateConversationModal
@@ -378,7 +378,7 @@ export const ChatHub = () => {
                 </div>
             )}
 
-            <div className="w-full h-full max-w-full flex flex-col gap-3 pt-2">
+            <div className="w-full h-full max-w-full flex flex-col gap-0 pt-2">
 
                 {/* Header */}
                 <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
@@ -412,7 +412,6 @@ export const ChatHub = () => {
                         <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
                         <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
                         <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Docs</Button>
-
                     </nav>
 
                     {/* User Profile */}
@@ -481,17 +480,23 @@ export const ChatHub = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="w-full h-[92vh] flex gap-6 p-0 pt-0 pb-1 not-rounded relative">
+                <div className="w-full h-[92vh] flex gap-6 p-0 pt-4 pb-1 not-rounded relative">
 
                     {/* Sidebar */}
                     <aside
-                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-65' : 'w-15'}`}
+                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-75' : 'w-15'}`}
                     >
-                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-5' : 'py-5 px-2 items-center'}`}>
+                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border p-1.5 border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-4' : 'py-5 px-2 items-center'}`}>
 
-                            <div className={`flex items-center w-full mb-6 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-between' : 'justify-center'}`}>
+                            <div className={`flex items-center w-auto mb-1 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-center' : 'justify-center'}`}>
                                 {isAsideOpen && (
-                                    <div className="relative w-full opacity-100 animate-in fade-in duration-300">
+                                    <nav className="flex items-center bg-background rounded-2xl px-1 py-1 shadow-sm gap-1 w-65 h-12">
+                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Chat</Button>
+                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-5 text-sm font-medium">Image</Button>
+                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Freepik</Button>
+                                    </nav>
+
+                                    /*<div className="relative w-full opacity-100 animate-in fade-in duration-300">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
                                         <Input
                                             type="text"
@@ -500,14 +505,14 @@ export const ChatHub = () => {
                                             className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
                                             placeholder="Search rooms..."
                                         />
-                                    </div>
+                                    </div>*/
                                 )}
 
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setAsideOpen(!isAsideOpen)}
-                                    className={'h-10 w-10 rounded-full bg-background hover:bg-background/40 text-gray-600 shrink-0 shadow-sm'}
+                                    className={'h-8 w-8 rounded-full bg-background hover:bg-background/40 text-gray-600 shrink-0 shadow-sm'}
                                 >
                                     {isAsideOpen ? (
                                         <X size={20} />
@@ -516,7 +521,18 @@ export const ChatHub = () => {
                                     )}
                                 </Button>
                             </div>
-
+                            <div className={`w-full px-1 mb-2 transition-all duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                <div className="relative w-full opacity-100 animate-in fade-in duration-300">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
+                                    <Input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full bg-background border-0 rounded-xl h-8 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
+                                        placeholder="Search rooms..."
+                                    />
+                                </div>
+                            </div>
 
                             <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
@@ -542,7 +558,7 @@ export const ChatHub = () => {
                                         key={conversation.id}
                                         onClick={() => handleConversationClick(conversation.id)}
                                         className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
-                ${selectedConversationId === conversation.id
+                                        ${selectedConversationId === conversation.id
                                                 ? 'bg-background shadow-md border-white/60'
                                                 : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
                                             }`}

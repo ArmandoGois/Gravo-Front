@@ -53,7 +53,13 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
-
+const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
 
 export const ChatHub = () => {
     //Use States
@@ -182,18 +188,33 @@ export const ChatHub = () => {
         });
     };
 
-    const handleSendMessage = () => {
-        if (!inputValue.trim()) return;
+    const handleSendMessage = async () => { // Nota el async
+        // 1. Validación Básica
+        if (!inputValue.trim() && selectedFiles.length === 0) return;
+
+        // 2. Validación de Regla de Negocio: No imágenes en chat normal
+        if (!isImageMode && selectedFiles.length > 0) {
+            setAlertMessage("Images are only allowed in Image Mode.");
+            setShowModelAlert(true);
+            setTimeout(() => setShowModelAlert(false), 3000);
+            return; // Detenemos el envío
+        }
+
         if (activeModels.length === 0) {
             setShowModelAlert(true);
-            setTimeout(() => {
-                setShowModelAlert(false);
-            }, 3000);
+            setAlertMessage("Select a model first");
+            setTimeout(() => setShowModelAlert(false), 3000);
             return;
         }
 
         const textToSend = inputValue;
+        const filesToSend = [...selectedFiles]; // Copia de los archivos
+
+        // 3. LIMPIEZA INMEDIATA DE UI (Para sensación de rapidez)
         setInputValue("");
+        setSelectedFiles([]);
+        setImagePreviews([]);
+        // Nota: Revocamos URLs en el useEffect, así que aquí solo vaciamos el array
 
         const currentId = selectedConversationId || "temp-new-chat";
 
@@ -201,26 +222,41 @@ export const ChatHub = () => {
             selectConversation(currentId);
         }
 
+        // Crear mensaje temporal para la UI
         const tempUserMessage = {
             id: crypto.randomUUID(),
             role: "user" as const,
-            content: textToSend,
+            content: textToSend, // Podrías añadir lógica aquí para mostrar miniaturas en el chat si quisieras
             conversation_id: currentId,
             created_at: new Date().toISOString()
         };
 
         setMessages([...messages, tempUserMessage]);
 
+        // 4. LÓGICA DE ENVÍO
         if (isImageMode) {
             const imageModelId = activeModels[0].id;
+
+            // Convertir imágenes a Base64 si hay archivos
+            let referenceImages: string[] = [];
+            if (filesToSend.length > 0) {
+                try {
+                    referenceImages = await Promise.all(filesToSend.map(fileToBase64));
+                } catch (error) {
+                    console.error("Error converting images", error);
+                    // Manejar error si falla la conversión
+                }
+            }
 
             generateImage({
                 prompt: textToSend,
                 modelId: imageModelId,
-                conversationId: currentId
+                conversationId: currentId,
+                reference_images: referenceImages
             });
 
         } else {
+            // Chat normal (sin imágenes)
             sendMessage(textToSend);
         }
     };
@@ -329,6 +365,51 @@ export const ChatHub = () => {
     const filteredConversations = activeConversations.filter((conversation) =>
         conversation.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Image Handler
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const newFiles = Array.from(e.target.files);
+
+            // Max 3 images rule
+            const totalImages = selectedFiles.length + newFiles.length;
+
+            if (totalImages > 3) {
+                setAlertMessage("Maximum 3 images allowed.");
+                setShowModelAlert(true);
+                setTimeout(() => setShowModelAlert(false), 3000);
+
+                // eslint-disable-next-line no-param-reassign
+                e.target.value = '';
+                return;
+            }
+
+            setSelectedFiles(prev => [...prev, ...newFiles]);
+
+            try {
+                const base64Promises = newFiles.map(file => fileToBase64(file));
+                const newPreviews = await Promise.all(base64Promises);
+                setImagePreviews(prev => [...prev, ...newPreviews]);
+            } catch (error) {
+                console.error("Error generating previews", error);
+            }
+        }
+    };
+
+    const removeImage = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        setImagePreviews(prev => {
+            const newPreviews = prev.filter((_, i) => i !== index);
+            URL.revokeObjectURL(prev[index]);
+            return newPreviews;
+        });
+    };
 
     return (
         //Simulate background
@@ -793,7 +874,6 @@ export const ChatHub = () => {
                                                                 : 'bg-background text-gray-900 rounded-tl-sm'
                                                             }`}
                                                     >
-                                                        {/* 5. Selector Condicional */}
                                                         {isImageMessage(msg.content) ? (
                                                             <ImageMessage content={msg.content} />
                                                         ) : (
@@ -811,11 +891,35 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-full h-36 px-4 md:px-16 pb-0 z-40 flex justify-center  shrink-0">
+                        <div className="w-full h-auto min-h-36 px-4 md:px-16 pb-0 z-40 flex justify-center shrink-0 mb-6">
 
                             <Card className="w-full max-w-5xl bg-background/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
-                                <div className="flex gap-3 mb-3 px-2">
+                                {imagePreviews.length > 0 && (
+                                    <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
+                                        {imagePreviews.map((preview, index) => (
+                                            <div key={index} className="relative group shrink-0">
+                                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/30 shadow-sm bg-black/5">
+                                                    {/* Use img instead of Image for simplicity */}
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={preview}
+                                                        alt="preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={() => removeImage(index)}
+                                                    className="absolute -top-1 -right-1 bg-black/60 backdrop-blur-sm text-white rounded-full p-0.5 shadow-sm hover:bg-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 mb-3 px-2 mt-2">
                                     <Button
                                         size="sm"
                                         variant="ghost"
@@ -838,20 +942,44 @@ export const ChatHub = () => {
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     disabled={isBusy}
-                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800"
+                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl"
                                     placeholder={isImageMode ? "Describe the image you want to generate..." : "Start a new message..."}
                                 />
 
-                                <div className="flex justify-between items-center px-2 pt-2">
-                                    <div className="flex h-auto items-center gap-8 pb-4 text-gray-400">
+                                <div className="flex justify-between items-center px-2 pt-2 pb-1">
+                                    <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
 
                                         {/* Basic Tools */}
                                         <div className="flex items-center gap-6">
                                             <Settings size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
-                                            <Paperclip size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
+
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                className="hidden"
+                                                ref={fileInputRef}
+                                                onChange={handleFileSelect}
+                                                // eslint-disable-next-line no-param-reassign
+                                                onClick={(e) => (e.currentTarget.value = '')}
+                                            />
+                                            <div
+                                                onClick={() => {
+                                                    if (isImageMode) {
+                                                        fileInputRef.current?.click()
+                                                    } else {
+                                                        setAlertMessage("Switch to Image Mode to attach files");
+                                                        setShowModelAlert(true);
+                                                        setTimeout(() => setShowModelAlert(false), 2000);
+                                                    }
+                                                }}
+                                                className={`cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                            >
+                                                <Paperclip size={17} />
+                                            </div>
+
                                             <Mic size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
                                         </div>
-
 
                                         <div
                                             onClick={() => setIsSearchActive(!isSearchActive)}
@@ -927,8 +1055,8 @@ export const ChatHub = () => {
                                 </div>
                             </Card>
                         </div>
-                    </main>
-                </div>
+                    </main >
+                </div >
             </div >
         </div >
     );

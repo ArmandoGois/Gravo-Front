@@ -4,18 +4,25 @@ import { generateImageUseCase } from "@/application/features/image/use-cases/gen
 import { GenerateImageRequestDto } from "@/domain/dtos/image-generation.dto";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 
+interface GenerateImageMutationParams {
+    prompt: string;
+    modelId: string;
+    conversationId?: string | null;
+    reference_images?: string[];
+}
+
 export const useGenerateImage = () => {
     const queryClient = useQueryClient();
     const { messages, setMessages, selectedConversationId } = useMessageUIStore();
 
     const mutation = useMutation({
-        mutationFn: (params: { prompt: string; modelId: string; conversationId?: string | null }) => {
+        mutationFn: (params: GenerateImageMutationParams) => {
 
             const payload: GenerateImageRequestDto = {
                 model: params.modelId,
                 prompt: params.prompt,
-                conversation_id: params.conversationId,
-                // Aquí puedes agregar controles de UI para aspect_ratio si los implementas luego
+                conversation_id: params.conversationId ?? undefined,
+                reference_images: params.reference_images,
                 aspect_ratio: "1:1",
                 size: "2K",
                 n: 1
@@ -25,10 +32,8 @@ export const useGenerateImage = () => {
         },
 
         onSuccess: (aiMessage) => {
-            // Agregamos el mensaje con la imagen al chat
             setMessages([...messages, aiMessage]);
 
-            // Invalidamos la query de mensajes para asegurar consistencia si recargas
             if (selectedConversationId) {
                 queryClient.invalidateQueries({ queryKey: ["messages", selectedConversationId] });
             }
@@ -36,7 +41,6 @@ export const useGenerateImage = () => {
 
         onError: (error) => {
             console.error("Failed to generate image", error);
-            // Aquí podrías disparar un Toast de error
         }
     });
 

@@ -281,17 +281,15 @@ export const ChatHub = () => {
     };
 
     const isImageMessage = (content: string | MessageContentPayload): boolean => {
-        // 1. PRIORIDAD: Verificación Explícita (La forma correcta)
         if (typeof content === 'object' && content !== null) {
-            // Si el objeto ya dice que es imagen, confiamos ciegamente
+
             if (content.type === 'image') return true;
         }
 
-        // 2. FALLBACK: Detección por texto (Solo si viene como string o tipo 'text')
+
         const text = typeof content === 'string' ? content : content.text;
 
-        // Solo detectamos si es formato Markdown explícito ![...](...)
-        // Ya NO detectamos URL sueltas (http://...) para evitar falsos positivos
+
         return /^\s*!\[(.*?)\]\((.*?)\)\s*$/.test(text);
     };
 

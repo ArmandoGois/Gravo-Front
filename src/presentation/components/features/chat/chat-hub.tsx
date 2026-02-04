@@ -76,7 +76,7 @@ export const ChatHub = () => {
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-
+    const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'freepik'>('chat');
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
@@ -354,7 +354,19 @@ export const ChatHub = () => {
 
     }, [isImageModel, availableModels, activeModels, isImageMode, selectedConversationId, removeModel, setModels]);
 
-    const filteredConversations = activeConversations.filter((conversation) =>
+    const getSourceConversations = () => {
+        if (activeSidebarTab === 'chat') {
+            return activeConversations;
+        }
+        if (activeSidebarTab === 'image') {
+            return [];
+        }
+        return []; // Freepik
+    };
+
+    const sourceConversations = getSourceConversations();
+
+    const filteredConversations = sourceConversations.filter((conversation) =>
         conversation.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -574,9 +586,38 @@ export const ChatHub = () => {
                             <div className={`flex items-center w-auto mb-1 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-center' : 'justify-center'}`}>
                                 {isAsideOpen && (
                                     <nav className="flex items-center bg-background rounded-2xl px-1 py-1 shadow-sm gap-1 w-65 h-12">
-                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Chat</Button>
-                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-5 text-sm font-medium">Image</Button>
-                                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Freepik</Button>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => setActiveSidebarTab('chat')}
+                                            className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'chat'
+                                                ? 'bg-white text-black shadow-sm'
+                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
+                                                }`}
+                                        >
+                                            Chat
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => setActiveSidebarTab('image')}
+                                            className={`rounded-full h-9 px-5 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'image'
+                                                ? 'bg-white text-black shadow-sm'
+                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
+                                                }`}
+                                        >
+                                            Image
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => setActiveSidebarTab('freepik')}
+                                            className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'freepik'
+                                                ? 'bg-white text-black shadow-sm'
+                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
+                                                }`}
+                                        >
+                                            Freepik
+                                        </Button>
                                     </nav>
 
                                     /*<div className="relative w-full opacity-100 animate-in fade-in duration-300">
@@ -616,8 +657,14 @@ export const ChatHub = () => {
                                 )}
 
                                 {/* Empty State */}
-                                {!isLoadingChats && activeConversations.length === 0 && (
-                                    <p className="text-xs text-font-gray italic pl-2">No active conversations.</p>
+                                {!isLoadingChats && filteredConversations.length === 0 && (
+                                    <div className="flex flex-col gap-2 px-2 mt-10 opacity-60">
+                                        <p className="text-xs text-font-gray italic text-center">
+                                            {activeSidebarTab === 'chat' && "No text conversations found."}
+                                            {activeSidebarTab === 'image' && "No image history found."}
+                                            {activeSidebarTab === 'freepik' && "Freepik integration coming soon."}
+                                        </p>
+                                    </div>
                                 )}
 
                                 {activeConversations.length === 0 && (

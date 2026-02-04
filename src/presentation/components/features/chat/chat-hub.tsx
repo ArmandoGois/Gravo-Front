@@ -22,7 +22,8 @@ import {
     Loader2,
     Bot,
     MoreVertical,
-    Pencil
+    Pencil,
+    PanelRightOpen
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -484,8 +485,18 @@ export const ChatHub = () => {
 
                     {/* Sidebar */}
                     <aside
-                        className={`hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-75' : 'w-15'}`}
+                        className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-75' : 'w-0 md:w-16'}`}
                     >
+                        <button
+                            onClick={() => setAsideOpen(!isAsideOpen)}
+                            className="absolute -right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-14 bg-white border border-gray-200 shadow-md rounded-full hover:bg-gray-50 transition-all cursor-pointer group"
+                        >
+                            {isAsideOpen ? (
+                                <PanelRightOpen size={22} className="text-gray-500 group-hover:text-black" />
+                            ) : (
+                                <PanelLeftOpen size={22} className="text-gray-500 group-hover:text-black" />
+                            )}
+                        </button>
                         <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border p-1.5 border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-4' : 'py-5 px-2 items-center'}`}>
 
                             <div className={`flex items-center w-auto mb-1 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-center' : 'justify-center'}`}>
@@ -508,18 +519,6 @@ export const ChatHub = () => {
                                     </div>*/
                                 )}
 
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setAsideOpen(!isAsideOpen)}
-                                    className={'h-8 w-8 rounded-full bg-background hover:bg-background/40 text-gray-600 shrink-0 shadow-sm'}
-                                >
-                                    {isAsideOpen ? (
-                                        <X size={20} />
-                                    ) : (
-                                        <PanelLeftOpen size={20} />
-                                    )}
-                                </Button>
                             </div>
                             <div className={`w-full px-1 mb-2 transition-all duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                 <div className="relative w-full opacity-100 animate-in fade-in duration-300">

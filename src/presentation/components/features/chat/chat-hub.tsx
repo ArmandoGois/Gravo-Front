@@ -50,6 +50,7 @@ import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
+import { useImageHistory } from "@/presentation/hooks/use-image-history";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
@@ -93,6 +94,7 @@ export const ChatHub = () => {
     const { models: availableModels } = useModels();
     const { isLoading: isLoadingChats } = useConversations();
     const { isLoading: isLoadingMessages } = useConversationMessages();
+    const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -127,7 +129,16 @@ export const ChatHub = () => {
     const handleCreateConversation = (title: string, modelIds: string[]) => {
         createConversation({ title, model_id: modelIds });
     };
-    const handleConversationClick = (id: string) => { // Updated
+    const handleConversationClick = (id: string) => {
+        if (activeSidebarTab === 'image') {
+            const selectedImage = imageHistory.find(img => img.id === id);
+            if (selectedImage) {
+                console.log("Selected Image History:", selectedImage); // Placeholder for actual image detail view logic
+            }
+            return;
+        }
+
+
         if (selectedConversationId === id) return;
 
         if (isImageMode) {
@@ -359,12 +370,19 @@ export const ChatHub = () => {
             return activeConversations;
         }
         if (activeSidebarTab === 'image') {
-            return [];
+            return imageHistory.map(img => ({
+                id: img.id,
+                title: img.prompt,
+                models: [{ id: img.model, title: "Image Model" }],
+                originalData: img
+            }));
         }
         return []; // Freepik
     };
 
     const sourceConversations = getSourceConversations();
+
+    const isListLoading = activeSidebarTab === 'chat' ? isLoadingChats : isLoadingImages;
 
     const filteredConversations = sourceConversations.filter((conversation) =>
         conversation.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -650,7 +668,7 @@ export const ChatHub = () => {
                                 <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                 {/* Render of Active Chats */}
-                                {isLoadingChats && activeConversations.length === 0 && (
+                                {isListLoading && activeConversations.length === 0 && (
                                     <div className="flex flex-col gap-2 px-2 animate-pulse">
                                         <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
                                     </div>

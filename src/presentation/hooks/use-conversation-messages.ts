@@ -5,7 +5,7 @@ import { getMessagesUseCase } from "@/application/features/conversations/use-cas
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 
 
-export const useConversationMessages = () => {
+export const useConversationMessages = (isEnabled: boolean = true) => {
     const {
         selectedConversationId,
         setMessages,
@@ -16,7 +16,7 @@ export const useConversationMessages = () => {
         queryKey: ["messages", selectedConversationId],
         queryFn: () => getMessagesUseCase(selectedConversationId!),
 
-        enabled: !!selectedConversationId && selectedConversationId !== "temp-new-chat",
+        enabled: !!selectedConversationId && isEnabled,
         staleTime: 0,
     });
 

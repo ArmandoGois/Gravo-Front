@@ -51,6 +51,7 @@ import { useCreateConversation } from "@/presentation/hooks/use-create-conversat
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
 import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
 import { useImageHistory } from "@/presentation/hooks/use-image-history";
+import { useLoadImageGeneration } from "@/presentation/hooks/use-load-image-generation";
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
@@ -93,7 +94,7 @@ export const ChatHub = () => {
     //Hooks for data fetching
     const { models: availableModels } = useModels();
     const { isLoading: isLoadingChats } = useConversations();
-    const { isLoading: isLoadingMessages } = useConversationMessages();
+    const { isLoading: isLoadingMessages } = useConversationMessages(activeSidebarTab === 'chat');
     const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
 
     //Hooks for actions   
@@ -108,6 +109,7 @@ export const ChatHub = () => {
     const { sendMessage, isSending } = useSendMessage();
     const { generateImage, isGenerating } = useGenerateImage();
     const isBusy = isSending || isGenerating;
+    useLoadImageGeneration(selectedConversationId, activeSidebarTab === 'image');
 
     //Autoscroll to bottom on new messages
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -129,30 +131,53 @@ export const ChatHub = () => {
     const handleCreateConversation = (title: string, modelIds: string[]) => {
         createConversation({ title, model_id: modelIds });
     };
+
     const handleConversationClick = (id: string) => {
-        if (activeSidebarTab === 'image') {
-            const selectedImage = imageHistory.find(img => img.id === id);
-            if (selectedImage) {
-                console.log("Selected Image History:", selectedImage); // Placeholder for actual image detail view logic
-            }
-            return;
-        }
-
-
         if (selectedConversationId === id) return;
 
-        if (isImageMode) {
-            setIsImageMode(false);
-            activeModels.forEach(m => {
-                if (isImageModel(m.id)) removeModel(m.id);
-            });
-        }
-
+        setMessages([]);
         selectConversation(id);
 
-        const currentConversation = activeConversations.find(c => c.id === id);
-        if (currentConversation && currentConversation.models) {
-            setModels(currentConversation.models);
+        if (activeSidebarTab === 'chat') {
+            if (isImageMode) {
+                setIsImageMode(false);
+            }
+
+            const currentConversation = activeConversations.find(c => c.id === id);
+            if (currentConversation && currentConversation.models) {
+                setModels(currentConversation.models);
+            }
+        }
+
+        if (activeSidebarTab === 'image') {
+            if (!isImageMode) {
+                setIsImageMode(true);
+            }
+
+            const selectedImage = imageHistory.find(img => img.id === id);
+
+            if (selectedImage) {
+                const fullModel = availableModels.find(m => m.id === selectedImage.model);
+
+                if (fullModel) {
+                    setModels([fullModel]);
+                }
+            }
+        }
+    };
+
+    const handleTabChange = (tab: 'chat' | 'image' | 'freepik') => {
+        setActiveSidebarTab(tab);
+
+        selectConversation(null);
+
+        setMessages([]);
+        setModels([]);
+
+        if (tab === 'chat') {
+            setIsImageMode(false);
+        } else if (tab === 'image') {
+            setIsImageMode(true);
         }
     };
 
@@ -606,7 +631,7 @@ export const ChatHub = () => {
                                     <nav className="flex items-center bg-background rounded-2xl px-1 py-1 shadow-sm gap-1 w-65 h-12">
                                         <Button
                                             variant="ghost"
-                                            onClick={() => setActiveSidebarTab('chat')}
+                                            onClick={() => handleTabChange('chat')}
                                             className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'chat'
                                                 ? 'bg-white text-black shadow-sm'
                                                 : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
@@ -617,7 +642,7 @@ export const ChatHub = () => {
 
                                         <Button
                                             variant="ghost"
-                                            onClick={() => setActiveSidebarTab('image')}
+                                            onClick={() => handleTabChange('image')}
                                             className={`rounded-full h-9 px-5 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'image'
                                                 ? 'bg-white text-black shadow-sm'
                                                 : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
@@ -628,7 +653,7 @@ export const ChatHub = () => {
 
                                         <Button
                                             variant="ghost"
-                                            onClick={() => setActiveSidebarTab('freepik')}
+                                            onClick={() => handleTabChange('freepik')}
                                             className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'freepik'
                                                 ? 'bg-white text-black shadow-sm'
                                                 : 'text-font-gray hover:text-gray-900 hover:bg-transparent'

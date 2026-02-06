@@ -56,6 +56,8 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
+import { SearchModal } from '../conversation/search-conversation';
+
 const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -77,12 +79,13 @@ export const ChatHub = () => {
     const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
     const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'freepik'>('chat');
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
+
+    const [searchTerm] = useState("");
 
     const { logout, user } = useAuth();
 
@@ -470,6 +473,13 @@ export const ChatHub = () => {
                 isLoading={isCreating}
             />
 
+            <SearchModal
+                key={isSearchActive ? 'open' : 'closed'}
+                isOpen={isSearchActive}
+                onClose={() => setIsSearchActive(false)}
+            />
+
+
             {/* Menu for rename and delete */}
             {isRenameModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
@@ -506,7 +516,7 @@ export const ChatHub = () => {
                 </div>
             )}
 
-            <div className="w-full h-full max-w-full flex flex-col gap-0 pt-2">
+            <div className="w-full h-full max-w-full flex flex-col gap-0 pt-2 ">
 
                 {/* Header */}
                 <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
@@ -616,7 +626,8 @@ export const ChatHub = () => {
                     >
                         <button
                             onClick={() => setAsideOpen(!isAsideOpen)}
-                            className="absolute -right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-14 bg-white border border-gray-200 shadow-md rounded-full hover:bg-gray-50 transition-all cursor-pointer group"
+                            className={`absolute -right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-14 bg-white border border-gray-200 shadow-md rounded-full hover:bg-gray-50 transition-all cursor-pointer group ${isCreateConversationOpen ? 'hidden' : ''}`}
+                            disabled={isCreateConversationOpen}
                         >
                             {isAsideOpen ? (
                                 <PanelRightOpen size={22} className="text-gray-500 group-hover:text-black" />
@@ -662,31 +673,17 @@ export const ChatHub = () => {
                                             Freepik
                                         </Button>
                                     </nav>
-
-                                    /*<div className="relative w-full opacity-100 animate-in fade-in duration-300">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
-                                        <Input
-                                            type="text"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full bg-background border-0 rounded-xl h-11 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
-                                            placeholder="Search rooms..."
-                                        />
-                                    </div>*/
                                 )}
 
                             </div>
                             <div className={`w-full px-1 mb-2 transition-all duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                <div className="relative w-full opacity-100 animate-in fade-in duration-300">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-font-gray h-4 w-4" />
-                                    <Input
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full bg-background border-0 rounded-xl h-8 pl-10 text-sm placeholder:text-gray-600 focus-visible:ring-1 focus-visible:ring-white/50 shadow-inner"
-                                        placeholder="Search rooms..."
-                                    />
-                                </div>
+                                <Button
+                                    onClick={() => setIsSearchActive(true)}
+                                    className="relative w-full flex items-center bg-background border border-transparent rounded-xl h-8 px-3 text-sm text-gray-500 hover:bg-white/80 hover:shadow-sm transition-all shadow-inner group cursor-text"
+                                >
+                                    <Search className="mr-2 h-4 w-4 text-font-gray group-hover:text-gray-800" />
+                                    <div className="text-gray-600 truncate">Search rooms...</div>
+                                </Button>
                             </div>
 
                             <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>

@@ -401,11 +401,16 @@ export const ChatHub = () => {
             return imageHistory.map(img => ({
                 id: img.id,
                 title: img.prompt,
-                models: [{ id: img.model, title: "Image Model" }],
+                createdAt: img.created_at,
+                models: [{
+                    id: img.model,
+                    title: "Image Model",
+                    name: "Image Generation"
+                }],
                 originalData: img
             }));
         }
-        return []; // Freepik
+        return [];
     };
 
     const sourceConversations = getSourceConversations();
@@ -478,6 +483,7 @@ export const ChatHub = () => {
                 isOpen={isSearchActive}
                 onClose={() => setIsSearchActive(false)}
                 onSelect={handleConversationClick}
+                items={sourceConversations}
             />
 
 

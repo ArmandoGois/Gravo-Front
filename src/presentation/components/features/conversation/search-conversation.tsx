@@ -1,24 +1,29 @@
 import { Search, MessageSquare, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
-
 import { Input } from '../../ui/input';
+
+export interface SearchableItem {
+    id: string;
+    title: string;
+    createdAt?: string | Date;
+    models?: { name?: string; title?: string }[];
+}
 
 interface SearchModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (conversationId: string) => void;
+    onSelect: (id: string) => void;
+    items: SearchableItem[];
 }
 
-export const SearchModal = ({ isOpen, onClose, onSelect }: SearchModalProps) => {
+export const SearchModal = ({ isOpen, onClose, onSelect, items }: SearchModalProps) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState("");
-    const conversations = useConversationUIStore((state) => state.activeConversations);
 
-    const filteredResults = conversations.filter((chat) =>
-        chat.title.toLowerCase().includes(query.toLowerCase())
+    const filteredResults = items.filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase())
     );
 
     useEffect(() => {
@@ -53,7 +58,7 @@ export const SearchModal = ({ isOpen, onClose, onSelect }: SearchModalProps) => 
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search in your conversations..."
+                        placeholder="Search..."
                         className="flex-1 bg-transparent border-none outline-none text-lg text-gray-800 placeholder:text-gray-400 focus-visible:ring-0 shadow-none"
                     />
                     <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
@@ -64,11 +69,11 @@ export const SearchModal = ({ isOpen, onClose, onSelect }: SearchModalProps) => 
                 <div className="max-h-[50vh] overflow-y-auto p-2 custom-scrollbar">
                     {filteredResults.length > 0 ? (
                         <div className="space-y-1">
-                            {filteredResults.map((chat) => (
+                            {filteredResults.map((item) => (
                                 <button
-                                    key={chat.id}
+                                    key={item.id}
                                     onClick={() => {
-                                        onSelect(chat.id);
+                                        onSelect(item.id);
                                         onClose();
                                     }}
                                     className="w-full flex items-center px-3 py-3 rounded-2xl hover:bg-gray-100/80 transition-all group text-left"
@@ -78,14 +83,16 @@ export const SearchModal = ({ isOpen, onClose, onSelect }: SearchModalProps) => 
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-sm font-semibold text-gray-800 truncate">
-                                            {chat.title}
+                                            {item.title}
                                         </h4>
                                         <p className="text-xs text-gray-500 truncate">
-                                            {chat.models?.map(m => m.name).join(", ")}
+                                            {item.models?.map(m => m.name || m.title).join(", ")}
                                         </p>
                                     </div>
                                     <div className="text-[11px] text-gray-400 ml-4 whitespace-nowrap">
-                                        {chat.createdAt ? new Date(chat.createdAt).toLocaleDateString() : ''}
+                                        {item.createdAt
+                                            ? new Date(item.createdAt).toLocaleDateString()
+                                            : ''}
                                     </div>
                                 </button>
                             ))}

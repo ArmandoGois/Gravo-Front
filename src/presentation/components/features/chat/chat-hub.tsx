@@ -71,7 +71,8 @@ export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
     const [isAsideOpen, setAsideOpen] = useState(false);
-    const [isSearchActive, setIsSearchActive] = useState(false);
+    const [isInternetSearch, setIsInternetSearch] = useState(false);
+    const [isSearchChatActive, setIsSearchChatActive] = useState(false);
     const [memoryValue, setMemoryValue] = useState(10);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
@@ -479,9 +480,9 @@ export const ChatHub = () => {
             />
 
             <SearchModal
-                key={isSearchActive ? 'open' : 'closed'}
-                isOpen={isSearchActive}
-                onClose={() => setIsSearchActive(false)}
+                key={isSearchChatActive ? 'open' : 'closed'}
+                isOpen={isSearchChatActive}
+                onClose={() => setIsSearchChatActive(false)}
                 onSelect={handleConversationClick}
                 items={sourceConversations}
             />
@@ -533,7 +534,7 @@ export const ChatHub = () => {
                         onClick={() => {
                             selectConversation(null);
                             setModels([]);
-                            setIsSearchActive(false);
+                            setIsInternetSearch(false);
                             setIsPopoverOpen(false);
                         }}
                     >
@@ -685,7 +686,7 @@ export const ChatHub = () => {
                             </div>
                             <div className={`w-full px-1 mb-2 transition-all duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                 <Button
-                                    onClick={() => setIsSearchActive(true)}
+                                    onClick={() => setIsSearchChatActive(true)}
                                     className="relative w-full flex items-center bg-background border border-transparent rounded-xl h-8 px-3 text-sm text-gray-500 hover:bg-white/80 hover:shadow-sm transition-all shadow-inner group cursor-text"
                                 >
                                     <Search className="mr-2 h-4 w-4 text-font-gray group-hover:text-gray-800" />
@@ -1082,13 +1083,13 @@ export const ChatHub = () => {
                                         </div>
 
                                         <div
-                                            onClick={() => setIsSearchActive(!isSearchActive)}
-                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isSearchActive ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
+                                            onClick={() => setIsInternetSearch(!isInternetSearch)}
+                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isInternetSearch ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
                                             <Globe size={18} className='text-black' />
                                             <span className="text-sm font-medium text-black">Search</span>
 
-                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isSearchActive ? 'bg-secondary-blue' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
-                                                <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isSearchActive ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isInternetSearch ? 'bg-secondary-blue' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
+                                                <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isInternetSearch ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                             </div>
                                         </div>
 
@@ -1151,7 +1152,6 @@ export const ChatHub = () => {
                                             <ArrowUp size={20} />
                                         )}
                                     </Button>
-
                                 </div>
                             </Card>
                         </div>

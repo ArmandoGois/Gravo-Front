@@ -8,14 +8,13 @@ import { Input } from '../../ui/input';
 interface SearchModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSelect: (conversationId: string) => void;
 }
 
-export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
+export const SearchModal = ({ isOpen, onClose, onSelect }: SearchModalProps) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
-
     const [query, setQuery] = useState("");
-
     const conversations = useConversationUIStore((state) => state.activeConversations);
 
     const filteredResults = conversations.filter((chat) =>
@@ -68,6 +67,10 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                             {filteredResults.map((chat) => (
                                 <button
                                     key={chat.id}
+                                    onClick={() => {
+                                        onSelect(chat.id);
+                                        onClose();
+                                    }}
                                     className="w-full flex items-center px-3 py-3 rounded-2xl hover:bg-gray-100/80 transition-all group text-left"
                                 >
                                     <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-sm mr-4 group-hover:border-blue-200 group-hover:text-blue-500 transition-all">
@@ -78,11 +81,11 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                                             {chat.title}
                                         </h4>
                                         <p className="text-xs text-gray-500 truncate">
-                                            {chat.models.map(m => m.name).join(", ")}
+                                            {chat.models?.map(m => m.name).join(", ")}
                                         </p>
                                     </div>
                                     <div className="text-[11px] text-gray-400 ml-4 whitespace-nowrap">
-                                        {new Date(chat.createdAt).toLocaleDateString()}
+                                        {chat.createdAt ? new Date(chat.createdAt).toLocaleDateString() : ''}
                                     </div>
                                 </button>
                             ))}

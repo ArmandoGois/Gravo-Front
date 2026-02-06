@@ -477,6 +477,7 @@ export const ChatHub = () => {
                 key={isSearchActive ? 'open' : 'closed'}
                 isOpen={isSearchActive}
                 onClose={() => setIsSearchActive(false)}
+                onSelect={handleConversationClick}
             />
 
 

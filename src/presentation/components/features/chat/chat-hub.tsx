@@ -23,7 +23,8 @@ import {
     Bot,
     MoreVertical,
     Pencil,
-    PanelRightOpen
+    PanelRightOpen,
+    Wand2
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -49,6 +50,7 @@ import { useConversationMessages } from "@/presentation/hooks/use-conversation-m
 import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
 import { useDeleteConversation } from "@/presentation/hooks/use-delete-conversation";
+import { useEditImage } from "@/presentation/hooks/use-edit-image";
 import { useGenerateImage } from "@/presentation/hooks/use-generate-image";
 import { useImageHistory } from "@/presentation/hooks/use-image-history";
 import { useLoadImageGeneration } from "@/presentation/hooks/use-load-image-generation";
@@ -85,6 +87,7 @@ export const ChatHub = () => {
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
+    const [isEditImageMode, setIsEditImageMode] = useState(false);
 
     const [searchTerm] = useState("");
 
@@ -112,7 +115,8 @@ export const ChatHub = () => {
     const { deleteConversation } = useDeleteConversation();
     const { sendMessage, isSending } = useSendMessage();
     const { generateImage, isGenerating } = useGenerateImage();
-    const isBusy = isSending || isGenerating;
+    const { editImage, isEditing } = useEditImage();
+    const isBusy = isSending || isGenerating || isEditing;
     useLoadImageGeneration(selectedConversationId, activeSidebarTab === 'image');
 
     //Autoscroll to bottom on new messages
@@ -269,7 +273,20 @@ export const ChatHub = () => {
 
         setMessages([...messages, tempUserMessage]);
 
-        if (isImageMode) {
+        if (isEditImageMode && isImageMode) {
+            try {
+                editImage({
+                    prompt: textToSend,
+                });
+            } catch (e) {
+                setAlertMessage("Could not find an image to edit context.");
+                console.error("Edit image error:", e);
+                setShowModelAlert(true);
+            }
+            return;
+        }
+
+        if (isImageMode && !isEditImageMode) {
             const imageModelId = activeModels[0].id;
 
             let referenceImages: string[] = [];
@@ -297,6 +314,15 @@ export const ChatHub = () => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    const handleToggleEditImageMode = () => {
+        setIsEditImageMode(!isEditImageMode);
+        if (!isEditImageMode) {
+            setInputValue("");
+        } else {
+            setInputValue("");
         }
     };
 
@@ -1033,6 +1059,20 @@ export const ChatHub = () => {
                                         <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
                                         Image
                                     </Button>
+                                    {isImageMode && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleToggleEditImageMode}
+                                            className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all animate-in fade-in zoom-in-95 duration-200 ${isEditImageMode
+                                                ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                                : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                                }`}
+                                        >
+                                            <Wand2 size={14} className={isEditImageMode ? 'text-white' : 'text-gray-600'} />
+                                            Edit
+                                        </Button>
+                                    )}
                                     <Button size="sm" variant="ghost" className="h-8 rounded-full bg-background/80 border border-border text-gray-600 text-xs font-bold gap-2 hover:bg-background shadow-sm">
                                         <Monitor size={14} /> Landing Page
                                     </Button>
@@ -1044,7 +1084,13 @@ export const ChatHub = () => {
                                     onKeyDown={handleKeyDown}
                                     disabled={isBusy}
                                     className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl"
-                                    placeholder={isImageMode ? "Describe the image you want to generate..." : "Start a new message..."}
+                                    placeholder={
+                                        isEditImageMode
+                                            ? "Describe the edit you want to make..."
+                                            : isImageMode
+                                                ? "Describe the image you want to generate..."
+                                                : "Start a new message..."
+                                    }
                                 />
 
                                 <div className="flex justify-between items-center px-2 pt-2 pb-1">

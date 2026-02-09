@@ -8,26 +8,28 @@ import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
 export const useConversationMessages = (isEnabled: boolean = true) => {
     const {
         selectedConversationId,
-        setMessages,
-        setLoadingMessages
+        setMessages
     } = useMessageUIStore();
 
     const { data, isLoading } = useQuery({
         queryKey: ["messages", selectedConversationId],
-        queryFn: () => getMessagesUseCase(selectedConversationId!),
+        queryFn: async () => {
+            if (!isEnabled || !selectedConversationId) {
+                return [];
+            }
+
+            return await getMessagesUseCase(selectedConversationId);
+        },
 
         enabled: !!selectedConversationId && isEnabled,
         staleTime: 0,
     });
 
     useEffect(() => {
-        if (selectedConversationId && selectedConversationId !== "temp-new-chat") {
-            setLoadingMessages(isLoading);
-            if (data) {
-                setMessages(data);
-            }
+        if (data && isEnabled) {
+            setMessages(data);
         }
-    }, [data, isLoading, selectedConversationId, setMessages, setLoadingMessages]);
+    }, [data, setMessages, isEnabled]);
 
     return {
         messages: data || [],

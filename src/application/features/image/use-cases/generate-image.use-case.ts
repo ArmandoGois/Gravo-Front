@@ -2,21 +2,23 @@ import type { GenerateImageRequestDto, GenerateImageResponseDto } from "@/domain
 import type { Message } from "@/domain/entities/message.entity";
 import { httpService } from "@/infrastructure/services/http.service";
 
-
 export const generateImageUseCase = async (
     params: GenerateImageRequestDto
 ): Promise<Message> => {
     try {
+        const validConversationId = (params.conversation_id && params.conversation_id !== "temp-new-chat")
+            ? params.conversation_id
+            : undefined;
+
         const payload = {
             model: params.model,
             prompt: params.prompt,
             n: params.n ?? 1,
             size: params.size ?? "2K",
             aspect_ratio: params.aspect_ratio ?? "1:1",
-            conversation_id: params.conversation_id
+            conversation_id: validConversationId
         };
 
-        // Endpoint JSON original
         const response = await httpService.post<GenerateImageResponseDto>("/v1/images/generations", payload);
 
         const imageData = response.data?.[0];
@@ -27,7 +29,7 @@ export const generateImageUseCase = async (
             role: "assistant",
             content: { type: "image", text: imageData.url },
             model: params.model,
-            conversation_id: params.conversation_id || "",
+            conversation_id: validConversationId || "",
             created_at: new Date().toISOString(),
         };
     } catch (error) {
@@ -35,3 +37,4 @@ export const generateImageUseCase = async (
         throw error;
     }
 };
+

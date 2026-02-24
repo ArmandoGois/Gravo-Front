@@ -656,7 +656,8 @@ export const ChatHub = () => {
 
                     {/* Sidebar */}
                     <aside
-                        className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-75' : 'w-0 md:w-16'}`}
+                        className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-64 2xl:w-75' : 'w-0 md:w-16'
+                            }`}
                     >
                         <button
                             onClick={() => setAsideOpen(!isAsideOpen)}
@@ -857,8 +858,7 @@ export const ChatHub = () => {
                     <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden">
 
                         {/* New Conversation & Add Model */}
-                        <div className="absolute top-6 right-8 flex items-center gap-3 z-30">
-
+                        <div className="absolute top-3 right-4 2xl:top-6 2xl:right-8 flex items-center gap-2 2xl:gap-3 z-30">
                             {/* Models list */}
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
 
@@ -912,34 +912,39 @@ export const ChatHub = () => {
                         </div>
 
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-16 pt-20 pb-48 scrollbar-hide">
-
+                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 scrollbar-hide">
                             {/* A: No chat selected -> Cards */}
                             {!selectedConversationId ? (
                                 <>
-                                    <div className="mb-12 space-y-2 mx-auto">
-                                        <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
-                                        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
+                                    <div className="mb-6 2xl:mb-12 space-y-1 2xl:space-y-2 mx-auto">
+                                        <h1 className="text-3xl md:text-4xl 2xl:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
+                                        <h1 className="text-3xl md:text-4xl 2xl:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
                                     </div>
 
                                     {activeModels.length === 0 && (
-                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 2xl:gap-4 max-w-3xl 2xl:max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
                                             {recommendedCards.map((card, idx) => (
                                                 <Card
                                                     key={idx}
                                                     onClick={() => handleCardClick(card.keywords)}
-                                                    className="group h-40 rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                                    className="group h-28 2xl:h-40 rounded-3xl 2xl:rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
                                                 >
-                                                    <CardHeader className="px-6 pt-6 pb-0">
-                                                        <CardTitle className="text-xl font-medium text-gray-700 group-hover:text-black">
+                                                    <CardHeader className="px-4 pt-4 2xl:px-6 2xl:pt-6 pb-0">
+                                                        <CardTitle className="text-base 2xl:text-xl font-medium text-gray-700 group-hover:text-black">
                                                             {card.title}
                                                         </CardTitle>
                                                     </CardHeader>
 
-                                                    <CardFooter className="px-6 pb-4 flex justify-end gap-2">
+                                                    <CardFooter className="px-4 pb-3 2xl:px-6 2xl:pb-4 flex justify-end gap-1.5 2xl:gap-2">
                                                         {card.logos.map((logo, i) => (
-                                                            <div key={i} className="w-8 h-8 rounded-full bg-background flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
-                                                                <Image src={logo.src} alt={logo.alt} width={18} height={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                                                            <div key={i} className="w-6 h-6 2xl:w-8 2xl:h-8 rounded-full bg-background flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                                                                <Image
+                                                                    src={logo.src}
+                                                                    alt={logo.alt}
+                                                                    width={18}
+                                                                    height={18}
+                                                                    className="opacity-70 group-hover:opacity-100 transition-opacity w-3.5 h-3.5 2xl:w-4.5 2xl:h-4.5"
+                                                                />
                                                             </div>
                                                         ))}
                                                     </CardFooter>
@@ -1018,8 +1023,7 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-full h-auto min-h-36 px-4 md:px-16 pb-0 z-40 flex justify-center shrink-0 mb-6">
-
+                        <div className="w-full h-auto min-h-24 2xl:min-h-36 px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-6">
                             <Card className="w-full max-w-5xl bg-background/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
 
                                 {imagePreviews.length > 0 && (

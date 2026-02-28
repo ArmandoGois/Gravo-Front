@@ -94,7 +94,7 @@ export const ChatHub = () => {
     const { logout, user } = useAuth();
 
     //Stores
-    const { activeModels, addModel, removeModel, setModels } = useModelUIStore();
+    const { activeModels, addModel, removeModel, setModels, removeAllModels } = useModelUIStore();
     const { activeConversations } = useConversationUIStore();
     const { selectedConversationId, selectConversation, messages, setMessages } = useMessageUIStore();
 
@@ -192,9 +192,8 @@ export const ChatHub = () => {
     const recommendedCards = useMemo(() => [
         {
             title: 'Flagship models',
-            keywords: ['gpt-4', 'gemini', 'claude', 'opus'],
+            keywords: ['gpt-4', 'claude', 'opus'],
             logos: [
-                { src: '/Gemini.svg', alt: 'Gemini' },
                 { src: '/Grok.svg', alt: 'Grok' },
                 { src: '/DeepSeek.svg', alt: 'DeepSeek' },
                 { src: '/Mistral.svg', alt: 'Mistral' }
@@ -553,7 +552,7 @@ export const ChatHub = () => {
             <div className="w-full h-full max-w-full flex flex-col gap-0 pt-2 ">
 
                 {/* Header */}
-                <div className="relative z-50 w-full h-14 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/40 shadow-sm flex items-center justify-between px-6 -mt-2 ">
+                <div className="relative z-50 w-full h-14 flex items-center justify-between px-6 -mt-2 ">
                     {/* Logo */}
                     <div
                         className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
@@ -652,13 +651,14 @@ export const ChatHub = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="w-full h-[92vh] flex gap-6 p-0 pt-4 pb-1 not-rounded relative">
+                <div className="w-full h-[92vh] flex gap-6 p-0 pb-1 pt-1 not-rounded relative">
 
                     {/* Sidebar */}
                     <aside
-                        className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen ? 'w-64 2xl:w-75' : 'w-0 md:w-16'
-                            }`}
-                    >
+                        className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen
+                            ? 'w-5 lg:w-60 xl:w-64 2xl:w-75'
+                            : 'w-0 md:w-16'
+                            }`}>
                         <button
                             onClick={() => setAsideOpen(!isAsideOpen)}
                             className={`absolute -right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-14 bg-white border border-gray-200 shadow-md rounded-full hover:bg-gray-50 transition-all cursor-pointer group ${isCreateConversationOpen ? 'hidden' : ''}`}
@@ -858,21 +858,39 @@ export const ChatHub = () => {
                     <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden">
 
                         {/* New Conversation & Add Model */}
-                        <div className="absolute top-3 right-4 2xl:top-6 2xl:right-8 flex items-center gap-2 2xl:gap-3 z-30">
-                            {/* Models list */}
-                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient pr-2">
 
-                                <div className={activeModels.length === 0 ? 'block' : 'hidden'}>
-                                    <p className="text-xs text-black italic pl-2 whitespace-nowrap">
-                                        No active models.
-                                    </p>
-                                </div>
+                        <div className="absolute top-3 left-16 md:left-4 right-4 2xl:top-6 2xl:left-8 2xl:right-8 flex items-start gap-2 2xl:gap-3 z-30">
+                            {/*Models List*/}
+
+                            <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-3 w-full [&::-webkit-scrollbar]:h-4  [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
+
+                                {activeModels.length === 0 && (
+                                    <Button
+                                        variant="outline"
+                                        className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-2 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                        No active models
+                                    </Button>
+                                )}
+
+                                {activeModels.length > 0 && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeAllModels();
+                                            setIsImageMode(false);
+                                        }}
+                                        className="shrink-0 h-10 group flex items-center gap-1.5 px-2 rounded-full bg-red-50/80 hover:bg-red-100 border border-red-200 text-destructive transition-all shadow-sm backdrop-blur-md"
+                                    >
+                                        <Trash2 size={14} />
+                                        <span className="text-xs font-semibold whitespace-nowrap">Clear all models</span>
+                                    </button>
+                                )}
 
                                 {/* Models mapping */}
                                 {activeModels.map((model) => (
                                     <div
                                         key={model.id}
-                                        className="shrink-0  h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-sm backdrop-blur-md">
+                                        className="shrink-0 h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-accent-foreground backdrop-blur-md">
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             {model.id && (
                                                 <ModelIcon modelName={model.id} />
@@ -889,45 +907,42 @@ export const ChatHub = () => {
                                                     setIsImageMode(false);
                                                 }
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 ml-2 p-0.5 hover:bg-red-100 rounded-full text-red-400 transition-all shrink-0">
+                                            className=" group-hover:opacity-100 ml-2 p-0.5 bg-red-100 rounded-full text-destructive transition-all shrink-0">
                                             <X size={12} />
                                         </button>
                                     </div>
                                 ))}
                             </div>
 
-                            {activeModels.length > 0 && <div className="h-6 w-px bg-background/30 shrink-0 mx-1"></div>}
+                            <div className="shrink-0 flex items-center gap-2 2xl:gap-3 pl-1">
+                                {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
 
-                            <Button
-                                onClick={() => setIsCreateConversationOpen(true)}
-                                variant="outline"
-                                className="rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
-                                <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
-                            </Button>
+                                <Button
+                                    onClick={() => setIsCreateConversationOpen(true)}
+                                    variant="outline"
+                                    className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                    <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
+                                </Button>
 
-                            <div className="shrink-0">
-                                <ModelSelector />
+                                <div className="shrink-0">
+                                    <ModelSelector />
+                                </div>
+
                             </div>
-
                         </div>
 
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 scrollbar-hide">
+                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 scrollbar-hide mt-20 2xl:mt-24">
                             {/* A: No chat selected -> Cards */}
                             {!selectedConversationId ? (
                                 <>
-                                    <div className="mb-6 2xl:mb-12 space-y-1 2xl:space-y-2 mx-auto">
-                                        <h1 className="text-3xl md:text-4xl 2xl:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
-                                        <h1 className="text-3xl md:text-4xl 2xl:text-6xl font-bold text-white tracking-tight drop-shadow-md opacity-90">Write your message below.</h1>
-                                    </div>
-
                                     {activeModels.length === 0 && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 2xl:gap-4 max-w-3xl 2xl:max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
                                             {recommendedCards.map((card, idx) => (
                                                 <Card
                                                     key={idx}
                                                     onClick={() => handleCardClick(card.keywords)}
-                                                    className="group h-28 2xl:h-40 rounded-3xl 2xl:rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
+                                                    className="group 2xl:h-32 rounded-3xl 2xl:rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
                                                 >
                                                     <CardHeader className="px-4 pt-4 2xl:px-6 2xl:pt-6 pb-0">
                                                         <CardTitle className="text-base 2xl:text-xl font-medium text-gray-700 group-hover:text-black">
@@ -1023,9 +1038,8 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-full h-auto min-h-24 2xl:min-h-36 px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-6">
-                            <Card className="w-full max-w-5xl bg-background/80 backdrop-blur-2xl rounded-4xl p-2 shadow-2xl border border-white/60">
-
+                        <div className="w-80% h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2">
+                            <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
                                 {imagePreviews.length > 0 && (
                                     <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
                                         {imagePreviews.map((preview, index) => (
@@ -1050,7 +1064,7 @@ export const ChatHub = () => {
                                     </div>
                                 )}
 
-                                <div className="flex gap-3 mb-3 px-2 mt-2">
+                                <div className="flex gap-3 mb-1 2xl:mb-2 px-4 mt-2 2xl:mt-3">
                                     <Button
                                         size="sm"
                                         variant="ghost"
@@ -1082,26 +1096,29 @@ export const ChatHub = () => {
                                     </Button>
                                 </div>
 
-                                <Input
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    disabled={isBusy}
-                                    className="h-14 w-full border-none bg-background px-4 text-lg shadow-none placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl"
-                                    placeholder={
-                                        isEditImageMode
-                                            ? "Describe the edit you want to make..."
-                                            : isImageMode
-                                                ? "Describe the image you want to generate..."
-                                                : "Start a new message..."
-                                    }
-                                />
+                                <div className="w-full px-4 ">
+                                    <Input
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        disabled={isBusy}
+                                        // Cambiamos bg-background por bg-white o un tono que resalte, agregamos sombra y borde sutil
+                                        className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
+                                        placeholder={
+                                            isEditImageMode
+                                                ? "Describe the edit you want to make..."
+                                                : isImageMode
+                                                    ? "Describe the image you want to generate..."
+                                                    : "Start a new message..."
+                                        }
+                                    />
+                                </div>
 
                                 <div className="flex justify-between items-center px-2 pt-2 pb-1">
                                     <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
 
                                         {/* Basic Tools */}
-                                        <div className="flex items-center gap-6">
+                                        <div className=" pl-1 pt-1 flex items-center gap-6">
                                             <Settings size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
 
                                             <input

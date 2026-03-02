@@ -1031,6 +1031,51 @@ export const ChatHub = () => {
                                             </div>
                                         ))
                                     )}
+
+                                    {/*Typing Indicator*/}
+                                    {isBusy && (
+                                        <div className="flex w-full justify-start animate-in fade-in duration-300">
+                                            <div className="flex flex-col max-w-[85%] items-start">
+
+                                                <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                    {activeModels.length === 0 ? (
+                                                        <>
+                                                            <Bot size={14} />
+                                                            <span>Assistant</span>
+                                                        </>
+                                                    ) : activeModels.length === 1 ? (
+                                                        // 1 model active = name + logo
+                                                        <>
+                                                            <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                <ModelIcon modelName={activeModels[0].id} />
+                                                            </div>
+                                                            <span>{activeModels[0].title || activeModels[0].id}</span>
+                                                        </>
+                                                    ) : (
+                                                        // Multiple models active = stack of logos
+                                                        <div className="flex items-center -space-x-1.5">
+                                                            {activeModels.map((model, idx) => (
+                                                                <div
+                                                                    key={`loading-${model.id}-${idx}`}
+                                                                    className="relative w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden"
+                                                                    style={{ zIndex: activeModels.length - idx }}
+                                                                >
+                                                                    <ModelIcon modelName={model.id} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="rounded-3xl px-5 py-4 shadow-sm w-fit bg-background text-gray-900 rounded-tl-sm flex items-center gap-1.5 h-11 border border-white/40">
+                                                    {/* Puntos animados */}
+                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div ref={messagesEndRef} />
                                 </div>
                             )}
@@ -1210,14 +1255,10 @@ export const ChatHub = () => {
                                         onClick={handleSendMessage}
                                         disabled={isBusy}
                                         size="icon"
-                                        className="bg-secondary-blue hover:bg-secondary-blue text-white rounded-2xl h-7 w-10 -mt-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 "
+                                        className={`rounded-2xl h-7 w-10 -mt-3 shadow-lg transition-all hover:-translate-y-0.5 ${isBusy ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-blue hover:bg-secondary-blue hover:shadow-xl text-white'
+                                            }`}
                                     >
-                                        {isBusy ? (
-                                            <Loader2 className="animate-spin" size={20} />
-                                        ) : (
-
-                                            <ArrowUp size={20} />
-                                        )}
+                                        <ArrowUp size={20} />
                                     </Button>
                                 </div>
                             </Card>

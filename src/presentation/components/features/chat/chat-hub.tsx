@@ -24,7 +24,10 @@ import {
     MoreVertical,
     Pencil,
     PanelRightOpen,
-    Wand2
+    Wand2,
+    ThumbsUp,
+    ThumbsDown,
+    CornerUpRight
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -982,12 +985,13 @@ export const ChatHub = () => {
                                         </div>
                                     ) : (
                                         messages.map((msg) => (
-                                            < div
+                                            <div
                                                 key={msg.id}
-                                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                className={`group flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                             >
                                                 <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
 
+                                                    {/* Role + Model Info */}
                                                     <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
                                                         <span>{msg.role}</span>
                                                         {msg.role === 'user' ? (
@@ -995,7 +999,6 @@ export const ChatHub = () => {
                                                         ) : (
                                                             (() => {
                                                                 const modelDetails = getMessageModelDetails(msg.model);
-
                                                                 return (
                                                                     <>
                                                                         {modelDetails ? (
@@ -1014,6 +1017,7 @@ export const ChatHub = () => {
                                                         )}
                                                     </div>
 
+                                                    {/* Message Bubble*/}
                                                     <div
                                                         className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
                                                             ${msg.role === 'user'
@@ -1027,6 +1031,45 @@ export const ChatHub = () => {
                                                             <TextMessage content={msg.content} />
                                                         )}
                                                     </div>
+
+                                                    {/* Button zone */}
+                                                    {msg.role === 'assistant' && (
+                                                        <div className="flex items-center justify-start w-full gap-1 mt-1.5 pl-2 text-black-400">
+
+                                                            {/* Placeholder: Like */}
+                                                            <button
+                                                                className="p-1.5 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                                title="Good response"
+                                                            >
+                                                                <ThumbsUp size={14} />
+                                                            </button>
+
+                                                            {/* Dislike = remove model */}
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (msg.model) {
+                                                                        removeModel(msg.model);
+                                                                        setAlertMessage(`Modelo ${msg.model} removido`);
+                                                                        setShowModelAlert(true);
+                                                                        setTimeout(() => setShowModelAlert(false), 2000);
+                                                                    }
+                                                                }}
+                                                                className="p-1.5 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Bad response (Remove model)"
+                                                            >
+                                                                <ThumbsDown size={14} />
+                                                            </button>
+
+                                                            {/* Placeholder: Reenviar */}
+                                                            <button
+                                                                className="p-1.5 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="Forward / Resend"
+                                                            >
+                                                                <CornerUpRight size={14} />
+                                                            </button>
+
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))
@@ -1068,7 +1111,7 @@ export const ChatHub = () => {
                                                 </div>
 
                                                 <div className="rounded-3xl px-5 py-4 shadow-sm w-fit bg-background text-gray-900 rounded-tl-sm flex items-center gap-1.5 h-11 border border-white/40">
-                                                    {/* Puntos animados */}
+                                                    {/* Writing docs*/}
                                                     <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                                                     <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                                                     <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
@@ -1083,7 +1126,7 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-80% h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2">
+                        <div className="w-80% h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
                             <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
                                 {imagePreviews.length > 0 && (
                                     <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
@@ -1147,7 +1190,6 @@ export const ChatHub = () => {
                                         onChange={(e) => setInputValue(e.target.value)}
                                         onKeyDown={handleKeyDown}
                                         disabled={isBusy}
-                                        // Cambiamos bg-background por bg-white o un tono que resalte, agregamos sombra y borde sutil
                                         className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
                                         placeholder={
                                             isEditImageMode

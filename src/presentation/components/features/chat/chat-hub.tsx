@@ -936,6 +936,10 @@ export const ChatHub = () => {
                             {/* A: No chat selected -> Cards */}
                             {!selectedConversationId ? (
                                 <>
+                                    {/*<div className="mb-8 mx-auto">
+                                        <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
+                                    </div>*/}
+
                                     {activeModels.length === 0 && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 2xl:gap-4 max-w-3xl 2xl:max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
                                             {recommendedCards.map((card, idx) => (

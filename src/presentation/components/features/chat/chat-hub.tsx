@@ -2,23 +2,17 @@
 
 import {
     Image as ImageIcon,
-    Settings,
     Paperclip,
-    Mic,
-    Globe,
     ArrowUp,
     Search,
     SquarePen,
     ChevronDown,
     X,
-    ChevronUp,
     Sun,
     Trash2,
     Moon,
-    Bell,
     MessageSquare,
     PanelLeftOpen,
-    Monitor,
     Loader2,
     Bot,
     MoreVertical,
@@ -76,7 +70,7 @@ export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
     const [isAsideOpen, setAsideOpen] = useState(false);
-    const [isInternetSearch, setIsInternetSearch] = useState(false);
+    //const [isInternetSearch, setIsInternetSearch] = useState(false);
     const [isSearchChatActive, setIsSearchChatActive] = useState(false);
     const [memoryValue, setMemoryValue] = useState(10);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -562,7 +556,7 @@ export const ChatHub = () => {
                         onClick={() => {
                             selectConversation(null);
                             setModels([]);
-                            setIsInternetSearch(false);
+                            //setIsInternetSearch(false);
                             setIsPopoverOpen(false);
                         }}
                     >
@@ -578,50 +572,42 @@ export const ChatHub = () => {
                         </div>
                     </div>
 
-                    {/* Nav Central */}
-                    <nav className="hidden lg:flex items-center bg-background rounded-full px-1 py-1 shadow-sm gap-1 h-12 ">
-                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Models</Button>
-                        <Button variant="ghost" className="rounded-full bg-secondary-blue text-white hover:bg-[#4a7a9f] h-9 px-5 text-sm font-medium shadow-sm">Chat</Button>
-                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Ranking</Button>
-                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Enterprise</Button>
-                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Pricing</Button>
-                        <Button variant="ghost" className="rounded-full text-font-gray hover:text-gray-900 h-9 px-4 text-sm font-medium">Docs</Button>
-                    </nav>
 
                     {/* User Profile */}
                     <div className="flex items-center gap-3">
-                        <nav className="hidden lg:flex items-center bg-background rounded-full px-2.5 py-1 shadow-sm gap-3 h-12 w-fit">
-                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
-                                <Bell size={20} />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full bg-gray-200 hover:bg-background shadow-sm w-10 h-10 text-gray-600">
-                                <Search size={20} />
-                            </Button>
-                        </nav>
-                        {/* Deployable Menu */}
                         <div className='relative'>
                             <div
-                                className="flex items-center bg-background rounded-full p-1 pr-4 gap-3 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors h-12"
+                                className="flex items-center bg-background rounded-full p-1 gap-2.5 shadow-sm cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                             >
-                                <div className="w-12 h-12 rounded-full overflow-hidden pl-1 pt-0.5">
-                                    <Image src="/user_avatar.svg" alt="User" width={46} height={44} />
+                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                                    <Image src="/user_avatar.svg" alt="User" width={48} height={48} className="rounded-full" />
                                 </div>
-                                <div className="flex flex-col text-left leading-none">
-                                    <span className="text-[15px] font-bold text-gray-800">
-                                        User (Placeholder)
+
+                                <div className="flex flex-col text-left justify-center">
+                                    <span className="text-22px] font-bold text-gray-800 leading-none whitespace-nowrap mt-0.5">
+                                        User {/* PlaceHolder */}
                                     </span>
-                                    <span className="text-[15px] text-font-gray">
-                                        {user?.email || 'Loading...'}
-                                    </span>
+
+                                    <div
+                                        className={`grid transition-all duration-300 ease-in-out ${isMenuOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'
+                                            }`}
+                                    >
+                                        <span className="text-[12px] text-gray-500 overflow-hidden whitespace-nowrap leading-none">
+                                            {user?.email || 'Loading...'}
+                                        </span>
+                                    </div>
                                 </div>
-                                {!isMenuOpen ? (
-                                    <ChevronDown size={18} className="text-gray-400" />
-                                ) : (
-                                    <ChevronUp size={18} className="text-gray-400" />
-                                )}
+
+                                <div className="shrink-0 flex items-center justify-center ml-0.5 mt-0.5">
+                                    <ChevronDown
+                                        size={16}
+                                        className={`text-gray-400 transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}
+                                    />
+                                </div>
+
                                 {isMenuOpen && (
-                                    <div className="absolute top-full right-0 mt-2 w-36 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                    <div className="absolute top-[calc(100%+8px)] right-0 w-48 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                                         <ul className="flex flex-col gap-0.5">
                                             {['Credits', 'Keys', 'Activity', 'Settings', 'Enterprise'].map((item) => (
                                                 <li key={item} className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
@@ -630,8 +616,12 @@ export const ChatHub = () => {
                                             ))}
 
                                             <li
-                                                onClick={() => logout()}
-                                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    logout();
+                                                }}
+                                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors font-medium"
+                                            >
                                                 Sign out
                                             </li>
                                         </ul>
@@ -1157,6 +1147,20 @@ export const ChatHub = () => {
                                 )}
 
                                 <div className="flex gap-3 mb-1 2xl:mb-2 px-4 mt-2 2xl:mt-3">
+                                    <div
+                                        onClick={() => {
+                                            if (isImageMode) {
+                                                fileInputRef.current?.click()
+                                            } else {
+                                                setAlertMessage("Switch to Image Mode to attach files");
+                                                setShowModelAlert(true);
+                                                setTimeout(() => setShowModelAlert(false), 2000);
+                                            }
+                                        }}
+                                        className={` mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                    >
+                                        <Paperclip size={17} />
+                                    </div>
                                     <Button
                                         size="sm"
                                         variant="ghost"
@@ -1183,9 +1187,6 @@ export const ChatHub = () => {
                                             Edit
                                         </Button>
                                     )}
-                                    <Button size="sm" variant="ghost" className="h-8 rounded-full bg-background/80 border border-border text-gray-600 text-xs font-bold gap-2 hover:bg-background shadow-sm">
-                                        <Monitor size={14} /> Landing Page
-                                    </Button>
                                 </div>
 
                                 <div className="w-full px-4 ">
@@ -1210,8 +1211,6 @@ export const ChatHub = () => {
 
                                         {/* Basic Tools */}
                                         <div className=" pl-1 pt-1 flex items-center gap-6">
-                                            <Settings size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
-
                                             <input
                                                 type="file"
                                                 multiple
@@ -1222,44 +1221,18 @@ export const ChatHub = () => {
                                                 // eslint-disable-next-line no-param-reassign
                                                 onClick={(e) => (e.currentTarget.value = '')}
                                             />
-                                            <div
-                                                onClick={() => {
-                                                    if (isImageMode) {
-                                                        fileInputRef.current?.click()
-                                                    } else {
-                                                        setAlertMessage("Switch to Image Mode to attach files");
-                                                        setShowModelAlert(true);
-                                                        setTimeout(() => setShowModelAlert(false), 2000);
-                                                    }
-                                                }}
-                                                className={`cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
-                                            >
-                                                <Paperclip size={17} />
-                                            </div>
-
-                                            <Mic size={17} className="text-black hover:text-gray-600 cursor-pointer transition-colors" />
                                         </div>
 
-                                        <div
-                                            onClick={() => setIsInternetSearch(!isInternetSearch)}
-                                            className={`flex items-center gap-2 cursor-pointer transition-colors group ${isInternetSearch ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
-                                            <Globe size={18} className='text-black' />
-                                            <span className="text-sm font-medium text-black">Search</span>
-
-                                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center ${isInternetSearch ? 'bg-secondary-blue' : 'bg-gray-170 group-hover:bg-gray-300'}`}>
-                                                <div className={`w-4 h-4 bg-background rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${isInternetSearch ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                            </div>
-                                        </div>
 
                                         <div className="relative" >
                                             <div
                                                 onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                                className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black "
-                                            >
+                                                className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black ">
                                                 <MessageSquare size={18} />
                                                 <span className="text-sm font-medium">Memory ({memoryValue})</span>
                                                 <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
                                             </div>
+                                            {/* Idea: change message square to a button like the image one and put them together*/}
 
                                             {isPopoverOpen && (
                                                 <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">

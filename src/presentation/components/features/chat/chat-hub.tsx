@@ -950,17 +950,17 @@ export const ChatHub = () => {
                                                     </h3>
 
                                                     {/* Colors Grid */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
                                                         {/* Primary Colors */}
                                                         {selectedClientDetails.brand_profile?.primary_colors && selectedClientDetails.brand_profile.primary_colors.length > 0 && (
                                                             <div>
-                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Primary Colors</span>
-                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Primary Colors</span>
+                                                                <div className="flex flex-wrap gap-2">
                                                                     {selectedClientDetails.brand_profile.primary_colors.map((color, i) => (
-                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
-                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
-                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        <div key={i} className="flex items-center gap-2 bg-white/70 p-1.5 pr-3 rounded-xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all">
+                                                                            <div className="w-6 h-6 rounded-full border-[1.5px] border-white shadow-sm" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs font-semibold text-gray-700 font-mono">{color}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -970,12 +970,12 @@ export const ChatHub = () => {
                                                         {/* Secondary Colors */}
                                                         {selectedClientDetails.brand_profile?.secondary_colors && selectedClientDetails.brand_profile.secondary_colors.length > 0 && (
                                                             <div>
-                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Secondary Colors</span>
-                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Secondary Colors</span>
+                                                                <div className="flex flex-wrap gap-2">
                                                                     {selectedClientDetails.brand_profile.secondary_colors.map((color, i) => (
-                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
-                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
-                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        <div key={i} className="flex items-center gap-2 bg-white/70 p-1.5 pr-3 rounded-xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all">
+                                                                            <div className="w-6 h-6 rounded-full border-[1.5px] border-white shadow-sm" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs font-semibold text-gray-700 font-mono">{color}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -985,12 +985,12 @@ export const ChatHub = () => {
                                                         {/* Accent Colors */}
                                                         {selectedClientDetails.brand_profile?.accent_colors && selectedClientDetails.brand_profile.accent_colors.length > 0 && (
                                                             <div>
-                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Accent Colors</span>
-                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Accent Colors</span>
+                                                                <div className="flex flex-wrap gap-2">
                                                                     {selectedClientDetails.brand_profile.accent_colors.map((color, i) => (
-                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
-                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
-                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        <div key={i} className="flex items-center gap-2 bg-white/70 p-1.5 pr-3 rounded-xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all">
+                                                                            <div className="w-6 h-6 rounded-full border-[1.5px] border-white shadow-sm" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs font-semibold text-gray-700 font-mono">{color}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -1000,15 +1000,15 @@ export const ChatHub = () => {
                                                         {/* Forbidden Colors */}
                                                         {selectedClientDetails.brand_profile?.forbidden_colors && selectedClientDetails.brand_profile.forbidden_colors.length > 0 && (
                                                             <div>
-                                                                <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Forbidden Colors</span>
-                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-2 block">Forbidden Colors</span>
+                                                                <div className="flex flex-wrap gap-2">
                                                                     {selectedClientDetails.brand_profile.forbidden_colors.map((color, i) => (
-                                                                        <div key={i} className="flex items-center gap-1.5 bg-red-50/50 px-2 py-1 rounded-md border border-red-100 shadow-sm">
-                                                                            <div className="w-3.5 h-3.5 rounded-full border border-red-200 shadow-inner relative flex items-center justify-center overflow-hidden" style={{ backgroundColor: color }}>
-                                                                                {/* Red strike-through line for forbidden colors */}
-                                                                                <div className="w-full h-[1.5px] bg-red-500 absolute rotate-45"></div>
+                                                                        <div key={i} className="flex items-center gap-2 bg-red-50/80 p-1.5 pr-3 rounded-xl border border-red-100/80 shadow-sm hover:shadow-md transition-all group">
+                                                                            <div className="w-6 h-6 rounded-full border-[1.5px] border-red-200 shadow-sm relative flex items-center justify-center overflow-hidden" style={{ backgroundColor: color }}>
+                                                                                {/* Red strike-through line */}
+                                                                                <div className="w-[120%] h-0.5 bg-red-500/80 absolute rotate-45 group-hover:bg-red-600 transition-colors"></div>
                                                                             </div>
-                                                                            <span className="text-xs text-red-700 font-mono">{color}</span>
+                                                                            <span className="text-xs font-semibold text-red-700 font-mono">{color}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -1016,8 +1016,8 @@ export const ChatHub = () => {
                                                         )}
                                                     </div>
 
-                                                    {/* Typography & Notes */}
-                                                    <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/50">
+                                                    {/* Typography & Notes - Se mantiene igual pero con un padding top ajustado */}
+                                                    <div className="grid grid-cols-2 gap-6 pt-6 border-t border-gray-200/50">
                                                         <div>
                                                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Typography Style</span>
                                                             <p className="text-sm text-gray-800 mt-1 font-medium">

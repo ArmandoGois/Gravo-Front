@@ -1181,10 +1181,14 @@ export const ChatHub = () => {
                                     )}
                                     <Button
                                         onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                        className="h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all bg-background/80 border-border text-gray-600 hover:bg-background">
-                                        <MessageSquare size={18} />
+                                        className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isPopoverOpen
+                                                ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                                : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                            }`}
+                                    >
+                                        <MessageSquare size={18} className={isPopoverOpen ? 'text-white' : 'text-gray-600'} />
                                         <span className="text-sm font-medium">Memory ({memoryValue})</span>
-                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180 text-white' : 'text-gray-600'}`} />
                                     </Button>
                                     {isPopoverOpen && (
                                         <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">

@@ -22,7 +22,8 @@ import {
     ThumbsUp,
     ThumbsDown,
     CornerUpRight,
-    LayoutGrid
+    LayoutGrid,
+    UserPlus
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -32,6 +33,7 @@ const TextMessage = dynamic(
 );
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+import type { Client } from '@/domain/entities/client.entity';
 import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
@@ -44,6 +46,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useClients } from '@/presentation/hooks/use-clients';
 import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
 import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
@@ -80,12 +83,14 @@ export const ChatHub = () => {
     const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
-    const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'freepik'>('chat');
+    const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'clients'>('chat'); // <-- Changed to clients
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
     const [isEditImageMode, setIsEditImageMode] = useState(false);
+
+    const [, setSelectedClient] = useState<Client | null>(null);
 
     const [searchTerm] = useState("");
 
@@ -101,6 +106,7 @@ export const ChatHub = () => {
     const { isLoading: isLoadingChats } = useConversations();
     const { isLoading: isLoadingMessages } = useConversationMessages(activeSidebarTab === 'chat');
     const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
+    const { clients, isLoading: isLoadingClients, loadClients } = useClients(); // <-- Hook clients
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -128,6 +134,13 @@ export const ChatHub = () => {
             });
         }
     }, [messages]);
+
+    // Fetch clients ONLY when tab is active
+    useEffect(() => {
+        if (activeSidebarTab === 'clients') {
+            loadClients();
+        }
+    }, [activeSidebarTab, loadClients]);
 
     const isImageModel = useCallback((modelId: string) => {
         const model = availableModels.find(m => m.id === modelId);
@@ -172,22 +185,20 @@ export const ChatHub = () => {
         }
     };
 
-    const handleTabChange = (tab: 'chat' | 'image' | 'freepik') => {
+    const handleTabChange = (tab: 'chat' | 'image' | 'clients') => {
         setActiveSidebarTab(tab);
 
         selectConversation(null);
+        setSelectedClient(null); // Clear selected client on tab change
         setMessages([]);
         setModels([]);
 
-        if (tab === 'chat') {
+        if (tab === 'chat' || tab === 'clients') {
             setIsImageMode(false);
         } else if (tab === 'image') {
             setIsImageMode(true);
         }
     };
-
-
-
 
 
     const handleSendMessage = async () => {
@@ -561,6 +572,7 @@ export const ChatHub = () => {
                             </div>
 
 
+                            {/* MENU DE NAVEGACIÓN UNIFICADO */}
                             <div className={`w-full flex flex-col gap-1 bg-background rounded-2xl   px-1 mb-4 mt-2 transition-all duration-300 ${isAsideOpen ? 'items-stretch' : 'items-center'}`}>
 
                                 {/*New Chat */}
@@ -611,129 +623,133 @@ export const ChatHub = () => {
                                     </div>
                                 </Button>
 
-                                {/*Clients (here is where all the clients stuff are gonna be) */}
+                                {/*Clients */}
                                 <Button
-                                    onClick={() => handleTabChange('freepik')}
+                                    onClick={() => handleTabChange('clients')}
                                     variant="ghost"
                                     className={`relative flex items-center group cursor-pointer transition-all duration-200 border-0 shadow-none
                             ${isAsideOpen
-                                            ? `w-full h-10 px-3 rounded-xl justify-start ${activeSidebarTab === 'freepik' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
-                                            : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'freepik' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                            ? `w-full h-10 px-3 rounded-xl justify-start ${activeSidebarTab === 'clients' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                            : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'clients' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
                                         }`}
                                 >
-                                    <LayoutGrid className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'freepik' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
-                                    <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'freepik' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                    <LayoutGrid className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'clients' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'clients' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                         Clients
                                     </div>
                                 </Button>
 
-                                {/*Search Rooms */}
-                                <Button
-                                    onClick={() => setIsSearchChatActive(true)}
-                                    variant="ghost"
-                                    className={`relative flex items-center group cursor-text transition-all duration-200 border-0 shadow-none
-                            ${isAsideOpen
-                                            ? 'w-full h-10 px-3 rounded-xl justify-start bg-background/50 hover:bg-white border border-transparent hover:shadow-sm'
-                                            : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
-                                        }`}
-                                >
-                                    <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
-                                    <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                        Search rooms...
-                                    </div>
-                                </Button>
-                            </div>
-
-                            <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
-
-                                {/* Render of Active Chats */}
-                                {isListLoading && activeConversations.length === 0 && (
-                                    <div className="flex flex-col gap-2 px-2 animate-pulse">
-                                        <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
-                                    </div>
-                                )}
-
-                                {/* Empty State */}
-                                {!isLoadingChats && filteredConversations.length === 0 && (
-                                    <div className="flex flex-col gap-2 px-2 mt-10 opacity-60">
-                                        <p className="text-xs text-font-gray italic text-center">
-                                            {activeSidebarTab === 'chat' && "No text conversations found."}
-                                            {activeSidebarTab === 'image' && "No image history found."}
-                                            {activeSidebarTab === 'freepik' && "Freepik integration coming soon."}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {activeConversations.length === 0 && (
-                                    <p className="text-xs text-white italic pl-2">No active Conversations.</p>
-                                )}
-
-                                {filteredConversations.map(conversation => (
-                                    <div
-                                        key={conversation.id}
-                                        onClick={() => handleConversationClick(conversation.id)}
-                                        className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
-                                        ${selectedConversationId === conversation.id
-                                                ? 'bg-background shadow-md border-white/60'
-                                                : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
+                                {/* Search Rooms - Hidden in Clients tab */}
+                                {activeSidebarTab !== 'clients' && (
+                                    <Button
+                                        onClick={() => setIsSearchChatActive(true)}
+                                        variant="ghost"
+                                        className={`relative flex items-center group cursor-text transition-all duration-200 border-0 shadow-none
+                                ${isAsideOpen
+                                                ? 'w-full h-10 px-3 rounded-xl justify-start bg-background/50 hover:bg-white border border-transparent hover:shadow-sm'
+                                                : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
                                             }`}
                                     >
-                                        <div className="flex flex-col overflow-hidden max-w-[80%]">
-                                            <div className="flex items-center gap-2">
-
-                                                <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
-                                            </div>
-                                            <span className="text-[10px] text-font-gray pl-6 truncate">
-                                                {conversation.models.length} models
-                                            </span>
+                                        <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                        <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                            Search rooms...
                                         </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
-                                                }}
-                                                className={`p-1.5 rounded-lg transition-all 
-                                                    ${activeMenuId === conversation.id
-                                                        ? 'bg-gray-200 opacity-100'
-                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
-
-                                            {/* Floating Menu*/}
-                                            {activeMenuId === conversation.id && (
-                                                <div
-                                                    className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <button
-                                                        onClick={() => openRenameModal(conversation.id, conversation.title)}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
-                                                    >
-                                                        <Pencil size={14} />
-                                                        Rename
-                                                    </button>
-
-                                                    <div className="h-px bg-gray-100 my-1" />
-
-                                                    <button
-                                                        onClick={() => {
-                                                            setConversationToDelete(conversation.id);
-                                                            setActiveMenuId(null);
-                                                        }}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                    </Button>
+                                )}
                             </div>
+
+                            {/* Chats & Images History List - Hidden in Clients tab */}
+                            {activeSidebarTab !== 'clients' && (
+                                <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                    <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
+
+                                    {/* Render of Active Chats */}
+                                    {isListLoading && activeConversations.length === 0 && (
+                                        <div className="flex flex-col gap-2 px-2 animate-pulse">
+                                            <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
+                                        </div>
+                                    )}
+
+                                    {/* Empty State */}
+                                    {!isLoadingChats && filteredConversations.length === 0 && (
+                                        <div className="flex flex-col gap-2 px-2 mt-10 opacity-60">
+                                            <p className="text-xs text-font-gray italic text-center">
+                                                {activeSidebarTab === 'chat' && "No text conversations found."}
+                                                {activeSidebarTab === 'image' && "No image history found."}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {activeConversations.length === 0 && (
+                                        <p className="text-xs text-white italic pl-2">No active Conversations.</p>
+                                    )}
+
+                                    {/* Map through conversations */}
+                                    {filteredConversations.map(conversation => (
+                                        <div
+                                            key={conversation.id}
+                                            onClick={() => handleConversationClick(conversation.id)}
+                                            className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
+                                            ${selectedConversationId === conversation.id
+                                                    ? 'bg-background shadow-md border-white/60'
+                                                    : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
+                                                }`}
+                                        >
+                                            <div className="flex flex-col overflow-hidden max-w-[80%]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
+                                                </div>
+                                                <span className="text-[10px] text-font-gray pl-6 truncate">
+                                                    {conversation.models.length} models
+                                                </span>
+                                            </div>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
+                                                    }}
+                                                    className={`p-1.5 rounded-lg transition-all 
+                                                        ${activeMenuId === conversation.id
+                                                            ? 'bg-gray-200 opacity-100'
+                                                            : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+
+                                                {/* Floating Menu */}
+                                                {activeMenuId === conversation.id && (
+                                                    <div
+                                                        className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <button
+                                                            onClick={() => openRenameModal(conversation.id, conversation.title)}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
+                                                        >
+                                                            <Pencil size={14} />
+                                                            Rename
+                                                        </button>
+
+                                                        <div className="h-px bg-gray-100 my-1" />
+
+                                                        <button
+                                                            onClick={() => {
+                                                                setConversationToDelete(conversation.id);
+                                                                setActiveMenuId(null);
+                                                            }}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </Card>
                     </aside>
 
@@ -776,7 +792,7 @@ export const ChatHub = () => {
                         </div>
                     )}
 
-
+                    {/* Navbar Superior del Usuario */}
                     <div className="absolute top-4 right-4 lg:top-5 lg:right-6 z-70">
                         <div className="flex items-center gap-3">
                             <div className='relative'>
@@ -847,431 +863,493 @@ export const ChatHub = () => {
                         </div>
                     </div>
 
-                    {/* Main Content */}
-                    <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden min-w-0">
+                    {/* Main Content Area */}
+                    <main className={`flex-1 relative flex flex-col h-full rounded-[2.5rem] overflow-hidden min-w-0 ${activeSidebarTab === 'clients' ? 'p-0 pt-10 2xl:pt-14 pb-0 2xl:pb-0 px-4 md:px-8 2xl:px-16' : 'p-0'}`}>
 
-                        {/* New Conversation & Add Model */}
-                        <div className="absolute top-3 left-16 md:left-4 right-48 lg:right-56 2xl:top-6 2xl:left-8 2xl:right-64 flex items-start gap-2 2xl:gap-3 z-30">
-                            {/*Models List*/}
+                        {activeSidebarTab === 'clients' ? (
 
-                            <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-3 w-full [&::-webkit-scrollbar]:h-4  [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
+                            // --- CLIENTS VIEW ---
+                            <div className="w-full h-full flex flex-col items-center p-8 bg-card/40 backdrop-blur-md rounded-3xl border border-white/20 shadow-xl animate-in fade-in zoom-in-95 duration-300 overflow-y-auto custom-scrollbar">
 
-                                {activeModels.length === 0 && (
-                                    <Button
-                                        variant="outline"
-                                        className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-2 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
-                                        No active models
-                                    </Button>
-                                )}
-
-                                {activeModels.length > 0 && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeAllModels();
-                                            setIsImageMode(false);
-                                        }}
-                                        className="shrink-0 h-10 group flex items-center gap-1.5 px-2 rounded-full bg-red-50/80 hover:bg-red-100 border border-red-200 text-destructive transition-all shadow-sm backdrop-blur-md"
-                                    >
-                                        <Trash2 size={14} />
-                                        <span className="text-xs font-semibold whitespace-nowrap">Clear all models</span>
-                                    </button>
-                                )}
-
-                                {/* Models mapping */}
-                                {activeModels.map((model) => (
-                                    <div
-                                        key={model.id}
-                                        className="shrink-0 h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-accent-foreground backdrop-blur-md">
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            {model.id && (
-                                                <ModelIcon modelName={model.id} />
-                                            )}
-                                            <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
-                                                {model.title}
-                                            </span>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                removeModel(model.id);
-                                                if (isImageModel(model.id)) {
-                                                    setIsImageMode(false);
-                                                }
-                                            }}
-                                            className=" group-hover:opacity-100 ml-2 p-0.5 bg-red-100 rounded-full text-destructive transition-all shrink-0">
-                                            <X size={12} />
-                                        </button>
+                                {isLoadingClients ? (
+                                    <div className="flex flex-col items-center justify-center h-full py-8">
+                                        <Loader2 className="animate-spin text-secondary-blue w-8 h-8 mb-4" />
+                                        <p className="text-gray-500 font-medium">Loading clients...</p>
                                     </div>
-                                ))}
-                            </div>
-
-                            <div className="shrink-0 flex items-center gap-2 2xl:gap-3 pl-1">
-                                {selectedConversationId && (
-                                    <>
-                                        {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
-                                        <div className="shrink-0">
-                                            <ModelSelector />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-
-                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 mt-20 2xl:mt-24 scrollbar-hide [&::-webkit-scrollbar]:hidden! [-ms-overflow-style:none] [scrollbar-width:none]">
-                            {/* A: No chat selected -> Recent Chats Preview */}
-                            {!selectedConversationId ? (
-                                <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">                                    {filteredConversations.length > 0 ? (
-                                    <>
-                                        <h2 className="font-semibold text-[rgba(55,55,54)] tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
-                                        <div className="flex gap-3 2xl:gap-4 w-full overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:h-4 [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
-
-                                            {filteredConversations.slice(0, 10).map((conversation) => (
-                                                <Card
-                                                    key={conversation.id}
-                                                    onClick={() => handleConversationClick(conversation.id)}
-                                                    className="group shrink-0 snap-start  md:w-70 2xl:w-[320px] h-40 2xl:h- rounded-3xl 2xl:rounded-4xl bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-4 2xl:p-6"
-                                                >
-
-                                                    <div className="flex justify-between items-start gap-2">
-                                                        <h3 className="font-medium text-gray-800 text-sm 2xl:text-base line-clamp-2">
-                                                            {conversation.title}
-                                                        </h3>
-                                                        <MessageSquare size={16} className="text-gray-400 group-hover:text-secondary-blue shrink-0" />
-                                                    </div>
-                                                    <div className="text-[11px] 2xl:text-xs text-gray-500 font-medium flex items-center gap-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-secondary-blue/60 group-hover:bg-secondary-blue transition-colors"></div>
-                                                        {conversation.models.length} {conversation.models.length === 1 ? 'model' : 'models'}
-                                                    </div>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </>
+                                ) : clients.length === 0 ? (
+                                    // Empty state - Create Client
+                                    <div className="flex items-center justify-center h-full w-full max-w-lg">
+                                        <Card className="w-full aspect-[4/3] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-[2rem] shadow-none bg-transparent group">
+                                            <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
+                                                <UserPlus size={28} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Crear cliente</h3>
+                                            <p className="text-sm text-gray-500 mt-2 text-center px-6 leading-relaxed">
+                                                Aún no tienes clientes registrados. Añade tu primer cliente para comenzar a trabajar.
+                                            </p>
+                                        </Card>
+                                    </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center h-full opacity-60">
-                                        <MessageSquare size={32} className="text-gray-400 mb-4" />
-                                        <p className="text-sm text-gray-500 italic text-center">
-                                            No recent conversations. Start a new one below!
-                                        </p>
+                                    // Grid of Clients
+                                    <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {/* Create new client card inside the grid */}
+                                        <Card className="aspect-[4/3] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-[2rem] shadow-none bg-transparent group">
+                                            <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
+                                                <UserPlus size={20} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
+                                            </div>
+                                            <h3 className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Añadir</h3>
+                                        </Card>
+
+                                        {/* Fetched Clients */}
+                                        {clients.map((client) => (
+                                            <Card
+                                                key={client.id}
+                                                onClick={() => setSelectedClient(client)} // <-- Set selected client
+                                                className="aspect-[4/3] bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-[2rem] group hover:-translate-y-1"
+                                            >
+                                                <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 overflow-hidden border border-gray-100 group-hover:scale-105 transition-transform duration-300">
+                                                    {client.logo_url ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img src={client.logo_url} alt={client.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-4xl select-none">🏢</span>
+                                                    )}
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-800 group-hover:text-secondary-blue transition-colors text-center px-4 w-full truncate">
+                                                    {client.name}
+                                                </h3>
+                                                {client.industry && (
+                                                    <p className="text-xs text-gray-500 mt-1 truncate max-w-[80%]">{client.industry}</p>
+                                                )}
+                                            </Card>
+                                        ))}
                                     </div>
                                 )}
-                                </div>
-                            ) : (
-                                /* B: chat selected -> messages */
-                                <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
+                            </div>
 
-                                    {isLoadingMessages ? (
-                                        <div className="flex justify-center items-center h-40">
-                                            <Loader2 className="animate-spin text-white w-8 h-8" />
-                                        </div>
-                                    ) : messages.length === 0 ? (
-                                        <div className="text-center text-white italic mt-10 text-3xl">
-                                            No messages yet. Start the conversation!
-                                        </div>
-                                    ) : (
-                                        messages.map((msg) => (
-                                            <div
-                                                key={msg.id}
-                                                className={`group flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        ) : (
+                            // --- CHAT / IMAGES VIEW ---
+                            <>
+                                {/* New Conversation & Add Model */}
+                                <div className="absolute top-3 left-16 md:left-4 right-48 lg:right-56 2xl:top-6 2xl:left-8 2xl:right-64 flex items-start gap-2 2xl:gap-3 z-30">
+                                    {/*Models List*/}
+
+                                    <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-3 w-full [&::-webkit-scrollbar]:h-4  [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
+
+                                        {activeModels.length === 0 && (
+                                            <Button
+                                                variant="outline"
+                                                className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-2 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                                No active models
+                                            </Button>
+                                        )}
+
+                                        {activeModels.length > 0 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeAllModels();
+                                                    setIsImageMode(false);
+                                                }}
+                                                className="shrink-0 h-10 group flex items-center gap-1.5 px-2 rounded-full bg-red-50/80 hover:bg-red-100 border border-red-200 text-destructive transition-all shadow-sm backdrop-blur-md"
                                             >
-                                                <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                                <Trash2 size={14} />
+                                                <span className="text-xs font-semibold whitespace-nowrap">Clear all models</span>
+                                            </button>
+                                        )}
 
-                                                    {/* Role + Model Info */}
-                                                    <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                        <span>{msg.role}</span>
-                                                        {msg.role === 'user' ? (
-                                                            <Image src="/user_avatar.svg" alt="User" width={30} height={30} />
-                                                        ) : (
-                                                            (() => {
-                                                                const modelDetails = getMessageModelDetails(msg.model);
-                                                                return (
-                                                                    <>
-                                                                        {modelDetails ? (
-                                                                            <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
-                                                                                <ModelIcon modelName={modelDetails.id} />
-                                                                            </div>
-                                                                        ) : (
-                                                                            <Bot size={14} />
-                                                                        )}
-                                                                        <span>
-                                                                            {modelDetails ? modelDetails.id : "Assistant"}
-                                                                        </span>
-                                                                    </>
-                                                                );
-                                                            })()
-                                                        )}
-                                                    </div>
-
-                                                    {/* Message Bubble*/}
-                                                    <div
-                                                        className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
-                                                            ${msg.role === 'user'
-                                                                ? 'bg-black text-white rounded-tr-sm'
-                                                                : 'bg-background text-gray-900 rounded-tl-sm'
-                                                            }`}
-                                                    >
-                                                        {isImageMessage(msg.content) ? (
-                                                            <ImageMessage content={msg.content} />
-                                                        ) : (
-                                                            <TextMessage content={msg.content} />
-                                                        )}
-                                                    </div>
-
-                                                    {/* Button zone */}
-                                                    {msg.role === 'assistant' && (
-                                                        <div className="flex items-center justify-start w-full gap-1 mt-1.5 pl-2 text-black-400">
-
-                                                            {/* Placeholder: Like */}
-                                                            <button
-                                                                className="p-1.5 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                                title="Good response"
-                                                            >
-                                                                <ThumbsUp size={14} />
-                                                            </button>
-
-                                                            {/* Dislike = remove model */}
-                                                            <button
-                                                                onClick={() => {
-                                                                    if (msg.model) {
-                                                                        removeModel(msg.model);
-                                                                        setAlertMessage(`Modelo ${msg.model} removido`);
-                                                                        setShowModelAlert(true);
-                                                                        setTimeout(() => setShowModelAlert(false), 2000);
-                                                                    }
-                                                                }}
-                                                                className="p-1.5 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                                title="Bad response (Remove model)"
-                                                            >
-                                                                <ThumbsDown size={14} />
-                                                            </button>
-
-                                                            {/* Placeholder: Re-send */}
-                                                            <button
-                                                                className="p-1.5 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                                title="Forward / Resend"
-                                                            >
-                                                                <CornerUpRight size={14} />
-                                                            </button>
-
-                                                        </div>
+                                        {/* Models mapping */}
+                                        {activeModels.map((model) => (
+                                            <div
+                                                key={model.id}
+                                                className="shrink-0 h-10 group flex items-center justify-between px-3 py-2 rounded-full bg-background hover:bg-background/60 cursor-pointer transition-all border border-white/20 hover:border-white/50 shadow-accent-foreground backdrop-blur-md">
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    {model.id && (
+                                                        <ModelIcon modelName={model.id} />
                                                     )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-
-                                    {/*Typing Indicator*/}
-                                    {isBusy && (
-                                        <div className="flex w-full justify-start animate-in fade-in duration-300">
-                                            <div className="flex flex-col max-w-[85%] items-start">
-
-                                                <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
-                                                    {activeModels.length === 0 ? (
-                                                        <>
-                                                            <Bot size={14} />
-                                                            <span>Assistant</span>
-                                                        </>
-                                                    ) : activeModels.length === 1 ? (
-                                                        // 1 model active = name + logo
-                                                        <>
-                                                            <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
-                                                                <ModelIcon modelName={activeModels[0].id} />
-                                                            </div>
-                                                            <span>{activeModels[0].title || activeModels[0].id}</span>
-                                                        </>
-                                                    ) : (
-                                                        // Multiple models active = stack of logos
-                                                        <div className="flex items-center -space-x-1.5">
-                                                            {activeModels.map((model, idx) => (
-                                                                <div
-                                                                    key={`loading-${model.id}-${idx}`}
-                                                                    className="relative w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden"
-                                                                    style={{ zIndex: activeModels.length - idx }}
-                                                                >
-                                                                    <ModelIcon modelName={model.id} />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="rounded-3xl px-5 py-4 shadow-sm w-fit bg-background text-gray-900 rounded-tl-sm flex items-center gap-1.5 h-11 border border-white/40">
-                                                    {/* Writing docs*/}
-                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div ref={messagesEndRef} />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input Area */}
-
-                        <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
-                            <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
-                                {imagePreviews.length > 0 && (
-                                    <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
-                                        {imagePreviews.map((preview, index) => (
-                                            <div key={index} className="relative group shrink-0">
-                                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/30 shadow-sm bg-black/5">
-                                                    {/* Use img instead of Image for simplicity */}
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img
-                                                        src={preview}
-                                                        alt="preview"
-                                                        className="w-full h-full object-cover"
-                                                    />
+                                                    <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
+                                                        {model.title}
+                                                    </span>
                                                 </div>
                                                 <button
-                                                    onClick={() => removeImage(index)}
-                                                    className="absolute -top-1 -right-1 bg-black/60 backdrop-blur-sm text-white rounded-full p-0.5 shadow-sm hover:bg-red-500 transition-all opacity-0 group-hover:opacity-100"
-                                                >
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeModel(model.id);
+                                                        if (isImageModel(model.id)) {
+                                                            setIsImageMode(false);
+                                                        }
+                                                    }}
+                                                    className=" group-hover:opacity-100 ml-2 p-0.5 bg-red-100 rounded-full text-destructive transition-all shrink-0">
                                                     <X size={12} />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
-                                )}
 
-                                <div className="flex gap-3 mb-1 2xl:mb-2 px-4 mt-2 2xl:mt-3">
-                                    <div
-                                        onClick={() => {
-                                            if (isImageMode) {
-                                                fileInputRef.current?.click()
-                                            } else {
-                                                setAlertMessage("Switch to Image Mode to attach files");
-                                                setShowModelAlert(true);
-                                                setTimeout(() => setShowModelAlert(false), 2000);
-                                            }
-                                        }}
-                                        className={` mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
-                                    >
-                                        <Paperclip size={17} />
+                                    <div className="shrink-0 flex items-center gap-2 2xl:gap-3 pl-1">
+                                        {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
+                                        <div className="shrink-0">
+                                            <ModelSelector />
+                                        </div>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={handleToggleImageMode}
+                                </div>
 
-                                        className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
-                                            ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
-                                            : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
-                                            }`}>
-                                        <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
-                                        Image
-                                    </Button>
-                                    {isImageMode && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={handleToggleEditImageMode}
-                                            className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all animate-in fade-in zoom-in-95 duration-200 ${isEditImageMode
-                                                ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
-                                                : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
-                                                }`}
-                                        >
-                                            <Wand2 size={14} className={isEditImageMode ? 'text-white' : 'text-gray-600'} />
-                                            Edit
-                                        </Button>
+
+                                <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 mt-20 2xl:mt-24 scrollbar-hide [&::-webkit-scrollbar]:hidden! [-ms-overflow-style:none] [scrollbar-width:none]">
+                                    {/* A: No chat selected -> Cards */}
+                                    {!selectedConversationId ? (
+                                        <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">
+                                            {filteredConversations.length > 0 ? (
+                                                <>
+                                                    <h2 className="font-semibold text-[rgba(55,55,54)] tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
+                                                    <div className="flex gap-3 2xl:gap-4 w-full overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:h-4 [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
+                                                        {filteredConversations.slice(0, 10).map((conversation) => (
+                                                            <Card
+                                                                key={conversation.id}
+                                                                onClick={() => handleConversationClick(conversation.id)}
+                                                                className="group shrink-0 snap-start  md:w-70 2xl:w-[320px] h-40 2xl:h- rounded-3xl 2xl:rounded-4xl bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-4 2xl:p-6"
+                                                            >
+                                                                <div className="flex justify-between items-start gap-2">
+                                                                    <h3 className="font-medium text-gray-800 text-sm 2xl:text-base line-clamp-2">
+                                                                        {conversation.title}
+                                                                    </h3>
+                                                                    <MessageSquare size={16} className="text-gray-400 group-hover:text-secondary-blue shrink-0" />
+                                                                </div>
+                                                                <div className="text-[11px] 2xl:text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-secondary-blue/60 group-hover:bg-secondary-blue transition-colors"></div>
+                                                                    {conversation.models.length} {conversation.models.length === 1 ? 'model' : 'models'}
+                                                                </div>
+                                                            </Card>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center h-full opacity-60">
+                                                    <MessageSquare size={32} className="text-gray-400 mb-4" />
+                                                    <p className="text-sm text-gray-500 italic text-center">
+                                                        No recent conversations. Start a new one below!
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        /* B: chat selected -> messages */
+                                        <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
+
+                                            {isLoadingMessages ? (
+                                                <div className="flex justify-center items-center h-40">
+                                                    <Loader2 className="animate-spin text-white w-8 h-8" />
+                                                </div>
+                                            ) : messages.length === 0 ? (
+                                                <div className="text-center text-white italic mt-10 text-3xl">
+                                                    No messages yet. Start the conversation!
+                                                </div>
+                                            ) : (
+                                                messages.map((msg) => (
+                                                    <div
+                                                        key={msg.id}
+                                                        className={`group flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                    >
+                                                        <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+
+                                                            {/* Role + Model Info */}
+                                                            <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                                <span>{msg.role}</span>
+                                                                {msg.role === 'user' ? (
+                                                                    <Image src="/user_avatar.svg" alt="User" width={30} height={30} />
+                                                                ) : (
+                                                                    (() => {
+                                                                        const modelDetails = getMessageModelDetails(msg.model);
+                                                                        return (
+                                                                            <>
+                                                                                {modelDetails ? (
+                                                                                    <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                                        <ModelIcon modelName={modelDetails.id} />
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <Bot size={14} />
+                                                                                )}
+                                                                                <span>
+                                                                                    {modelDetails ? modelDetails.id : "Assistant"}
+                                                                                </span>
+                                                                            </>
+                                                                        );
+                                                                    })()
+                                                                )}
+                                                            </div>
+
+                                                            {/* Message Bubble*/}
+                                                            <div
+                                                                className={`rounded-3xl p-5 shadow-sm text-sm leading-relaxed w-full
+                                                                    ${msg.role === 'user'
+                                                                        ? 'bg-black text-white rounded-tr-sm'
+                                                                        : 'bg-background text-gray-900 rounded-tl-sm'
+                                                                    }`}
+                                                            >
+                                                                {isImageMessage(msg.content) ? (
+                                                                    <ImageMessage content={msg.content} />
+                                                                ) : (
+                                                                    <TextMessage content={msg.content} />
+                                                                )}
+                                                            </div>
+
+                                                            {/* Button zone */}
+                                                            {msg.role === 'assistant' && (
+                                                                <div className="flex items-center justify-start w-full gap-1 mt-1.5 pl-2 text-gray-400">
+
+                                                                    {/* Placeholder: Like */}
+                                                                    <button
+                                                                        className="p-1.5 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                                        title="Good response"
+                                                                    >
+                                                                        <ThumbsUp size={14} />
+                                                                    </button>
+
+                                                                    {/* Dislike = remove model */}
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (msg.model) {
+                                                                                removeModel(msg.model);
+                                                                                setAlertMessage(`Modelo ${msg.model} removido`);
+                                                                                setShowModelAlert(true);
+                                                                                setTimeout(() => setShowModelAlert(false), 2000);
+                                                                            }
+                                                                        }}
+                                                                        className="p-1.5 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                        title="Bad response (Remove model)"
+                                                                    >
+                                                                        <ThumbsDown size={14} />
+                                                                    </button>
+
+                                                                    {/* Placeholder: Re-send */}
+                                                                    <button
+                                                                        className="p-1.5 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                        title="Forward / Resend"
+                                                                    >
+                                                                        <CornerUpRight size={14} />
+                                                                    </button>
+
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+
+                                            {/*Typing Indicator*/}
+                                            {isBusy && (
+                                                <div className="flex w-full justify-start animate-in fade-in duration-300">
+                                                    <div className="flex flex-col max-w-[85%] items-start">
+
+                                                        <div className="flex items-center gap-2 mb-2 opacity-70 text-xs font-semibold uppercase tracking-wider">
+                                                            {activeModels.length === 0 ? (
+                                                                <>
+                                                                    <Bot size={14} />
+                                                                    <span>Assistant</span>
+                                                                </>
+                                                            ) : activeModels.length === 1 ? (
+                                                                // 1 model active = name + logo
+                                                                <>
+                                                                    <div className="w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                                        <ModelIcon modelName={activeModels[0].id} />
+                                                                    </div>
+                                                                    <span>{activeModels[0].title || activeModels[0].id}</span>
+                                                                </>
+                                                            ) : (
+                                                                // Multiple models active = stack of logos
+                                                                <div className="flex items-center -space-x-1.5">
+                                                                    {activeModels.map((model, idx) => (
+                                                                        <div
+                                                                            key={`loading-${model.id}-${idx}`}
+                                                                            className="relative w-5 h-5 rounded-full bg-background border border-gray-200 flex items-center justify-center overflow-hidden"
+                                                                            style={{ zIndex: activeModels.length - idx }}
+                                                                        >
+                                                                            <ModelIcon modelName={model.id} />
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="rounded-3xl px-5 py-4 shadow-sm w-fit bg-background text-gray-900 rounded-tl-sm flex items-center gap-1.5 h-11 border border-white/40">
+                                                            {/* Writing docs*/}
+                                                            <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                                            <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                                            <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div ref={messagesEndRef} />
+                                        </div>
                                     )}
-                                    <Button
-                                        onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                        className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isPopoverOpen
-                                                ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
-                                                : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
-                                            }`}
-                                    >
-                                        <MessageSquare size={18} className={isPopoverOpen ? 'text-white' : 'text-gray-600'} />
-                                        <span className="text-sm font-medium">Memory ({memoryValue})</span>
-                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180 text-white' : 'text-gray-600'}`} />
-                                    </Button>
-                                    {isPopoverOpen && (
-                                        <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <span className="text-gray-700 font-medium">Chat memory</span>
+                                </div>
 
-                                                <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
-                                                    {memoryValue}
+                                {/* Input Area */}
+                                <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
+                                    <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
+                                        {imagePreviews.length > 0 && (
+                                            <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
+                                                {imagePreviews.map((preview, index) => (
+                                                    <div key={index} className="relative group shrink-0">
+                                                        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/30 shadow-sm bg-black/5">
+                                                            {/* Use img instead of Image for simplicity */}
+                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                            <img
+                                                                src={preview}
+                                                                alt="preview"
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <button
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute -top-1 -right-1 bg-black/60 backdrop-blur-sm text-white rounded-full p-0.5 shadow-sm hover:bg-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-3 mb-1 2xl:mb-2 px-4 mt-2 2xl:mt-3">
+                                            <div
+                                                onClick={() => {
+                                                    if (isImageMode) {
+                                                        fileInputRef.current?.click()
+                                                    } else {
+                                                        setAlertMessage("Switch to Image Mode to attach files");
+                                                        setShowModelAlert(true);
+                                                        setTimeout(() => setShowModelAlert(false), 2000);
+                                                    }
+                                                }}
+                                                className={` mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                            >
+                                                <Paperclip size={17} />
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={handleToggleImageMode}
+
+                                                className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
+                                                    ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                                    : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                                    }`}>
+                                                <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
+                                                Image
+                                            </Button>
+                                            {isImageMode && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={handleToggleEditImageMode}
+                                                    className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all animate-in fade-in zoom-in-95 duration-200 ${isEditImageMode
+                                                        ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                                        : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                                        }`}
+                                                >
+                                                    <Wand2 size={14} className={isEditImageMode ? 'text-white' : 'text-gray-600'} />
+                                                    Edit
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <div className="w-full px-4 ">
+                                            <Input
+                                                value={inputValue}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                onKeyDown={handleKeyDown}
+                                                disabled={isBusy}
+                                                className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
+                                                placeholder={
+                                                    isEditImageMode
+                                                        ? "Describe the edit you want to make..."
+                                                        : isImageMode
+                                                            ? "Describe the image you want to generate..."
+                                                            : "Start a new message..."
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="flex justify-between items-center px-2 pt-2 pb-1">
+                                            <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
+
+                                                {/* Basic Tools */}
+                                                <div className=" pl-1 pt-1 flex items-center gap-6">
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileSelect}
+                                                        // eslint-disable-next-line no-param-reassign
+                                                        onClick={(e) => (e.currentTarget.value = '')}
+                                                    />
+                                                </div>
+
+
+                                                <div className="relative" >
+                                                    <div
+                                                        onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                                        className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black ">
+                                                        <MessageSquare size={18} />
+                                                        <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                                    </div>
+                                                    {/* Idea: change message square to a button like the image one and put them together*/}
+
+                                                    {isPopoverOpen && (
+                                                        <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                            <div className="flex justify-between items-center mb-4">
+                                                                <span className="text-gray-700 font-medium">Chat memory</span>
+
+                                                                <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
+                                                                    {memoryValue}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Slider*/}
+                                                            <input
+                                                                type="range"
+                                                                min="0"
+                                                                max="500"
+                                                                value={memoryValue}
+                                                                onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                                            />
+
+                                                            <p className="mt-3 text-xs text-black leading-relaxed">
+                                                                Sends the last {memoryValue} messages from your conversation each request.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-
-                                            {/* Slider*/}
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="500"
-                                                value={memoryValue}
-                                                onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
-                                            />
-
-                                            <p className="mt-3 text-xs text-black leading-relaxed">
-                                                Sends the last {memoryValue} messages from your conversation each request.
-                                            </p>
+                                            {showModelAlert && (
+                                                <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                                    <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
+                                                        <span className="text-xxs font-semibold whitespace-nowrap">
+                                                            {alertMessage}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <Button
+                                                onClick={handleSendMessage}
+                                                disabled={isBusy}
+                                                size="icon"
+                                                className={`rounded-2xl h-7 w-10 -mt-3 shadow-lg transition-all hover:-translate-y-0.5 ${isBusy ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-blue hover:bg-secondary-blue hover:shadow-xl text-white'
+                                                    }`}
+                                            >
+                                                <ArrowUp size={20} />
+                                            </Button>
                                         </div>
-                                    )}
+                                    </Card>
                                 </div>
-
-                                <div className="w-full px-4 ">
-                                    <Input
-                                        value={inputValue}
-                                        onChange={(e) => setInputValue(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        disabled={isBusy}
-                                        className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
-                                        placeholder={
-                                            isEditImageMode
-                                                ? "Describe the edit you want to make..."
-                                                : isImageMode
-                                                    ? "Describe the image you want to generate..."
-                                                    : "Start a new message..."
-                                        }
-                                    />
-                                </div>
-
-                                <div className="flex justify-between items-center px-2 pt-2 pb-1">
-                                    <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
-
-                                        {/* Basic Tools */}
-                                        <div className=" pl-1 pt-1 flex items-center gap-6">
-                                            <input
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                className="hidden"
-                                                ref={fileInputRef}
-                                                onChange={handleFileSelect}
-                                                // eslint-disable-next-line no-param-reassign
-                                                onClick={(e) => (e.currentTarget.value = '')}
-                                            />
-                                        </div>
-                                    </div>
-                                    {showModelAlert && (
-                                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                            <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
-                                                <span className="text-xxs font-semibold whitespace-nowrap">
-                                                    {alertMessage}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <Button
-                                        onClick={handleSendMessage}
-                                        disabled={isBusy}
-                                        size="icon"
-                                        className={`rounded-2xl h-7 w-10 -mt-3 shadow-lg transition-all hover:-translate-y-0.5 ${isBusy ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-blue hover:bg-secondary-blue hover:shadow-xl text-white'
-                                            }`}
-                                    >
-                                        <ArrowUp size={20} />
-                                    </Button>
-                                </div>
-                            </Card>
-                        </div>
+                            </>
+                        )}
                     </main >
                 </div >
             </div >

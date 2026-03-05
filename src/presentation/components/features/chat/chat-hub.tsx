@@ -21,7 +21,8 @@ import {
     Wand2,
     ThumbsUp,
     ThumbsDown,
-    CornerUpRight
+    CornerUpRight,
+    LayoutGrid
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -69,7 +70,7 @@ export const ChatHub = () => {
     //Use States
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
-    const [isAsideOpen, setAsideOpen] = useState(false);
+    const [isAsideOpen, setAsideOpen] = useState(true);
     //const [isInternetSearch, setIsInternetSearch] = useState(false);
     const [isSearchChatActive, setIsSearchChatActive] = useState(false);
     const [memoryValue, setMemoryValue] = useState(10);
@@ -546,111 +547,16 @@ export const ChatHub = () => {
                 </div>
             )}
 
-            <div className="w-full h-full max-w-full flex flex-col gap-0 pt-2 ">
-
-                {/* Header */}
-                <div className="relative z-50 w-full h-14 flex items-center justify-between px-6 -mt-2 ">
-                    {/* Logo */}
-                    <div
-                        className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
-                        onClick={() => {
-                            selectConversation(null);
-                            setModels([]);
-                            //setIsInternetSearch(false);
-                            setIsPopoverOpen(false);
-                        }}
-                    >
-                        <div className="relative w-10 h-10 flex items-center justify-center">
-                            <Image
-                                src="/kromaticos_logo.svg"
-                                alt="Kromaticos Logo"
-                                width={35}
-                                height={35}
-                                className="object-contain"
-                            />
-                            <span className="absolute -top-1 -right-7 bg-destructive text-white text-[13px] font-bold px-2 rounded-sm">IA</span>
-                        </div>
-                    </div>
-
-
-                    {/* User Profile */}
-                    <div className="flex items-center gap-3">
-                        <div className='relative'>
-                            <div
-                                className="flex items-center bg-background rounded-full p-1 gap-2.5 shadow-sm cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            >
-                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 flex items-center justify-center">
-                                    <Image src="/user_avatar.svg" alt="User" width={48} height={48} className="rounded-full" />
-                                </div>
-
-                                <div className="flex flex-col text-left justify-center">
-                                    <span className="text-22px] font-bold text-gray-800 leading-none whitespace-nowrap mt-0.5">
-                                        User {/* PlaceHolder */}
-                                    </span>
-
-                                    <div
-                                        className={`grid transition-all duration-300 ease-in-out ${isMenuOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'
-                                            }`}
-                                    >
-                                        <span className="text-[12px] text-gray-500 overflow-hidden whitespace-nowrap leading-none">
-                                            {user?.email || 'Loading...'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="shrink-0 flex items-center justify-center ml-0.5 mt-0.5">
-                                    <ChevronDown
-                                        size={16}
-                                        className={`text-gray-400 transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}
-                                    />
-                                </div>
-
-                                {isMenuOpen && (
-                                    <div className="absolute top-[calc(100%+8px)] right-0 w-48 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                                        <ul className="flex flex-col gap-0.5">
-                                            {['Credits', 'Keys', 'Activity', 'Settings', 'Enterprise'].map((item) => (
-                                                <li key={item} className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
-                                                    {item}
-                                                </li>
-                                            ))}
-
-                                            <li
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    logout();
-                                                }}
-                                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors font-medium"
-                                            >
-                                                Sign out
-                                            </li>
-                                        </ul>
-
-                                        <div className="h-px bg-gray-100 my-1.5 mx-1" />
-
-                                        <div className="bg-gray-100 p-0.5 rounded-lg flex items-center justify-between">
-                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md bg-background shadow-sm transition-all">
-                                                <Sun size={14} className="text-gray-900" />
-                                            </button>
-                                            <button className="flex-1 flex items-center justify-center py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all">
-                                                <Moon size={14} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div className="w-full h-dvh max-w-full flex flex-col gap-0 overflow-hidden">
 
                 {/* Main Card */}
-                <div className="w-full h-[92vh] flex gap-6 p-0 pb-1 pt-1 not-rounded relative">
+                <div className="w-full h-full flex gap-4 lg:gap-6 p-2 lg:p-4 relative bg-transparent">
 
                     {/* Sidebar */}
                     <aside
                         className={`relative hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out ${isAsideOpen
                             ? 'w-5 lg:w-60 xl:w-64 2xl:w-75'
-                            : 'w-0 md:w-16'
+                            : 'w-0 md:w-20'
                             }`}>
                         <button
                             onClick={() => setAsideOpen(!isAsideOpen)}
@@ -663,54 +569,119 @@ export const ChatHub = () => {
                                 <PanelLeftOpen size={22} className="text-gray-500 group-hover:text-black" />
                             )}
                         </button>
-                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border p-1.5 border-white/20 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-4' : 'py-5 px-2 items-center'}`}>
 
-                            <div className={`flex items-center w-auto mb-1 transition-all duration-300 ${isAsideOpen ? 'gap-2 justify-center' : 'justify-center'}`}>
-                                {isAsideOpen && (
-                                    <nav className="flex items-center bg-background rounded-2xl px-1 py-1 shadow-sm gap-1 w-65 h-12">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleTabChange('chat')}
-                                            className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'chat'
-                                                ? 'bg-white text-black shadow-sm'
-                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
-                                                }`}
-                                        >
-                                            Chat
-                                        </Button>
+                        <Card className={`h-full w-full flex flex-col bg-card/40 backdrop-blur-3xl border border-white/20 shadow-xl rounded-3xl overflow-hidden transition-all duration-300 ${isAsideOpen ? 'p-4' : 'py-5 px-2 items-center'}`}>
 
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleTabChange('image')}
-                                            className={`rounded-full h-9 px-5 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'image'
-                                                ? 'bg-white text-black shadow-sm'
-                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
-                                                }`}
-                                        >
-                                            Image
-                                        </Button>
+                            {/* Logo*/}
+                            <div
+                                className={`flex items-center cursor-pointer transition-opacity hover:opacity-80 shrink-0 ${isAsideOpen ? 'mb-1.5 px-1 justify-start' : 'mb-1.5 justify-center'}`}
+                                onClick={() => {
+                                    selectConversation(null);
+                                    setModels([]);
+                                    setIsPopoverOpen(false);
+                                }}
+                            >
+                                <div className="flex items-center">
+                                    <div className="relative flex items-center justify-center shrink-0">
+                                        <Image
+                                            src="/kromaticos_logo.svg"
+                                            alt="Kromaticos Logo"
+                                            width={35}
+                                            height={35}
+                                            className="object-contain relative z-10"
+                                        />
+                                        <span className="absolute -top-1.5 -right-3.5 bg-destructive text-white text-[10px] font-bold px-1.5 rounded-sm z-20">IA</span>
+                                    </div>
 
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleTabChange('freepik')}
-                                            className={`rounded-full h-9 px-4 text-sm font-medium transition-all duration-200 ${activeSidebarTab === 'freepik'
-                                                ? 'bg-white text-black shadow-sm'
-                                                : 'text-font-gray hover:text-gray-900 hover:bg-transparent'
-                                                }`}
-                                        >
-                                            Freepik
-                                        </Button>
-                                    </nav>
-                                )}
 
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out flex items-center ${isAsideOpen ? 'max-w-37.5 opacity-100' : 'max-w-0 opacity-0'}`}>
+                                        <span className="text-[26px] font-extrabold text-[rgba(55,55,54)] tracking-tighter leading-none -ml-0.5 mt-5">romaticos</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className={`w-full px-1 mb-2 transition-all duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+
+
+                            {/* MENU DE NAVEGACIÓN UNIFICADO */}
+                            <div className={`w-full flex flex-col gap-1 bg-background rounded-2xl   px-1 mb-4 mt-2 transition-all duration-300 ${isAsideOpen ? 'items-stretch' : 'items-center'}`}>
+
+                                {/*New Chat */}
+                                <Button
+                                    onClick={() => setIsCreateConversationOpen(true)}
+                                    variant="ghost"
+                                    className={`relative flex items-center group cursor-pointer transition-all duration-200 border-0 shadow-none
+                            ${isAsideOpen
+                                            ? 'w-full h-10 px-3 rounded-xl justify-start hover:bg-gray-100/50'
+                                            : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
+                                        }`}
+                                >
+                                    <SquarePen className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`font-medium text-sm text-gray-700 group-hover:text-gray-900 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                        New chat
+                                    </div>
+                                </Button>
+
+                                {/*Chat */}
+                                <Button
+                                    onClick={() => handleTabChange('chat')}
+                                    variant="ghost"
+                                    className={`relative flex items-center group cursor-pointer transition-all duration-200 border-0 shadow-none
+                            ${isAsideOpen
+                                            ? `w-full h-10 px-3 rounded-xl justify-start ${activeSidebarTab === 'chat' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                            : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'chat' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                        }`}
+                                >
+                                    <MessageSquare className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'chat' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'chat' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                        Chat
+                                    </div>
+                                </Button>
+
+                                {/*Image */}
+                                <Button
+                                    onClick={() => handleTabChange('image')}
+                                    variant="ghost"
+                                    className={`relative flex items-center group cursor-pointer transition-all duration-200 border-0 shadow-none
+                            ${isAsideOpen
+                                            ? `w-full h-10 px-3 rounded-xl justify-start ${activeSidebarTab === 'image' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                            : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'image' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                        }`}
+                                >
+                                    <ImageIcon className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'image' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'image' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                        Image
+                                    </div>
+                                </Button>
+
+                                {/*Clients (here is where all the clients stuff are gonna be) */}
+                                <Button
+                                    onClick={() => handleTabChange('freepik')}
+                                    variant="ghost"
+                                    className={`relative flex items-center group cursor-pointer transition-all duration-200 border-0 shadow-none
+                            ${isAsideOpen
+                                            ? `w-full h-10 px-3 rounded-xl justify-start ${activeSidebarTab === 'freepik' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                            : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'freepik' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
+                                        }`}
+                                >
+                                    <LayoutGrid className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'freepik' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'freepik' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                        Clients
+                                    </div>
+                                </Button>
+
+                                {/*Search Rooms */}
                                 <Button
                                     onClick={() => setIsSearchChatActive(true)}
-                                    className="relative w-full flex items-center bg-background border border-transparent rounded-xl h-8 px-3 text-sm text-gray-500 hover:bg-white/80 hover:shadow-sm transition-all shadow-inner group cursor-text"
+                                    variant="ghost"
+                                    className={`relative flex items-center group cursor-text transition-all duration-200 border-0 shadow-none
+                            ${isAsideOpen
+                                            ? 'w-full h-10 px-3 rounded-xl justify-start bg-background/50 hover:bg-white border border-transparent hover:shadow-sm'
+                                            : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
+                                        }`}
                                 >
-                                    <Search className="mr-2 h-4 w-4 text-font-gray group-hover:text-gray-800" />
-                                    <div className="text-gray-600 truncate">Search rooms...</div>
+                                    <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                        Search rooms...
+                                    </div>
                                 </Button>
                             </div>
 
@@ -847,12 +818,81 @@ export const ChatHub = () => {
                     )}
 
 
+                    <div className="absolute top-4 right-4 lg:top-5 lg:right-6 z-70">
+                        <div className="flex items-center gap-3">
+                            <div className='relative'>
+                                <div
+                                    className="flex items-center bg-background rounded-full p-1 pr-3 gap-2.5 shadow-sm cursor-pointer hover:bg-gray-50 transition-all duration-300 ease-in-out"
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                >
+                                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+                                        <Image src="/user_avatar.svg" alt="User" width={48} height={48} className="rounded-full" />
+                                    </div>
+
+                                    <div className="flex flex-col text-left justify-center">
+                                        <span className="text-[14px] font-bold text-gray-800 leading-none whitespace-nowrap mt-0.5">
+                                            User {/* PlaceHolder */}
+                                        </span>
+
+                                        <div
+                                            className={`grid transition-all duration-300 ease-in-out ${isMenuOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'
+                                                }`}
+                                        >
+                                            <span className="text-[12px] text-gray-500 overflow-hidden whitespace-nowrap leading-none">
+                                                {user?.email || 'Loading...'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="shrink-0 flex items-center justify-center ml-0.5 mt-0.5">
+                                        <ChevronDown
+                                            size={16}
+                                            className={`text-gray-400 transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}
+                                        />
+                                    </div>
+
+                                    {isMenuOpen && (
+                                        <div className="absolute top-[calc(100%+8px)] right-0 w-48 bg-background rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                            <ul className="flex flex-col gap-0.5">
+                                                {['Credits', 'Keys', 'Activity', 'Settings', 'Enterprise'].map((item) => (
+                                                    <li key={item} className="px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg cursor-pointer transition-colors font-medium">
+                                                        {item}
+                                                    </li>
+                                                ))}
+
+                                                <li
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        logout();
+                                                    }}
+                                                    className="px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors font-medium"
+                                                >
+                                                    Sign out
+                                                </li>
+                                            </ul>
+
+                                            <div className="h-px bg-gray-100 my-1.5 mx-1" />
+
+                                            <div className="bg-gray-100 p-0.5 rounded-lg flex items-center justify-between">
+                                                <button className="flex-1 flex items-center justify-center py-1 rounded-md bg-background shadow-sm transition-all">
+                                                    <Sun size={14} className="text-gray-900" />
+                                                </button>
+                                                <button className="flex-1 flex items-center justify-center py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all">
+                                                    <Moon size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Main Content */}
-                    <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden">
+                    <main className="flex-1 relative flex flex-col h-full p-0 rounded-[2.5rem] overflow-hidden min-w-0">
 
                         {/* New Conversation & Add Model */}
-
-                        <div className="absolute top-3 left-16 md:left-4 right-4 2xl:top-6 2xl:left-8 2xl:right-8 flex items-start gap-2 2xl:gap-3 z-30">
+                        <div className="absolute top-3 left-16 md:left-4 right-48 lg:right-56 2xl:top-6 2xl:left-8 2xl:right-64 flex items-start gap-2 2xl:gap-3 z-30">
                             {/*Models List*/}
 
                             <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-3 w-full [&::-webkit-scrollbar]:h-4  [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
@@ -909,14 +949,6 @@ export const ChatHub = () => {
 
                             <div className="shrink-0 flex items-center gap-2 2xl:gap-3 pl-1">
                                 {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
-
-                                <Button
-                                    onClick={() => setIsCreateConversationOpen(true)}
-                                    variant="outline"
-                                    className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-5 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
-                                    <SquarePen size={16} /> <span className="hidden sm:inline">New chat</span>
-                                </Button>
-
                                 <div className="shrink-0">
                                     <ModelSelector />
                                 </div>
@@ -924,15 +956,10 @@ export const ChatHub = () => {
                             </div>
                         </div>
 
-
                         <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 scrollbar-hide mt-20 2xl:mt-24">
                             {/* A: No chat selected -> Cards */}
                             {!selectedConversationId ? (
                                 <>
-                                    {/*<div className="mb-8 mx-auto">
-                                        <h1 className="text-4xl md:text-6xl font-light text-white tracking-tight drop-shadow-md">Welcome to the chat.</h1>
-                                    </div>*/}
-
                                     {activeModels.length === 0 && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 2xl:gap-4 max-w-3xl 2xl:max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
                                             {recommendedCards.map((card, idx) => (
@@ -1054,7 +1081,7 @@ export const ChatHub = () => {
                                                                 <ThumbsDown size={14} />
                                                             </button>
 
-                                                            {/* Placeholder: Reenviar */}
+                                                            {/* Placeholder: Re-send */}
                                                             <button
                                                                 className="p-1.5 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                                                                 title="Forward / Resend"
@@ -1120,7 +1147,7 @@ export const ChatHub = () => {
 
                         {/* Input Area */}
 
-                        <div className="w-80% h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
+                        <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
                             <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
                                 {imagePreviews.length > 0 && (
                                     <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">

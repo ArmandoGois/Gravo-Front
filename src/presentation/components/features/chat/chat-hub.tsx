@@ -176,7 +176,6 @@ export const ChatHub = () => {
         setActiveSidebarTab(tab);
 
         selectConversation(null);
-
         setMessages([]);
         setModels([]);
 
@@ -601,7 +600,6 @@ export const ChatHub = () => {
                             </div>
 
 
-                            {/* MENU DE NAVEGACIÓN UNIFICADO */}
                             <div className={`w-full flex flex-col gap-1 bg-background rounded-2xl   px-1 mb-4 mt-2 transition-all duration-300 ${isAsideOpen ? 'items-stretch' : 'items-center'}`}>
 
                                 {/*New Chat */}
@@ -948,11 +946,14 @@ export const ChatHub = () => {
                             </div>
 
                             <div className="shrink-0 flex items-center gap-2 2xl:gap-3 pl-1">
-                                {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
-                                <div className="shrink-0">
-                                    <ModelSelector />
-                                </div>
-
+                                {selectedConversationId && (
+                                    <>
+                                        {activeModels.length > 0 && <div className="h-10 w-px bg-gray-400/30 shrink-0 mx-1"></div>}
+                                        <div className="shrink-0">
+                                            <ModelSelector />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -1001,7 +1002,7 @@ export const ChatHub = () => {
                                             <Loader2 className="animate-spin text-white w-8 h-8" />
                                         </div>
                                     ) : messages.length === 0 ? (
-                                        <div className="text-center text-white/70 italic mt-10">
+                                        <div className="text-center text-white italic mt-10 text-3xl">
                                             No messages yet. Start the conversation!
                                         </div>
                                     ) : (

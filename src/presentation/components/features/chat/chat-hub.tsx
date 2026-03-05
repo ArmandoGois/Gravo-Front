@@ -30,7 +30,7 @@ const TextMessage = dynamic(
     () => import('@/presentation/components/features/message/text-message').then(mod => mod.TextMessage),
     { ssr: false, loading: () => <span className="opacity-50">Loading message...</span> }
 );
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
@@ -41,7 +41,7 @@ import { ImageMessage } from '@/presentation/components/features/message/image-m
 import { ModelIcon } from '@/presentation/components/features/models/model-icons';
 import { ModelSelector } from "@/presentation/components/features/models/model-selector";
 import { Button } from '@/presentation/components/ui/button';
-import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
+import { Card } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
 import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
@@ -92,7 +92,7 @@ export const ChatHub = () => {
     const { logout, user } = useAuth();
 
     //Stores
-    const { activeModels, addModel, removeModel, setModels, removeAllModels } = useModelUIStore();
+    const { activeModels, removeModel, setModels, removeAllModels } = useModelUIStore();
     const { activeConversations } = useConversationUIStore();
     const { selectedConversationId, selectConversation, messages, setMessages } = useMessageUIStore();
 
@@ -186,48 +186,9 @@ export const ChatHub = () => {
         }
     };
 
-    const recommendedCards = useMemo(() => [
-        {
-            title: 'Flagship models',
-            keywords: ['gpt-4', 'claude', 'opus'],
-            logos: [
-                { src: '/Grok.svg', alt: 'Grok' },
-                { src: '/DeepSeek.svg', alt: 'DeepSeek' },
-                { src: '/Mistral.svg', alt: 'Mistral' }
-            ]
-        },
-        {
-            title: 'Best roleplay models',
-            keywords: ['mistral', 'llama', 'roleplay'],
-            logos: [{ src: '/Mistral.svg', alt: 'Mistral' }]
-        },
-        {
-            title: 'Best coding models',
-            keywords: ['deepseek', 'codellama', 'claude'],
-            logos: [{ src: '/DeepSeek.svg', alt: 'DeepSeek' }]
-        },
-        {
-            title: 'Reasoning models',
-            keywords: ['o1', 'reasoning', 'thinking'],
-            logos: [{ src: '/Gemini.svg', alt: 'Gemini' }]
-        }
-    ], []);
 
-    const handleCardClick = (keywords: string[]) => {
-        const modelsToAdd = availableModels.filter(model =>
-            keywords.some(keyword =>
-                model.id.toLowerCase().includes(keyword) ||
-                model.name?.toLowerCase().includes(keyword)
-            )
-        );
 
-        modelsToAdd.forEach(model => {
-            const isAlreadyActive = activeModels.some(m => m.id === model.id);
-            if (!isAlreadyActive) {
-                addModel(model);
-            }
-        });
-    };
+
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() && selectedFiles.length === 0) return;
@@ -957,42 +918,45 @@ export const ChatHub = () => {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 scrollbar-hide mt-20 2xl:mt-24">
-                            {/* A: No chat selected -> Cards */}
+                        {/* Se agregó !w-0 y !hidden para forzar la eliminación de la barra vertical */}
+                        <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 mt-20 2xl:mt-24 scrollbar-hide [&::-webkit-scrollbar]:hidden! [-ms-overflow-style:none] [scrollbar-width:none]">
+                            {/* A: No chat selected -> Recent Chats Preview */}
                             {!selectedConversationId ? (
-                                <>
-                                    {activeModels.length === 0 && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 2xl:gap-4 max-w-3xl 2xl:max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-300">
-                                            {recommendedCards.map((card, idx) => (
-                                                <Card
-                                                    key={idx}
-                                                    onClick={() => handleCardClick(card.keywords)}
-                                                    className="group 2xl:h-32 rounded-3xl 2xl:rounded-4xl bg-background/90 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-1"
-                                                >
-                                                    <CardHeader className="px-4 pt-4 2xl:px-6 2xl:pt-6 pb-0">
-                                                        <CardTitle className="text-base 2xl:text-xl font-medium text-gray-700 group-hover:text-black">
-                                                            {card.title}
-                                                        </CardTitle>
-                                                    </CardHeader>
+                                <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">                                    {filteredConversations.length > 0 ? (
+                                    <>
+                                        <h2 className="font-semibold text-[rgba(55,55,54)] tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
+                                        <div className="flex gap-3 2xl:gap-4 w-full overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:h-4 [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
 
-                                                    <CardFooter className="px-4 pb-3 2xl:px-6 2xl:pb-4 flex justify-end gap-1.5 2xl:gap-2">
-                                                        {card.logos.map((logo, i) => (
-                                                            <div key={i} className="w-6 h-6 2xl:w-8 2xl:h-8 rounded-full bg-background flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
-                                                                <Image
-                                                                    src={logo.src}
-                                                                    alt={logo.alt}
-                                                                    width={18}
-                                                                    height={18}
-                                                                    className="opacity-70 group-hover:opacity-100 transition-opacity w-3.5 h-3.5 2xl:w-4.5 2xl:h-4.5"
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </CardFooter>
+                                            {filteredConversations.slice(0, 10).map((conversation) => (
+                                                <Card
+                                                    key={conversation.id}
+                                                    onClick={() => handleConversationClick(conversation.id)}
+                                                    className="group shrink-0 snap-start  md:w-70 2xl:w-[320px] h-40 2xl:h- rounded-3xl 2xl:rounded-4xl bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-4 2xl:p-6"
+                                                >
+
+                                                    <div className="flex justify-between items-start gap-2">
+                                                        <h3 className="font-medium text-gray-800 text-sm 2xl:text-base line-clamp-2">
+                                                            {conversation.title}
+                                                        </h3>
+                                                        <MessageSquare size={16} className="text-gray-400 group-hover:text-secondary-blue shrink-0" />
+                                                    </div>
+                                                    <div className="text-[11px] 2xl:text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-secondary-blue/60 group-hover:bg-secondary-blue transition-colors"></div>
+                                                        {conversation.models.length} {conversation.models.length === 1 ? 'model' : 'models'}
+                                                    </div>
                                                 </Card>
                                             ))}
                                         </div>
-                                    )}
-                                </>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full opacity-60">
+                                        <MessageSquare size={32} className="text-gray-400 mb-4" />
+                                        <p className="text-sm text-gray-500 italic text-center">
+                                            No recent conversations. Start a new one below!
+                                        </p>
+                                    </div>
+                                )}
+                                </div>
                             ) : (
                                 /* B: chat selected -> messages */
                                 <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">

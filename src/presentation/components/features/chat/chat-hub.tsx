@@ -918,7 +918,7 @@ export const ChatHub = () => {
                             </div>
                         </div>
 
-                        {/* Se agregó !w-0 y !hidden para forzar la eliminación de la barra vertical */}
+
                         <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 mt-20 2xl:mt-24 scrollbar-hide [&::-webkit-scrollbar]:hidden! [-ms-overflow-style:none] [scrollbar-width:none]">
                             {/* A: No chat selected -> Recent Chats Preview */}
                             {!selectedConversationId ? (
@@ -1179,6 +1179,38 @@ export const ChatHub = () => {
                                             Edit
                                         </Button>
                                     )}
+                                    <Button
+                                        onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                        className="h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all bg-background/80 border-border text-gray-600 hover:bg-background">
+                                        <MessageSquare size={18} />
+                                        <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                    </Button>
+                                    {isPopoverOpen && (
+                                        <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <span className="text-gray-700 font-medium">Chat memory</span>
+
+                                                <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
+                                                    {memoryValue}
+                                                </div>
+                                            </div>
+
+                                            {/* Slider*/}
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="500"
+                                                value={memoryValue}
+                                                onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                            />
+
+                                            <p className="mt-3 text-xs text-black leading-relaxed">
+                                                Sends the last {memoryValue} messages from your conversation each request.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="w-full px-4 ">
@@ -1213,44 +1245,6 @@ export const ChatHub = () => {
                                                 // eslint-disable-next-line no-param-reassign
                                                 onClick={(e) => (e.currentTarget.value = '')}
                                             />
-                                        </div>
-
-
-                                        <div className="relative" >
-                                            <div
-                                                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                                className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black ">
-                                                <MessageSquare size={18} />
-                                                <span className="text-sm font-medium">Memory ({memoryValue})</span>
-                                                <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
-                                            </div>
-                                            {/* Idea: change message square to a button like the image one and put them together*/}
-
-                                            {isPopoverOpen && (
-                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <span className="text-gray-700 font-medium">Chat memory</span>
-
-                                                        <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
-                                                            {memoryValue}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Slider*/}
-                                                    <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="500"
-                                                        value={memoryValue}
-                                                        onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
-                                                    />
-
-                                                    <p className="mt-3 text-xs text-black leading-relaxed">
-                                                        Sends the last {memoryValue} messages from your conversation each request.
-                                                    </p>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                     {showModelAlert && (

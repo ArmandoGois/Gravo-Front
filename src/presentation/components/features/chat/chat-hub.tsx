@@ -23,7 +23,12 @@ import {
     ThumbsDown,
     CornerUpRight,
     LayoutGrid,
-    UserPlus
+    UserPlus,
+    ArrowLeft,     // <-- New icons for detail view
+    Building2,
+    Globe,
+    FileText,
+    Palette
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -33,7 +38,6 @@ const TextMessage = dynamic(
 );
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import type { Client } from '@/domain/entities/client.entity';
 import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
@@ -83,14 +87,12 @@ export const ChatHub = () => {
     const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
-    const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'clients'>('chat'); // <-- Changed to clients
+    const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'clients'>('chat');
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
     const [isEditImageMode, setIsEditImageMode] = useState(false);
-
-    const [, setSelectedClient] = useState<Client | null>(null);
 
     const [searchTerm] = useState("");
 
@@ -106,7 +108,17 @@ export const ChatHub = () => {
     const { isLoading: isLoadingChats } = useConversations();
     const { isLoading: isLoadingMessages } = useConversationMessages(activeSidebarTab === 'chat');
     const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
-    const { clients, isLoading: isLoadingClients, loadClients } = useClients(); // <-- Hook clients
+
+    // Clients Hook - Extracted everything needed for details
+    const {
+        clients,
+        isLoading: isLoadingClients,
+        loadClients,
+        selectedClientDetails,
+        isLoadingDetails,
+        loadClientDetails,
+        clearSelectedClient
+    } = useClients();
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -135,7 +147,6 @@ export const ChatHub = () => {
         }
     }, [messages]);
 
-    // Fetch clients ONLY when tab is active
     useEffect(() => {
         if (activeSidebarTab === 'clients') {
             loadClients();
@@ -189,17 +200,16 @@ export const ChatHub = () => {
         setActiveSidebarTab(tab);
 
         selectConversation(null);
-        setSelectedClient(null); // Clear selected client on tab change
+        clearSelectedClient(); // Clear selected client if user navigates away
         setMessages([]);
         setModels([]);
 
-        if (tab === 'chat' || tab === 'clients') {
+        if (tab === 'chat') {
             setIsImageMode(false);
         } else if (tab === 'image') {
             setIsImageMode(true);
         }
     };
-
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() && selectedFiles.length === 0) return;
@@ -869,17 +879,205 @@ export const ChatHub = () => {
                         {activeSidebarTab === 'clients' ? (
 
                             // --- CLIENTS VIEW ---
-                            <div className="w-full h-full flex flex-col items-center p-8 bg-card/40 backdrop-blur-md rounded-3xl border border-white/20 shadow-xl animate-in fade-in zoom-in-95 duration-300 overflow-y-auto custom-scrollbar">
+                            <div className="w-full h-full flex flex-col p-8 bg-card/40 backdrop-blur-md rounded-3xl border border-white/20 shadow-xl animate-in fade-in zoom-in-95 duration-300 overflow-y-auto custom-scrollbar">
 
-                                {isLoadingClients ? (
+                                {isLoadingDetails ? (
+                                    // Loader for detail view
+                                    <div className="flex flex-col items-center justify-center h-full py-8">
+                                        <Loader2 className="animate-spin text-secondary-blue w-8 h-8 mb-4" />
+                                        <p className="text-gray-500 font-medium">Loading client profile...</p>
+                                    </div>
+                                ) : selectedClientDetails ? (
+
+                                    // -- SINGLE CLIENT DETAIL PROFILE --
+                                    <div className="w-full max-w-5xl mx-auto flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
+
+                                        {/* Back button */}
+                                        <Button
+                                            variant="ghost"
+                                            onClick={clearSelectedClient}
+                                            className="w-fit mb-6 text-gray-500 hover:text-black hover:bg-white/50 rounded-xl"
+                                        >
+                                            <ArrowLeft className="mr-2 h-4 w-4" /> Back to clients
+                                        </Button>
+
+                                        {/* Profile Header */}
+                                        <div className="flex items-center gap-6 mb-8 bg-white/40 p-6 rounded-3xl border border-white/60 shadow-sm">
+                                            <div className="w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden border border-gray-100 shrink-0">
+                                                {selectedClientDetails.client.logo_url ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={selectedClientDetails.client.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="text-4xl select-none">🏢</span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                                                    {selectedClientDetails.client.name}
+                                                </h2>
+                                                <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600 font-medium">
+                                                    {selectedClientDetails.client.industry && (
+                                                        <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-lg border border-white">
+                                                            <Building2 size={16} className="text-secondary-blue" /> {selectedClientDetails.client.industry}
+                                                        </span>
+                                                    )}
+                                                    {selectedClientDetails.client.website && (
+                                                        <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1 rounded-lg border border-white">
+                                                            <Globe size={16} className="text-secondary-blue" /> {selectedClientDetails.client.website}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Grid for details */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                                            {/* Left Column - General Info */}
+                                            <div className="lg:col-span-2 space-y-6">
+                                                <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl">
+                                                    <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                        <FileText size={18} className="text-secondary-blue" /> Description
+                                                    </h3>
+                                                    <p className="text-gray-600 text-sm leading-relaxed">
+                                                        {selectedClientDetails.client.description || "No description provided for this client."}
+                                                    </p>
+                                                </Card>
+
+                                                <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl">
+                                                    <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                                                        <Palette size={18} className="text-secondary-blue" /> Brand Profile
+                                                    </h3>
+
+                                                    {/* Colors Grid */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+                                                        {/* Primary Colors */}
+                                                        {selectedClientDetails.brand_profile?.primary_colors && selectedClientDetails.brand_profile.primary_colors.length > 0 && (
+                                                            <div>
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Primary Colors</span>
+                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                    {selectedClientDetails.brand_profile.primary_colors.map((color, i) => (
+                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
+                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Secondary Colors */}
+                                                        {selectedClientDetails.brand_profile?.secondary_colors && selectedClientDetails.brand_profile.secondary_colors.length > 0 && (
+                                                            <div>
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Secondary Colors</span>
+                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                    {selectedClientDetails.brand_profile.secondary_colors.map((color, i) => (
+                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
+                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Accent Colors */}
+                                                        {selectedClientDetails.brand_profile?.accent_colors && selectedClientDetails.brand_profile.accent_colors.length > 0 && (
+                                                            <div>
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Accent Colors</span>
+                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                    {selectedClientDetails.brand_profile.accent_colors.map((color, i) => (
+                                                                        <div key={i} className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
+                                                                            <div className="w-3.5 h-3.5 rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color }}></div>
+                                                                            <span className="text-xs text-gray-700 font-mono">{color}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Forbidden Colors */}
+                                                        {selectedClientDetails.brand_profile?.forbidden_colors && selectedClientDetails.brand_profile.forbidden_colors.length > 0 && (
+                                                            <div>
+                                                                <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Forbidden Colors</span>
+                                                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                                                    {selectedClientDetails.brand_profile.forbidden_colors.map((color, i) => (
+                                                                        <div key={i} className="flex items-center gap-1.5 bg-red-50/50 px-2 py-1 rounded-md border border-red-100 shadow-sm">
+                                                                            <div className="w-3.5 h-3.5 rounded-full border border-red-200 shadow-inner relative flex items-center justify-center overflow-hidden" style={{ backgroundColor: color }}>
+                                                                                {/* Red strike-through line for forbidden colors */}
+                                                                                <div className="w-full h-[1.5px] bg-red-500 absolute rotate-45"></div>
+                                                                            </div>
+                                                                            <span className="text-xs text-red-700 font-mono">{color}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Typography & Notes */}
+                                                    <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/50">
+                                                        <div>
+                                                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Typography Style</span>
+                                                            <p className="text-sm text-gray-800 mt-1 font-medium">
+                                                                {selectedClientDetails.brand_profile?.typography_style || "Not specified"}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Font Preferences</span>
+                                                            <p className="text-sm text-gray-800 mt-1 font-medium">
+                                                                {selectedClientDetails.brand_profile?.font_preferences || "Not specified"}
+                                                            </p>
+                                                        </div>
+                                                        <div className="col-span-2">
+                                                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Style Notes</span>
+                                                            <p className="text-sm text-gray-600 mt-1 bg-white/40 p-3 rounded-xl border border-white/60">
+                                                                {selectedClientDetails.brand_profile?.style_notes || "No additional style notes."}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </div>
+
+                                            {/* Right Column - Stats / Assets */}
+                                            <div className="space-y-6">
+                                                <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl flex flex-col gap-4">
+                                                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                                        <ImageIcon size={18} className="text-secondary-blue" /> Assets
+                                                    </h3>
+
+                                                    <div className="bg-white/60 rounded-2xl p-4 flex items-center justify-between border border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                                        <span className="text-sm text-gray-700 font-semibold">Reference Images</span>
+                                                        <span className="bg-secondary-blue/15 text-secondary-blue px-3 py-1 rounded-full text-sm font-bold">
+                                                            {selectedClientDetails.reference_images_count}
+                                                        </span>
+                                                    </div>
+                                                    <div className="bg-white/60 rounded-2xl p-4 flex items-center justify-between border border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                                        <span className="text-sm text-gray-700 font-semibold">Templates</span>
+                                                        <span className="bg-secondary-blue/15 text-secondary-blue px-3 py-1 rounded-full text-sm font-bold">
+                                                            {selectedClientDetails.templates_count}
+                                                        </span>
+                                                    </div>
+                                                </Card>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                ) : isLoadingClients ? (
+
+                                    // Loader for the grid
                                     <div className="flex flex-col items-center justify-center h-full py-8">
                                         <Loader2 className="animate-spin text-secondary-blue w-8 h-8 mb-4" />
                                         <p className="text-gray-500 font-medium">Loading clients...</p>
                                     </div>
+
                                 ) : clients.length === 0 ? (
+
                                     // Empty state - Create Client
-                                    <div className="flex items-center justify-center h-full w-full max-w-lg">
-                                        <Card className="w-full aspect-[4/3] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-[2rem] shadow-none bg-transparent group">
+                                    <div className="flex items-center justify-center h-full w-full">
+                                        <Card className="w-full max-w-sm aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
                                             <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
                                                 <UserPlus size={28} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
                                             </div>
@@ -889,23 +1087,25 @@ export const ChatHub = () => {
                                             </p>
                                         </Card>
                                     </div>
+
                                 ) : (
+
                                     // Grid of Clients
-                                    <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {/* Create new client card inside the grid */}
-                                        <Card className="aspect-[4/3] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-[2rem] shadow-none bg-transparent group">
+                                        <Card className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
                                             <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
                                                 <UserPlus size={20} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
                                             </div>
-                                            <h3 className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Añadir</h3>
+                                            <h3 className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Añadir cliente</h3>
                                         </Card>
 
                                         {/* Fetched Clients */}
                                         {clients.map((client) => (
                                             <Card
                                                 key={client.id}
-                                                onClick={() => setSelectedClient(client)} // <-- Set selected client
-                                                className="aspect-[4/3] bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-[2rem] group hover:-translate-y-1"
+                                                onClick={() => loadClientDetails(client.id)} // <-- Fetch details on click
+                                                className="aspect-4/3 bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm hover:shadow-lg hover:border-white flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-4xl group hover:-translate-y-1"
                                             >
                                                 <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 overflow-hidden border border-gray-100 group-hover:scale-105 transition-transform duration-300">
                                                     {client.logo_url ? (
@@ -919,7 +1119,7 @@ export const ChatHub = () => {
                                                     {client.name}
                                                 </h3>
                                                 {client.industry && (
-                                                    <p className="text-xs text-gray-500 mt-1 truncate max-w-[80%]">{client.industry}</p>
+                                                    <p className="text-xs text-gray-500 mt-1 truncate max-w-[80%] font-medium">{client.industry}</p>
                                                 )}
                                             </Card>
                                         ))}

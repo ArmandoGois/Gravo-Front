@@ -1,4 +1,4 @@
-import { Client } from "@/domain/entities/client.entity";
+import { Client, ClientDetails } from "@/domain/entities/client.entity";
 
 export interface GetClientsResponseDto {
     clients: Client[];
@@ -7,3 +7,6 @@ export interface GetClientsResponseDto {
     offset: number;
     has_more: boolean;
 }
+
+// Added new DTO for single client response
+export type GetClientDetailsResponseDto = ClientDetails;

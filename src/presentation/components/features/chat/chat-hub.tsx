@@ -46,6 +46,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useClients } from '@/presentation/hooks/use-clients';
 import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
 import { useConversations } from "@/presentation/hooks/use-conversations";
 import { useCreateConversation } from "@/presentation/hooks/use-create-conversation";
@@ -57,6 +58,7 @@ import { useLoadImageGeneration } from "@/presentation/hooks/use-load-image-gene
 import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
+
 
 import { SearchModal } from '../conversation/search-conversation';
 
@@ -118,6 +120,13 @@ export const ChatHub = () => {
     const { editImage, isEditing } = useEditImage();
     const isBusy = isSending || isGenerating || isEditing;
     useLoadImageGeneration(selectedConversationId, activeSidebarTab === 'image');
+    const { clients, isLoading: isLoadingClients, loadClients } = useClients();
+    // Fetch clients ONLY when the clients tab becomes active
+    useEffect(() => {
+        if (activeSidebarTab === 'clients') {
+            loadClients();
+        }
+    }, [activeSidebarTab, loadClients]);
 
     //Autoscroll to bottom on new messages
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -675,115 +684,119 @@ export const ChatHub = () => {
                                     </div>
                                 </Button>
 
-                                {/*Search Rooms */}
-                                <Button
-                                    onClick={() => setIsSearchChatActive(true)}
-                                    variant="ghost"
-                                    className={`relative flex items-center group cursor-text transition-all duration-200 border-0 shadow-none
-                            ${isAsideOpen
-                                            ? 'w-full h-10 px-3 rounded-xl justify-start bg-background/50 hover:bg-white border border-transparent hover:shadow-sm'
-                                            : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
-                                        }`}
-                                >
-                                    <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
-                                    <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                        Search rooms...
-                                    </div>
-                                </Button>
-                            </div>
-
-                            <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">
-                                    {activeSidebarTab === 'clients' ? 'Clients List' : 'Active Chats'}
-                                </h3>
-
-                                {/* Render of Active Chats */}
-                                {isListLoading && activeConversations.length === 0 && (
-                                    <div className="flex flex-col gap-2 px-2 animate-pulse">
-                                        <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
-                                    </div>
-                                )}
-
-                                {/* Empty State */}
-                                {!isLoadingChats && filteredConversations.length === 0 && (
-                                    <div className="flex flex-col gap-2 px-2 mt-10 opacity-60">
-                                        <p className="text-xs text-font-gray italic text-center">
-                                            {activeSidebarTab === 'chat' && "No text conversations found."}
-                                            {activeSidebarTab === 'image' && "No image history found."}
-                                            {activeSidebarTab === 'clients' && "No clients registered yet."}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {activeConversations.length === 0 && activeSidebarTab !== 'clients' && (
-                                    <p className="text-xs text-white italic pl-2">No active Conversations.</p>
-                                )}
-
-                                {filteredConversations.map(conversation => (
-                                    <div
-                                        key={conversation.id}
-                                        onClick={() => handleConversationClick(conversation.id)}
-                                        className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
-                                        ${selectedConversationId === conversation.id
-                                                ? 'bg-background shadow-md border-white/60'
-                                                : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
+                                {/* Search Rooms - Hidden in Clients tab */}
+                                {activeSidebarTab !== 'clients' && (
+                                    <Button
+                                        onClick={() => setIsSearchChatActive(true)}
+                                        variant="ghost"
+                                        className={`relative flex items-center group cursor-text transition-all duration-200 border-0 shadow-none
+                                            ${isAsideOpen
+                                                ? 'w-full h-10 px-3 rounded-xl justify-start bg-background/50 hover:bg-white border border-transparent hover:shadow-sm'
+                                                : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
                                             }`}
                                     >
-                                        <div className="flex flex-col overflow-hidden max-w-[80%]">
-                                            <div className="flex items-center gap-2">
-
-                                                <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
-                                            </div>
-                                            <span className="text-[10px] text-font-gray pl-6 truncate">
-                                                {conversation.models.length} models
-                                            </span>
+                                        <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                        <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                            Search rooms...
                                         </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
-                                                }}
-                                                className={`p-1.5 rounded-lg transition-all 
-                                                    ${activeMenuId === conversation.id
-                                                        ? 'bg-gray-200 opacity-100'
-                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
-
-                                            {/* Floating Menu*/}
-                                            {activeMenuId === conversation.id && (
-                                                <div
-                                                    className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <button
-                                                        onClick={() => openRenameModal(conversation.id, conversation.title)}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
-                                                    >
-                                                        <Pencil size={14} />
-                                                        Rename
-                                                    </button>
-
-                                                    <div className="h-px bg-gray-100 my-1" />
-
-                                                    <button
-                                                        onClick={() => {
-                                                            setConversationToDelete(conversation.id);
-                                                            setActiveMenuId(null);
-                                                        }}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                    </Button>
+                                )}
                             </div>
+
+                            {/* Chats & Images History List - Hidden in Clients tab */}
+                            {activeSidebarTab !== 'clients' && (
+                                <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                                    <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">
+                                        Active Chats
+                                    </h3>
+
+                                    {/* Render of Active Chats */}
+                                    {isListLoading && activeConversations.length === 0 && (
+                                        <div className="flex flex-col gap-2 px-2 animate-pulse">
+                                            <p className="text-xs text-font-gray text-center mt-2">Syncing history...</p>
+                                        </div>
+                                    )}
+
+                                    {/* Empty State */}
+                                    {!isLoadingChats && filteredConversations.length === 0 && (
+                                        <div className="flex flex-col gap-2 px-2 mt-10 opacity-60">
+                                            <p className="text-xs text-font-gray italic text-center">
+                                                {activeSidebarTab === 'chat' && "No text conversations found."}
+                                                {activeSidebarTab === 'image' && "No image history found."}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {activeConversations.length === 0 && (
+                                        <p className="text-xs text-white italic pl-2">No active Conversations.</p>
+                                    )}
+
+                                    {/* Map through conversations */}
+                                    {filteredConversations.map(conversation => (
+                                        <div
+                                            key={conversation.id}
+                                            onClick={() => handleConversationClick(conversation.id)}
+                                            className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all border border-transparent 
+                                            ${selectedConversationId === conversation.id
+                                                    ? 'bg-background shadow-md border-white/60'
+                                                    : 'bg-background/40 hover:bg-background/70 hover:border-white/50'
+                                                }`}
+                                        >
+                                            <div className="flex flex-col overflow-hidden max-w-[80%]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
+                                                </div>
+                                                <span className="text-[10px] text-font-gray pl-6 truncate">
+                                                    {conversation.models.length} models
+                                                </span>
+                                            </div>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveMenuId(activeMenuId === conversation.id ? null : conversation.id);
+                                                    }}
+                                                    className={`p-1.5 rounded-lg transition-all 
+                                                        ${activeMenuId === conversation.id
+                                                            ? 'bg-gray-200 opacity-100'
+                                                            : 'opacity-0 group-hover:opacity-100 hover:bg-white/80 text-font-gray'}`}
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+
+                                                {/* Floating Menu */}
+                                                {activeMenuId === conversation.id && (
+                                                    <div
+                                                        className="absolute right-0 top-8 w-32 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <button
+                                                            onClick={() => openRenameModal(conversation.id, conversation.title)}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-black rounded-lg transition-colors text-left"
+                                                        >
+                                                            <Pencil size={14} />
+                                                            Rename
+                                                        </button>
+
+                                                        <div className="h-px bg-gray-100 my-1" />
+
+                                                        <button
+                                                            onClick={() => {
+                                                                setConversationToDelete(conversation.id);
+                                                                setActiveMenuId(null);
+                                                            }}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors text-left"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </Card>
                     </aside>
 
@@ -903,22 +916,48 @@ export const ChatHub = () => {
                         {activeSidebarTab === 'clients' ? (
 
                             // Clients View
-                            <div className="w-full h-full flex items-center justify-center p-4 pt-20 lg:p-8 lg:pt-24">
+                            <div className="w-full h-full overflow-y-auto p-4 pt-20 lg:p-8 lg:pt-24 custom-scrollbar">
+                                {isLoadingClients ? (
+                                    <div className="w-full h-full flex flex-col items-center justify-center">
+                                        <Loader2 className="animate-spin text-secondary-blue w-10 h-10 mb-4" />
+                                        <p className="text-gray-500 font-medium">Loading clients...</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6 animate-in fade-in zoom-in-95 duration-300">
 
-                                {/* Reduced max-width from 2xl to lg to make the bubble more compact */}
-                                <div className="w-full max-w-lg flex flex-col items-center justify-center p-6 lg:p-10 bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/20 shadow-xl animate-in fade-in zoom-in-95 duration-300">
+                                        {/* "Create client" Card */}
+                                        <Card className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
+                                            <div className="w-14 h-14 bg-white shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
+                                                <UserPlus size={24} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Crear cliente</h3>
+                                        </Card>
 
-                                    {/* "Create client" Button */}
-                                    <Card className="w-full aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
-                                        <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
-                                            <UserPlus size={28} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
-                                        </div>
-                                        <h3 className="text-xl font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Crear cliente</h3>
-                                        <p className="text-sm text-gray-500 mt-2 text-center px-6 leading-relaxed">
-                                            Aún no tienes clientes registrados. Añade tu primer cliente para comenzar a trabajar.
-                                        </p>
-                                    </Card>
-                                </div>
+                                        {/* Clients Cards Mapping */}
+                                        {clients.map((client) => (
+                                            <Card
+                                                key={client.id}
+                                                className="aspect-4/3 bg-card/40 backdrop-blur-md border border-white/20 shadow-sm hover:shadow-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-4xl group hover:-translate-y-1"
+                                            >
+                                                <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 overflow-hidden border border-gray-100 group-hover:scale-105 transition-transform duration-300">
+                                                    {client.logo_url ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img src={client.logo_url} alt={client.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        // Company Emoji fallback
+                                                        <span className="text-4xl select-none">🏢</span>
+                                                    )}
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-800 group-hover:text-secondary-blue transition-colors text-center px-4 w-full truncate">
+                                                    {client.name}
+                                                </h3>
+                                                {client.industry && (
+                                                    <p className="text-xs text-gray-500 mt-1 truncate max-w-[80%]">{client.industry}</p>
+                                                )}
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                         ) : (

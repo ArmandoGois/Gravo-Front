@@ -63,7 +63,9 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
+import { CreateClientModal } from '../chat/CreateClientModal';
 import { SearchModal } from '../conversation/search-conversation';
+
 
 const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -93,6 +95,7 @@ export const ChatHub = () => {
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
     const [isEditImageMode, setIsEditImageMode] = useState(false);
+    const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
 
     const [searchTerm] = useState("");
 
@@ -517,7 +520,7 @@ export const ChatHub = () => {
                                 Cancel
                             </Button>
                             <Button
-                                className="flex-1 rounded-xl bg-black text-white hover:bg-gray-800"
+                                className="flex-1 rounded-xl bg-black text-white hover:bg-logo-color"
                                 onClick={handleRenameSubmit}
                                 disabled={isUpdating}
                             >
@@ -576,7 +579,7 @@ export const ChatHub = () => {
 
 
                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out flex items-center ${isAsideOpen ? 'max-w-37.5 opacity-100' : 'max-w-0 opacity-0'}`}>
-                                        <span className="text-[26px] font-extrabold text-[rgba(55,55,54)] tracking-tighter leading-none -ml-0.5 mt-5">romaticos</span>
+                                        <span className="text-[26px] font-extrabold text-logo-color tracking-tighter leading-none -ml-0.5 mt-5">romaticos</span>
                                     </div>
                                 </div>
                             </div>
@@ -595,7 +598,7 @@ export const ChatHub = () => {
                                             : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
                                         }`}
                                 >
-                                    <SquarePen className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <SquarePen className={`h-4.5 w-4.5 text-gray-500 group-hover:text-logo-color transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
                                     <div className={`font-medium text-sm text-gray-700 group-hover:text-gray-900 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                         New chat
                                     </div>
@@ -611,7 +614,7 @@ export const ChatHub = () => {
                                             : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'chat' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
                                         }`}
                                 >
-                                    <MessageSquare className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'chat' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <MessageSquare className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'chat' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-logo-color'} ${isAsideOpen ? 'mr-3' : ''}`} />
                                     <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'chat' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                         Chat
                                     </div>
@@ -627,7 +630,7 @@ export const ChatHub = () => {
                                             : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'image' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
                                         }`}
                                 >
-                                    <ImageIcon className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'image' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <ImageIcon className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'image' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-logo-color'} ${isAsideOpen ? 'mr-3' : ''}`} />
                                     <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'image' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                         Image
                                     </div>
@@ -643,7 +646,7 @@ export const ChatHub = () => {
                                             : `w-10 h-10 rounded-full justify-center ${activeSidebarTab === 'clients' ? 'bg-secondary-blue/15' : 'hover:bg-gray-100/50'}`
                                         }`}
                                 >
-                                    <LayoutGrid className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'clients' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-gray-800'} ${isAsideOpen ? 'mr-3' : ''}`} />
+                                    <LayoutGrid className={`h-4.5 w-4.5 transition-all shrink-0 ${activeSidebarTab === 'clients' ? 'text-secondary-blue' : 'text-gray-500 group-hover:text-logo-color'} ${isAsideOpen ? 'mr-3' : ''}`} />
                                     <div className={`font-medium text-sm truncate transition-all duration-200 ${activeSidebarTab === 'clients' ? 'text-secondary-blue font-semibold' : 'text-gray-700 group-hover:text-gray-900'} ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                         Clients
                                     </div>
@@ -660,7 +663,7 @@ export const ChatHub = () => {
                                                 : 'w-10 h-10 rounded-full justify-center hover:bg-gray-100/50'
                                             }`}
                                     >
-                                        <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-gray-800 transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
+                                        <Search className={`h-4.5 w-4.5 text-gray-500 group-hover:text-logo-color transition-all shrink-0 ${isAsideOpen ? 'mr-3' : ''}`} />
                                         <div className={`text-sm text-gray-600 truncate transition-all duration-200 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
                                             Search rooms...
                                         </div>
@@ -671,7 +674,7 @@ export const ChatHub = () => {
                             {/* Chats & Images History List - Hidden in Clients tab */}
                             {activeSidebarTab !== 'clients' && (
                                 <div className={`flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar w-full transition-opacity duration-300 ${isAsideOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
-                                    <h3 className="text-xs font-bold text-gray-800 tracking-wider pl-2 mb-2">Active Chats</h3>
+                                    <h3 className="text-xs font-bold text-logo-color tracking-wider pl-2 mb-2">Active Chats</h3>
 
                                     {/* Render of Active Chats */}
                                     {isListLoading && activeConversations.length === 0 && (
@@ -707,7 +710,7 @@ export const ChatHub = () => {
                                         >
                                             <div className="flex flex-col overflow-hidden max-w-[80%]">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-semibold text-gray-800 truncate">{conversation.title}</span>
+                                                    <span className="text-sm font-semibold text-logo-color truncate">{conversation.title}</span>
                                                 </div>
                                                 <span className="text-[10px] text-font-gray pl-6 truncate">
                                                     {conversation.models.length} models
@@ -774,7 +777,7 @@ export const ChatHub = () => {
                                     <Trash2 size={24} />
                                 </div>
 
-                                <h3 className="text-lg font-bold text-gray-800 mb-2">Delete chat?</h3>
+                                <h3 className="text-lg font-bold text-logo-color mb-2">Delete chat?</h3>
                                 <p className="text-sm text-font-gray mb-6 leading-relaxed">
                                     All messages in this conversation will be permanently deleted.
                                 </p>
@@ -815,7 +818,7 @@ export const ChatHub = () => {
                                     </div>
 
                                     <div className="flex flex-col text-left justify-center">
-                                        <span className="text-[14px] font-bold text-gray-800 leading-none whitespace-nowrap mt-0.5">
+                                        <span className="text-[14px] font-bold text-logo-color leading-none whitespace-nowrap mt-0.5">
                                             User {/* PlaceHolder */}
                                         </span>
 
@@ -896,9 +899,9 @@ export const ChatHub = () => {
                                         <Button
                                             variant="ghost"
                                             onClick={clearSelectedClient}
-                                            className="w-fit mb-6 text-gray-500 hover:text-black hover:bg-white/50 rounded-xl"
+                                            className="w-fit mb-6  hover:text-black hover:bg-background rounded-xl text-logo-color"
                                         >
-                                            <ArrowLeft className="mr-2 h-4 w-4" /> Back to clients
+                                            <ArrowLeft className="mr-2 h-4 w-4 " /> Back to clients
                                         </Button>
 
                                         {/* Profile Header */}
@@ -912,7 +915,7 @@ export const ChatHub = () => {
                                                 )}
                                             </div>
                                             <div className="flex flex-col">
-                                                <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                                                <h2 className="text-3xl font-extrabold text-logo-color tracking-tight">
                                                     {selectedClientDetails.client.name}
                                                 </h2>
                                                 <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600 font-medium">
@@ -936,7 +939,7 @@ export const ChatHub = () => {
                                             {/* Left Column - General Info */}
                                             <div className="lg:col-span-2 space-y-6">
                                                 <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl">
-                                                    <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                    <h3 className="text-lg font-bold text-logo-color mb-3 flex items-center gap-2">
                                                         <FileText size={18} className="text-secondary-blue" /> Description
                                                     </h3>
                                                     <p className="text-gray-600 text-sm leading-relaxed">
@@ -945,7 +948,7 @@ export const ChatHub = () => {
                                                 </Card>
 
                                                 <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl">
-                                                    <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                                                    <h3 className="text-lg font-bold text-logo-color mb-5 flex items-center gap-2">
                                                         <Palette size={18} className="text-secondary-blue" /> Brand Profile
                                                     </h3>
 
@@ -1016,17 +1019,17 @@ export const ChatHub = () => {
                                                         )}
                                                     </div>
 
-                                                    {/* Typography & Notes - Se mantiene igual pero con un padding top ajustado */}
+                                                    {/* Typography & Notes */}
                                                     <div className="grid grid-cols-2 gap-6 pt-6 border-t border-gray-200/50">
                                                         <div>
                                                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Typography Style</span>
-                                                            <p className="text-sm text-gray-800 mt-1 font-medium">
+                                                            <p className="text-sm text-logo-color mt-1 font-medium">
                                                                 {selectedClientDetails.brand_profile?.typography_style || "Not specified"}
                                                             </p>
                                                         </div>
                                                         <div>
                                                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Font Preferences</span>
-                                                            <p className="text-sm text-gray-800 mt-1 font-medium">
+                                                            <p className="text-sm text-logo-color mt-1 font-medium">
                                                                 {selectedClientDetails.brand_profile?.font_preferences || "Not specified"}
                                                             </p>
                                                         </div>
@@ -1043,7 +1046,7 @@ export const ChatHub = () => {
                                             {/* Right Column - Stats / Assets */}
                                             <div className="space-y-6">
                                                 <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl flex flex-col gap-4">
-                                                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                                    <h3 className="text-lg font-bold text-logo-color flex items-center gap-2">
                                                         <ImageIcon size={18} className="text-secondary-blue" /> Assets
                                                     </h3>
 
@@ -1093,7 +1096,7 @@ export const ChatHub = () => {
                                     // Grid of Clients
                                     <div className="w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {/* Create new client card inside the grid */}
-                                        <Card className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
+                                        <Card onClick={() => setIsCreateClientOpen(true)} className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
                                             <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
                                                 <UserPlus size={20} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
                                             </div>
@@ -1115,7 +1118,7 @@ export const ChatHub = () => {
                                                         <span className="text-4xl select-none">🏢</span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-lg font-bold text-gray-800 group-hover:text-secondary-blue transition-colors text-center px-4 w-full truncate">
+                                                <h3 className="text-lg font-bold text-logo-color group-hover:text-secondary-blue transition-colors text-center px-4 w-full truncate">
                                                     {client.name}
                                                 </h3>
                                                 {client.industry && (
@@ -1167,7 +1170,7 @@ export const ChatHub = () => {
                                                     {model.id && (
                                                         <ModelIcon modelName={model.id} />
                                                     )}
-                                                    <span className="text-xs text-gray-800 font-medium whitespace-nowrap">
+                                                    <span className="text-xs text-logo-color font-medium whitespace-nowrap">
                                                         {model.title}
                                                     </span>
                                                 </div>
@@ -1201,7 +1204,7 @@ export const ChatHub = () => {
                                         <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">
                                             {filteredConversations.length > 0 ? (
                                                 <>
-                                                    <h2 className="font-semibold text-[rgba(55,55,54)] tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
+                                                    <h2 className="font-semibold text-logo-color tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
                                                     <div className="flex gap-3 2xl:gap-4 w-full overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:h-4 [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
                                                         {filteredConversations.slice(0, 10).map((conversation) => (
                                                             <Card
@@ -1210,7 +1213,7 @@ export const ChatHub = () => {
                                                                 className="group shrink-0 snap-start  md:w-70 2xl:w-[320px] h-40 2xl:h- rounded-3xl 2xl:rounded-4xl bg-background/80 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-lg hover:border-white/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between p-4 2xl:p-6"
                                                             >
                                                                 <div className="flex justify-between items-start gap-2">
-                                                                    <h3 className="font-medium text-gray-800 text-sm 2xl:text-base line-clamp-2">
+                                                                    <h3 className="font-medium text-logo-color text-sm 2xl:text-base line-clamp-2">
                                                                         {conversation.title}
                                                                     </h3>
                                                                     <MessageSquare size={16} className="text-gray-400 group-hover:text-secondary-blue shrink-0" />
@@ -1461,7 +1464,7 @@ export const ChatHub = () => {
                                                 onChange={(e) => setInputValue(e.target.value)}
                                                 onKeyDown={handleKeyDown}
                                                 disabled={isBusy}
-                                                className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-gray-800 rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
+                                                className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
                                                 placeholder={
                                                     isEditImageMode
                                                         ? "Describe the edit you want to make..."
@@ -1553,6 +1556,11 @@ export const ChatHub = () => {
                     </main >
                 </div >
             </div >
+            {/* Modal para crear clientes */}
+            <CreateClientModal
+                isOpen={isCreateClientOpen}
+                onClose={() => setIsCreateClientOpen(false)}
+            />
         </div >
     );
 }

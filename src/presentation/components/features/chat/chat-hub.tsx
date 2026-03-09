@@ -24,7 +24,7 @@ import {
     CornerUpRight,
     LayoutGrid,
     UserPlus,
-    ArrowLeft,     // <-- New icons for detail view
+    ArrowLeft,
     Building2,
     Globe,
     FileText,
@@ -805,7 +805,6 @@ export const ChatHub = () => {
                         </div>
                     )}
 
-                    {/* Navbar Superior del Usuario */}
                     <div className="absolute top-4 right-4 lg:top-5 lg:right-6 z-70">
                         <div className="flex items-center gap-3">
                             <div className='relative'>
@@ -1045,18 +1044,30 @@ export const ChatHub = () => {
 
                                             {/* Right Column - Stats / Assets */}
                                             <div className="space-y-6">
-                                                <Card className="p-6 bg-white/50 backdrop-blur-sm border-white/40 shadow-sm rounded-3xl flex flex-col gap-4">
+
+                                                {/* Edit Client Profile */}
+                                                <Button
+                                                    onClick={() => {
+                                                        // Here we will open an edit modal for clients
+                                                    }}
+                                                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-black bg-background hover:bg-secondary-blue hover:text-white border border-secondary-blue/20 transition-all duration-300 shadow-sm hover:shadow-md"
+                                                >
+                                                    <Pencil size={16} />
+                                                    Edit Client Profile
+                                                </Button>
+
+                                                <Card className="p-6 bg-background/50 backdrop-blur-sm border-background/40 shadow-sm rounded-3xl flex flex-col gap-4">
                                                     <h3 className="text-lg font-bold text-logo-color flex items-center gap-2">
                                                         <ImageIcon size={18} className="text-secondary-blue" /> Assets
                                                     </h3>
 
-                                                    <div className="bg-white/60 rounded-2xl p-4 flex items-center justify-between border border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                                    <div className="bg-background/60 rounded-2xl p-4 flex items-center justify-between border border-background shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                                         <span className="text-sm text-gray-700 font-semibold">Reference Images</span>
                                                         <span className="bg-secondary-blue/15 text-secondary-blue px-3 py-1 rounded-full text-sm font-bold">
                                                             {selectedClientDetails.reference_images_count}
                                                         </span>
                                                     </div>
-                                                    <div className="bg-white/60 rounded-2xl p-4 flex items-center justify-between border border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                                    <div className="bg-background/60 rounded-2xl p-4 flex items-center justify-between border border-background shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                                         <span className="text-sm text-gray-700 font-semibold">Templates</span>
                                                         <span className="bg-secondary-blue/15 text-secondary-blue px-3 py-1 rounded-full text-sm font-bold">
                                                             {selectedClientDetails.templates_count}
@@ -1080,8 +1091,8 @@ export const ChatHub = () => {
 
                                     // Empty state - Create Client
                                     <div className="flex items-center justify-center h-full w-full">
-                                        <Card className="w-full max-w-sm aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
-                                            <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
+                                        <Card className="w-full max-w-sm aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-background/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
+                                            <div className="w-16 h-16 bg-background shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
                                                 <UserPlus size={28} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Crear cliente</h3>
@@ -1096,8 +1107,8 @@ export const ChatHub = () => {
                                     // Grid of Clients
                                     <div className="w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {/* Create new client card inside the grid */}
-                                        <Card onClick={() => setIsCreateClientOpen(true)} className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
-                                            <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
+                                        <Card onClick={() => setIsCreateClientOpen(true)} className="aspect-4/3 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-background/40 hover:border-secondary-blue/50 transition-all duration-300 rounded-4xl shadow-none bg-transparent group">
+                                            <div className="w-12 h-12 bg-background shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-gray-100">
                                                 <UserPlus size={20} className="text-gray-400 group-hover:text-secondary-blue transition-colors" />
                                             </div>
                                             <h3 className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Añadir cliente</h3>
@@ -1108,9 +1119,9 @@ export const ChatHub = () => {
                                             <Card
                                                 key={client.id}
                                                 onClick={() => loadClientDetails(client.id)} // <-- Fetch details on click
-                                                className="aspect-4/3 bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm hover:shadow-lg hover:border-white flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-4xl group hover:-translate-y-1"
+                                                className="aspect-4/3 bg-background/50 backdrop-blur-sm border border-background/60 shadow-sm hover:shadow-lg hover:border-background flex flex-col items-center justify-center cursor-pointer transition-all duration-300 rounded-4xl group hover:-translate-y-1"
                                             >
-                                                <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 overflow-hidden border border-gray-100 group-hover:scale-105 transition-transform duration-300">
+                                                <div className="w-20 h-20 rounded-full bg-background shadow-sm flex items-center justify-center mb-4 overflow-hidden border border-gray-100 group-hover:scale-105 transition-transform duration-300">
                                                     {client.logo_url ? (
                                                         // eslint-disable-next-line @next/next/no-img-element
                                                         <img src={client.logo_url} alt={client.name} className="w-full h-full object-cover" />
@@ -1142,7 +1153,7 @@ export const ChatHub = () => {
                                         {activeModels.length === 0 && (
                                             <Button
                                                 variant="outline"
-                                                className="shrink-0 rounded-full bg-background border-white/40 text-black hover:bg-background/30 px-2 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
+                                                className="shrink-0 rounded-full bg-background border-background/40 text-black hover:bg-background/30 px-2 h-10 gap-2 font-medium backdrop-blur-md whitespace-nowrap">
                                                 No active models
                                             </Button>
                                         )}
@@ -1456,6 +1467,43 @@ export const ChatHub = () => {
                                                     Edit
                                                 </Button>
                                             )}
+                                            <Button
+                                                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                                className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isPopoverOpen
+                                                    ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
+                                                    : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
+                                                    }`}
+                                            >
+                                                <MessageSquare size={18} className={isPopoverOpen ? 'text-white' : 'text-gray-600'} />
+                                                <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                                <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180 text-white' : 'text-gray-600'}`} />
+                                            </Button>
+
+                                            {isPopoverOpen && (
+                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <span className="text-gray-700 font-medium">Chat memory</span>
+
+                                                        <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
+                                                            {memoryValue}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Slider*/}
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="500"
+                                                        value={memoryValue}
+                                                        onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                                    />
+
+                                                    <p className="mt-3 text-xs text-black leading-relaxed">
+                                                        Sends the last {memoryValue} messages from your conversation each request.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="w-full px-4 ">
@@ -1494,40 +1542,7 @@ export const ChatHub = () => {
 
 
                                                 <div className="relative" >
-                                                    <div
-                                                        onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                                        className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black ">
-                                                        <MessageSquare size={18} />
-                                                        <span className="text-sm font-medium">Memory ({memoryValue})</span>
-                                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
-                                                    </div>
-                                                    {/* Idea: change message square to a button like the image one and put them together*/}
 
-                                                    {isPopoverOpen && (
-                                                        <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
-                                                            <div className="flex justify-between items-center mb-4">
-                                                                <span className="text-gray-700 font-medium">Chat memory</span>
-
-                                                                <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
-                                                                    {memoryValue}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Slider*/}
-                                                            <input
-                                                                type="range"
-                                                                min="0"
-                                                                max="500"
-                                                                value={memoryValue}
-                                                                onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
-                                                            />
-
-                                                            <p className="mt-3 text-xs text-black leading-relaxed">
-                                                                Sends the last {memoryValue} messages from your conversation each request.
-                                                            </p>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                             {showModelAlert && (
@@ -1556,7 +1571,6 @@ export const ChatHub = () => {
                     </main >
                 </div >
             </div >
-            {/* Modal para crear clientes */}
             <CreateClientModal
                 isOpen={isCreateClientOpen}
                 onClose={() => setIsCreateClientOpen(false)}

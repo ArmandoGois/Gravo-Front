@@ -1,25 +1,21 @@
 import { X, ChevronRight, Check, Loader2, Building2, Palette, FileText } from 'lucide-react';
 import React, { useState } from 'react';
 
-// 1. Definimos los tipos de las props
 interface CreateClientModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
-// 2. Aplicamos la interfaz al componente
 export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientModalProps) => {
 
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Estado del Paso 1
     const [basicInfo, setBasicInfo] = useState({
         name: '', slug: '', description: '', website: '', industry: ''
     });
 
-    // Estado del Paso 2
     const [brandInfo, setBrandInfo] = useState({
         primaryColors: '', secondaryColors: '', accentColors: '', forbiddenColors: '',
         typography_style: '', font_preferences: '',
@@ -32,7 +28,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
 
     const handleStep1Submit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulación: pasamos al paso 2
         setStep(2);
     };
 
@@ -40,12 +35,12 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
         e.preventDefault();
         setIsLoading(true);
 
-        // Simulación: envío final
+
         setTimeout(() => {
             setIsLoading(false);
             if (onSuccess) onSuccess();
             onClose();
-            setStep(1); // Reseteamos al cerrar
+            setStep(1);
         }, 800);
     };
 
@@ -53,7 +48,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-in fade-in duration-200 p-4">
             <div className="bg-background/95 border border-white/50 p-0 rounded-3xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
 
-                {/* Cabecera del Modal */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 bg-white/50">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-secondary-blue/10 rounded-full flex items-center justify-center text-secondary-blue">
@@ -73,7 +67,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                     </button>
                 </div>
 
-                {/* Contenido (Scrollable) */}
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
 
                     {step === 1 && (
@@ -117,7 +110,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                                     {['primary', 'secondary', 'accent', 'forbidden'].map(type => {
                                         const colorKey = `${type}Colors` as keyof typeof brandInfo;
                                         const colorString = brandInfo[colorKey] as string;
-                                        // Filtramos los espacios vacíos para renderizar solo cuadros válidos
                                         const colorsArray = colorString.split(',').map(c => c.trim()).filter(Boolean);
 
                                         return (
@@ -129,7 +121,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                                                     className="h-10 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:border-secondary-blue outline-none transition-all"
                                                     placeholder="#hex, blue"
                                                 />
-                                                {/* Contenedor de la vista previa de colores */}
                                                 <div className="flex flex-wrap gap-1.5 min-h-6 px-1 mt-0.5">
                                                     {colorsArray.map((color, idx) => (
                                                         <div
@@ -202,7 +193,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                     )}
                 </div>
 
-                {/* Footer / Botones de acción */}
                 <div className="px-6 py-4 border-t border-gray-100/50 bg-white/50 flex justify-end gap-3">
                     <button
                         onClick={onClose}

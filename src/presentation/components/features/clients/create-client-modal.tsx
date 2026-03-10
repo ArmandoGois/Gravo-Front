@@ -136,7 +136,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-in fade-in duration-200 p-4">
             <div className="bg-background/95 border border-white/50 p-0 rounded-3xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
 
-                {/* Cabecera del Modal */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 bg-white/50">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-secondary-blue/10 rounded-full flex items-center justify-center text-secondary-blue">
@@ -269,7 +268,6 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                                 </div>
                             </div>
 
-                            {/* ... (Aquí continúa la otra parte del form de Typography & Style que ya tenías) ... */}
                             <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                                 <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><FileText size={16} className="text-secondary-blue" /> Typography & Style</h3>
                                 <div className="grid grid-cols-2 gap-4 mb-4">

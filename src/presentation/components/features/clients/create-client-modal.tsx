@@ -1,5 +1,5 @@
-import { X, ChevronRight, Check, Loader2, Building2, Palette, FileText, Plus } from 'lucide-react'; // <-- Added Plus icon
-import React, { useState } from 'react';
+import { X, ChevronRight, Check, Loader2, Building2, Palette, FileText, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 import { CreateBrandProfileRequestDto } from '@/domain/dtos/create-brand.dto';
 import { useCreateClient } from '@/presentation/hooks/use-create-client';
@@ -8,20 +8,32 @@ interface CreateClientModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    // New optional props for editing
+    initialStep?: number;
+    clientIdToEdit?: string | null;
 }
 
-export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientModalProps) => {
+export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1, clientIdToEdit = null }: CreateClientModalProps) => {
 
-    const [step, setStep] = useState(1);
-    const [createdClientId, setCreatedClientId] = useState<string | null>(null);
+    const [step, setStep] = useState(initialStep);
+    const [createdClientId, setCreatedClientId] = useState<string | null>(clientIdToEdit);
     const { createClient, createBrandProfile, isLoading, error } = useCreateClient();
 
-    // Step 1 State - Added logo_url
+    // Reset step and ID when modal opens or props change
+    useEffect(() => {
+        if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStep(initialStep);
+            setCreatedClientId(clientIdToEdit);
+        }
+    }, [isOpen, initialStep, clientIdToEdit]);
+
+    // Step 1 State
     const [basicInfo, setBasicInfo] = useState({
         name: '', slug: '', description: '', website: '', industry: '', logo_url: ''
     });
 
-    // Step 2 State - Colors are now arrays
+    // Step 2 State
     const [brandInfo, setBrandInfo] = useState({
         primaryColors: [] as string[],
         secondaryColors: [] as string[],
@@ -36,8 +48,8 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
     if (!isOpen) return null;
 
     const resetForm = () => {
-        setStep(1);
-        setCreatedClientId(null);
+        setStep(initialStep); // Reset to whatever the initial step was
+        setCreatedClientId(clientIdToEdit);
         setBasicInfo({ name: '', slug: '', description: '', website: '', industry: '', logo_url: '' });
         setBrandInfo({
             primaryColors: [], secondaryColors: [], accentColors: [], forbiddenColors: [],
@@ -337,7 +349,7 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess }: CreateClientMo
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-secondary-blue hover:bg-blue-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                     >
                         {isLoading ? <Loader2 size={16} className="animate-spin" /> : (step === 1 ? <ChevronRight size={16} /> : <Check size={16} />)}
-                        {step === 1 ? 'Next Step' : 'Save Client'}
+                        {step === 1 ? 'Next Step' : (clientIdToEdit ? 'Update Brand' : 'Save Client')}
                     </button>
                 </div>
 

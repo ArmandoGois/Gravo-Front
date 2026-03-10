@@ -123,6 +123,8 @@ export const ChatHub = () => {
         loadClientDetails,
         clearSelectedClient
     } = useClients();
+    const [isEditBrandModalOpen, setIsEditBrandModalOpen] = useState(false);
+    const [clientToEditId, setClientToEditId] = useState<string | null>(null);
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -1051,7 +1053,10 @@ export const ChatHub = () => {
                                                 {/* Edit Client Brand */}
                                                 <Button
                                                     onClick={() => {
-                                                        // Here we will open an edit modal for clients
+                                                        if (selectedClientDetails?.client.id) {
+                                                            setClientToEditId(selectedClientDetails.client.id);
+                                                            setIsEditBrandModalOpen(true);
+                                                        }
                                                     }}
                                                     className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-black bg-background hover:bg-secondary-blue hover:text-white border border-secondary-blue/20 transition-all duration-300 shadow-sm hover:shadow-md"
                                                 >
@@ -1577,6 +1582,23 @@ export const ChatHub = () => {
             <CreateClientModal
                 isOpen={isCreateClientOpen}
                 onClose={() => setIsCreateClientOpen(false)}
+                onSuccess={() => loadClients()}
+            />
+
+            {/* Edit Brand Profile Modal */}
+            <CreateClientModal
+                isOpen={isEditBrandModalOpen}
+                onClose={() => {
+                    setIsEditBrandModalOpen(false);
+                    setClientToEditId(null);
+                }}
+                initialStep={2} // Force it to open directly on the Brand step
+                clientIdToEdit={clientToEditId} // Pass the ID to update
+                onSuccess={() => {
+                    // Reload both the grid and the specific client details
+                    loadClients();
+                    if (clientToEditId) loadClientDetails(clientToEditId);
+                }}
             />
         </div >
     );

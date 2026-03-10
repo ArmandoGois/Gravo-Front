@@ -1048,7 +1048,7 @@ export const ChatHub = () => {
                                             {/* Right Column - Stats / Assets */}
                                             <div className="space-y-6">
 
-                                                {/* Edit Client Profile */}
+                                                {/* Edit Client Brand */}
                                                 <Button
                                                     onClick={() => {
                                                         // Here we will open an edit modal for clients
@@ -1056,7 +1056,7 @@ export const ChatHub = () => {
                                                     className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-black bg-background hover:bg-secondary-blue hover:text-white border border-secondary-blue/20 transition-all duration-300 shadow-sm hover:shadow-md"
                                                 >
                                                     <Pencil size={16} />
-                                                    Edit Client Profile
+                                                    Edit Client Brand
                                                 </Button>
 
                                                 <Card className="p-6 bg-background/50 backdrop-blur-sm border-background/40 shadow-sm rounded-3xl flex flex-col gap-4">

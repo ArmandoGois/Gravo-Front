@@ -63,7 +63,7 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
-import { CreateClientModal } from '../chat/CreateClientModal';
+import { CreateClientModal } from '../clients/create-client-modal';
 import { SearchModal } from '../conversation/search-conversation';
 
 
@@ -1556,7 +1556,7 @@ export const ChatHub = () => {
                     </main >
                 </div >
             </div >
-            {/* Modal para crear clientes */}
+            {/* Create Client Modal */}
             <CreateClientModal
                 isOpen={isCreateClientOpen}
                 onClose={() => setIsCreateClientOpen(false)}

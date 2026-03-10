@@ -63,8 +63,10 @@ import { useModels } from '@/presentation/hooks/use-models';
 import { useSendMessage } from "@/presentation/hooks/use-send-message";
 import { useUpdateConversation } from '@/presentation/hooks/use-update-conversation';
 
+import { Textarea } from '../../ui/textarea';
 import { CreateClientModal } from '../clients/create-client-modal';
 import { SearchModal } from '../conversation/search-conversation';
+
 
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -80,7 +82,6 @@ export const ChatHub = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
     const [isAsideOpen, setAsideOpen] = useState(true);
-    //const [isInternetSearch, setIsInternetSearch] = useState(false);
     const [isSearchChatActive, setIsSearchChatActive] = useState(false);
     const [memoryValue, setMemoryValue] = useState(10);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -267,6 +268,8 @@ export const ChatHub = () => {
             return;
         }
 
+
+
         if (isImageMode && !isEditImageMode) {
             const imageModelId = activeModels[0].id;
 
@@ -291,12 +294,12 @@ export const ChatHub = () => {
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
+    // const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    //     if (e.key === 'Enter' && !e.shiftKey) {
+    //         e.preventDefault();
+    //         handleSendMessage();
+    //     }
+    // };
 
     const handleToggleEditImageMode = () => {
         setIsEditImageMode(!isEditImageMode);
@@ -1507,10 +1510,9 @@ export const ChatHub = () => {
                                         </div>
 
                                         <div className="w-full px-4 ">
-                                            <Input
+                                            <Textarea
                                                 value={inputValue}
                                                 onChange={(e) => setInputValue(e.target.value)}
-                                                onKeyDown={handleKeyDown}
                                                 disabled={isBusy}
                                                 className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
                                                 placeholder={

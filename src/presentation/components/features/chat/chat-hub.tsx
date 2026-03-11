@@ -217,6 +217,14 @@ export const ChatHub = () => {
         }
     };
 
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [inputValue]);
+
     const handleSendMessage = async () => {
         if (!inputValue.trim() && selectedFiles.length === 0) return;
 
@@ -1408,20 +1416,16 @@ export const ChatHub = () => {
                                 </div>
 
                                 {/* Input Area */}
-                                <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2" >
-                                    <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60">
+                                <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2">
+
+                                    <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60 transition-all duration-200">
                                         {imagePreviews.length > 0 && (
                                             <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
                                                 {imagePreviews.map((preview, index) => (
                                                     <div key={index} className="relative group shrink-0">
                                                         <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/30 shadow-sm bg-black/5">
-                                                            {/* Use img instead of Image for simplicity */}
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                            <img
-                                                                src={preview}
-                                                                alt="preview"
-                                                                className="w-full h-full object-cover"
-                                                            />
+                                                            <img src={preview} alt="preview" className="w-full h-full object-cover" />
                                                         </div>
                                                         <button
                                                             onClick={() => removeImage(index)}
@@ -1434,7 +1438,8 @@ export const ChatHub = () => {
                                             </div>
                                         )}
 
-                                        <div className="flex gap-3 mb-1 2xl:mb-2 px-4 mt-2 2xl:mt-3">
+
+                                        <div className="flex gap-3 px-4 mt-3 mb-1">
                                             <div
                                                 onClick={() => {
                                                     if (isImageMode) {
@@ -1445,15 +1450,15 @@ export const ChatHub = () => {
                                                         setTimeout(() => setShowModelAlert(false), 2000);
                                                     }
                                                 }}
-                                                className={` mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                                className={`mt-1 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
                                             >
                                                 <Paperclip size={17} />
                                             </div>
+
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={handleToggleImageMode}
-
                                                 className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
                                                     ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
                                                     : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
@@ -1461,6 +1466,7 @@ export const ChatHub = () => {
                                                 <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
                                                 Image
                                             </Button>
+
                                             {isImageMode && (
                                                 <Button
                                                     size="sm"
@@ -1475,9 +1481,10 @@ export const ChatHub = () => {
                                                     Edit
                                                 </Button>
                                             )}
+
                                             <Button
                                                 onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                                className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isPopoverOpen
+                                                className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all relative ${isPopoverOpen
                                                     ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
                                                     : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
                                                     }`}
@@ -1485,92 +1492,92 @@ export const ChatHub = () => {
                                                 <MessageSquare size={18} className={isPopoverOpen ? 'text-white' : 'text-gray-600'} />
                                                 <span className="text-sm font-medium">Memory ({memoryValue})</span>
                                                 <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180 text-white' : 'text-gray-600'}`} />
-                                            </Button>
 
-                                            {isPopoverOpen && (
-                                                <div className="absolute bottom-full mb-2 left-0 w-95 p-1.5 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 ">
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <span className="text-gray-700 font-medium">Chat memory</span>
-
-                                                        <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-7.5 text-center">
-                                                            {memoryValue}
+                                                {isPopoverOpen && (
+                                                    <div className="absolute bottom-full mb-2 left-0 w-80 p-4 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 text-left cursor-default" onClick={e => e.stopPropagation()}>
+                                                        <div className="flex justify-between items-center mb-4">
+                                                            <span className="text-gray-700 font-medium">Chat memory</span>
+                                                            <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-12 text-center">
+                                                                {memoryValue}
+                                                            </div>
                                                         </div>
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="500"
+                                                            value={memoryValue}
+                                                            onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                                        />
+                                                        <p className="mt-3 text-xs text-black leading-relaxed">
+                                                            Sends the last {memoryValue} messages from your conversation each request.
+                                                        </p>
                                                     </div>
-
-                                                    {/* Slider*/}
-                                                    <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="500"
-                                                        value={memoryValue}
-                                                        onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
-                                                    />
-
-                                                    <p className="mt-3 text-xs text-black leading-relaxed">
-                                                        Sends the last {memoryValue} messages from your conversation each request.
-                                                    </p>
-                                                </div>
-                                            )}
+                                                )}
+                                            </Button>
                                         </div>
 
-                                        <div className="w-full px-4 ">
-                                            <Textarea
-                                                value={inputValue}
-                                                onChange={(e) => setInputValue(e.target.value)}
-                                                disabled={isBusy}
-                                                className="h-8 2xl:h-12 w-full bg-white border border-gray-200/60 shadow-sm px-5 text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80"
-                                                placeholder={
-                                                    isEditImageMode
-                                                        ? "Describe the edit you want to make..."
-                                                        : isImageMode
-                                                            ? "Describe the image you want to generate..."
-                                                            : "Start a new message..."
-                                                }
+
+                                        <div className="flex items-end gap-3 px-4 pt-1 pb-4 relative">
+
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                className="hidden"
+                                                ref={fileInputRef}
+                                                onChange={handleFileSelect}
+                                                // eslint-disable-next-line no-param-reassign
+                                                onClick={(e) => (e.currentTarget.value = '')}
                                             />
-                                        </div>
 
-                                        <div className="flex justify-between items-center px-2 pt-2 pb-1">
-                                            <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
-
-                                                {/* Basic Tools */}
-                                                <div className=" pl-1 pt-1 flex items-center gap-6">
-                                                    <input
-                                                        type="file"
-                                                        multiple
-                                                        accept="image/*"
-                                                        className="hidden"
-                                                        ref={fileInputRef}
-                                                        onChange={handleFileSelect}
-                                                        // eslint-disable-next-line no-param-reassign
-                                                        onClick={(e) => (e.currentTarget.value = '')}
-                                                    />
-                                                </div>
-
-
-                                                <div className="relative" >
-
-                                                </div>
-                                            </div>
                                             {showModelAlert && (
-                                                <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                                    <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive">
-                                                        <span className="text-xxs font-semibold whitespace-nowrap">
+                                                <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                                    <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive shadow-lg">
+                                                        <span className="text-xs font-semibold whitespace-nowrap">
                                                             {alertMessage}
                                                         </span>
                                                     </div>
                                                 </div>
                                             )}
+
+                                            <div className="flex-1">
+                                                <Textarea
+                                                    ref={textareaRef}
+                                                    value={inputValue}
+                                                    onChange={(e) => setInputValue(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleSendMessage();
+                                                        } else if (e.key === 'Enter' && e.shiftKey) {
+                                                            return;
+                                                        }
+                                                    }}
+                                                    disabled={isBusy}
+                                                    rows={1}
+                                                    className="w-full bg-white border border-gray-200/60 shadow-sm px-5 py-3.5 text-base 2xl:text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80 resize-none max-h-50 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
+                                                    placeholder={
+                                                        isEditImageMode
+                                                            ? "Describe the edit you want to make..."
+                                                            : isImageMode
+                                                                ? "Describe the image you want to generate..."
+                                                                : "Start a new message..."
+                                                    }
+                                                />
+                                            </div>
+
                                             <Button
                                                 onClick={handleSendMessage}
                                                 disabled={isBusy}
                                                 size="icon"
-                                                className={`rounded-2xl h-7 w-10 -mt-3 shadow-lg transition-all hover:-translate-y-0.5 ${isBusy ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-blue hover:bg-secondary-blue hover:shadow-xl text-white'
+                                                className={`rounded-2xl h-12 w-12 shrink-0 shadow-md transition-all hover:-translate-y-0.5 ${isBusy ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-blue hover:bg-secondary-blue hover:shadow-lg text-white'
                                                     }`}
                                             >
                                                 <ArrowUp size={20} />
                                             </Button>
                                         </div>
+
                                     </Card>
                                 </div>
                             </>

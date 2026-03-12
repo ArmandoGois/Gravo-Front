@@ -97,6 +97,8 @@ export const ChatHub = () => {
     const [newTitleInput, setNewTitleInput] = useState("");
     const [isEditImageMode, setIsEditImageMode] = useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
+    const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
 
     const [searchTerm] = useState("");
 
@@ -1058,6 +1060,20 @@ export const ChatHub = () => {
                                             {/* Right Column - Stats / Assets */}
                                             <div className="space-y-6">
 
+                                                {/* Edit Client Profile */}
+                                                <Button
+                                                    onClick={() => {
+                                                        if (selectedClientDetails?.client.id) {
+                                                            setClientToEditId(selectedClientDetails.client.id);
+                                                            setIsEditProfileModalOpen(true);
+                                                        }
+                                                    }}
+                                                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-black bg-white hover:bg-secondary-blue hover:text-white border border-white/60 transition-all duration-300 shadow-sm hover:shadow-md"
+                                                >
+                                                    <Building2 size={16} />
+                                                    Edit Client Profile
+                                                </Button>
+
                                                 {/* Edit Client Brand */}
                                                 <Button
                                                     onClick={() => {
@@ -1599,10 +1615,26 @@ export const ChatHub = () => {
                     setIsEditBrandModalOpen(false);
                     setClientToEditId(null);
                 }}
-                initialStep={2} // Force it to open directly on the Brand step
-                clientIdToEdit={clientToEditId} // Pass the ID to update
+                initialStep={2}
+                clientIdToEdit={clientToEditId}
                 onSuccess={() => {
-                    // Reload both the grid and the specific client details
+                    loadClients();
+                    if (clientToEditId) loadClientDetails(clientToEditId);
+                }}
+            />
+
+            {/* Edit Client Profile (Basic Info) Modal */}
+            <CreateClientModal
+                isOpen={isEditProfileModalOpen}
+                onClose={() => {
+                    setIsEditProfileModalOpen(false);
+                    setClientToEditId(null);
+                }}
+                initialStep={1}
+                clientIdToEdit={clientToEditId}
+                initialClientData={selectedClientDetails?.client || null} // <-- Pass the selected client data
+                isEditingOnlyOneStep={true} // <-- Ensure it saves and closes instead of going to step 2
+                onSuccess={() => {
                     loadClients();
                     if (clientToEditId) loadClientDetails(clientToEditId);
                 }}

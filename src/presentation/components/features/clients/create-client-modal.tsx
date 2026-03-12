@@ -2,6 +2,7 @@ import { X, ChevronRight, Check, Loader2, Building2, Palette, FileText, Plus } f
 import React, { useState, useEffect } from 'react';
 
 import { CreateBrandProfileRequestDto } from '@/domain/dtos/create-brand.dto';
+import { Client } from '@/domain/entities/client.entity';
 import { useCreateClient } from '@/presentation/hooks/use-create-client';
 
 interface CreateClientModalProps {
@@ -11,26 +12,27 @@ interface CreateClientModalProps {
     // New optional props for editing
     initialStep?: number;
     clientIdToEdit?: string | null;
+    initialClientData?: Client | null;
+    isEditingOnlyOneStep?: boolean;
 }
 
-export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1, clientIdToEdit = null }: CreateClientModalProps) => {
+export const CreateClientModal = ({
+    isOpen,
+    onClose,
+    onSuccess,
+    initialStep = 1,
+    clientIdToEdit = null,
+    initialClientData = null,
+    isEditingOnlyOneStep = false
+}: CreateClientModalProps) => {
 
     const [step, setStep] = useState(initialStep);
     const [createdClientId, setCreatedClientId] = useState<string | null>(clientIdToEdit);
-    const { createClient, createBrandProfile, isLoading, error } = useCreateClient();
+    const { createClient, updateClient, createBrandProfile, isLoading, error } = useCreateClient();
 
-    // Reset step and ID when modal opens or props change
-    useEffect(() => {
-        if (isOpen) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setStep(initialStep);
-            setCreatedClientId(clientIdToEdit);
-        }
-    }, [isOpen, initialStep, clientIdToEdit]);
-
-    // Step 1 State
+    // Step 1 State - Added is_active
     const [basicInfo, setBasicInfo] = useState({
-        name: '', slug: '', description: '', website: '', industry: '', logo_url: ''
+        name: '', slug: '', description: '', website: '', industry: '', logo_url: '', is_active: true
     });
 
     // Step 2 State
@@ -45,12 +47,37 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1,
         style_notes: '', restrictions_notes: '', general_notes: ''
     });
 
+    // Reset step, ID, and pre-fill data when modal opens or props change
+    useEffect(() => {
+        if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStep(initialStep);
+            setCreatedClientId(clientIdToEdit);
+
+            if (initialClientData) {
+                setBasicInfo({
+                    name: initialClientData.name || '',
+                    slug: initialClientData.slug || '',
+                    description: initialClientData.description || '',
+                    website: initialClientData.website || '',
+                    industry: initialClientData.industry || '',
+                    logo_url: initialClientData.logo_url || '',
+                    is_active: initialClientData.is_active ?? true // Conserve active status
+                });
+            } else {
+                setBasicInfo({ name: '', slug: '', description: '', website: '', industry: '', logo_url: '', is_active: true });
+            }
+        }
+    }, [isOpen, initialStep, clientIdToEdit, initialClientData]);
+
     if (!isOpen) return null;
 
     const resetForm = () => {
-        setStep(initialStep); // Reset to whatever the initial step was
+        setStep(initialStep);
         setCreatedClientId(clientIdToEdit);
-        setBasicInfo({ name: '', slug: '', description: '', website: '', industry: '', logo_url: '' });
+        if (!initialClientData) {
+            setBasicInfo({ name: '', slug: '', description: '', website: '', industry: '', logo_url: '', is_active: true });
+        }
         setBrandInfo({
             primaryColors: [], secondaryColors: [], accentColors: [], forbiddenColors: [],
             typography_style: '', font_preferences: '', preferred_styles: '', forbidden_styles: '',
@@ -91,18 +118,41 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1,
     const handleStep1Submit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const newClient = await createClient({
-                name: basicInfo.name,
-                slug: basicInfo.slug,
-                description: basicInfo.description,
-                website: basicInfo.website,
-                industry: basicInfo.industry,
-                logo_url: basicInfo.logo_url // <-- Sending logo_url
-            });
+            let clientResponse;
 
-            if (newClient && newClient.id) {
-                setCreatedClientId(newClient.id);
-                setStep(2);
+            // If we are editing an existing client
+            if (clientIdToEdit) {
+                clientResponse = await updateClient(clientIdToEdit, {
+                    name: basicInfo.name,
+                    slug: basicInfo.slug,
+                    description: basicInfo.description,
+                    website: basicInfo.website,
+                    industry: basicInfo.industry,
+                    logo_url: basicInfo.logo_url,
+                    is_active: basicInfo.is_active // Pass is_active
+                });
+            } else {
+                // If we are creating a new one
+                clientResponse = await createClient({
+                    name: basicInfo.name,
+                    slug: basicInfo.slug,
+                    description: basicInfo.description,
+                    website: basicInfo.website,
+                    industry: basicInfo.industry,
+                    logo_url: basicInfo.logo_url
+                });
+            }
+
+            if (clientResponse && clientResponse.id) {
+                setCreatedClientId(clientResponse.id);
+
+                // If we only wanted to edit step 1, close and success
+                if (isEditingOnlyOneStep) {
+                    if (onSuccess) onSuccess();
+                    handleClose();
+                } else {
+                    setStep(2);
+                }
             }
         } catch (err) {
             console.error("Step 1 failed:", err);
@@ -155,11 +205,15 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1,
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-gray-800 leading-tight">
-                                {step === 1 ? 'Add New Client' : 'Brand Identity'}
+                                {step === 1
+                                    ? (clientIdToEdit ? 'Edit Client Profile' : 'Add New Client')
+                                    : 'Brand Identity'}
                             </h2>
-                            <p className="text-xs text-gray-500 font-medium">
-                                Step {step} of 2
-                            </p>
+                            {!isEditingOnlyOneStep && (
+                                <p className="text-xs text-gray-500 font-medium">
+                                    Step {step} of 2
+                                </p>
+                            )}
                         </div>
                     </div>
                     <button onClick={handleClose} className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors" disabled={isLoading}>
@@ -348,8 +402,10 @@ export const CreateClientModal = ({ isOpen, onClose, onSuccess, initialStep = 1,
                         disabled={isLoading}
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-secondary-blue hover:bg-blue-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                     >
-                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : (step === 1 ? <ChevronRight size={16} /> : <Check size={16} />)}
-                        {step === 1 ? 'Next Step' : (clientIdToEdit ? 'Update Brand' : 'Save Client')}
+                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : (step === 1 && !isEditingOnlyOneStep ? <ChevronRight size={16} /> : <Check size={16} />)}
+                        {step === 1
+                            ? (isEditingOnlyOneStep ? 'Save Profile' : 'Next Step')
+                            : (clientIdToEdit ? 'Update Brand' : 'Save Client')}
                     </button>
                 </div>
 

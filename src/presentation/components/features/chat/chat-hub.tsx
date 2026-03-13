@@ -123,10 +123,13 @@ export const ChatHub = () => {
         selectedClientDetails,
         isLoadingDetails,
         loadClientDetails,
-        clearSelectedClient
+        clearSelectedClient,
+        deleteClient,
+        isDeleting
     } = useClients();
     const [isEditBrandModalOpen, setIsEditBrandModalOpen] = useState(false);
     const [clientToEditId, setClientToEditId] = useState<string | null>(null);
+    const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -539,6 +542,8 @@ export const ChatHub = () => {
                 </div>
             )}
 
+
+
             <div className="w-full h-dvh max-w-full flex flex-col gap-0 overflow-hidden">
 
                 {/* Main Card */}
@@ -774,6 +779,7 @@ export const ChatHub = () => {
                         </Card>
                     </aside>
 
+                    {/* Modal Delete Conversation */}
                     {conversationToDelete && (
                         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
 
@@ -807,6 +813,51 @@ export const ChatHub = () => {
                                         className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-destructive hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
                                     >
                                         Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal Delete Client */}
+                    {clientToDelete && (
+                        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div
+                                className="bg-background/90 border border-white/50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-w-xs w-full text-center transform transition-all scale-100 m-4"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                                    <Trash2 size={24} />
+                                </div>
+
+                                <h3 className="text-lg font-bold text-logo-color mb-2">Delete client?</h3>
+                                <p className="text-sm text-font-gray mb-6 leading-relaxed">
+                                    Are you sure you want to delete this client? This action cannot be undone.
+                                </p>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setClientToDelete(null)}
+                                        disabled={isDeleting}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            if (clientToDelete) {
+                                                try {
+                                                    await deleteClient(clientToDelete);
+                                                    setClientToDelete(null);
+                                                } catch (e) {
+                                                    console.error(e);
+                                                }
+                                            }
+                                        }}
+                                        disabled={isDeleting}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-destructive hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center"
+                                    >
+                                        {isDeleting ? <Loader2 size={16} className="animate-spin" /> : 'Delete'}
                                     </button>
                                 </div>
                             </div>
@@ -1079,6 +1130,19 @@ export const ChatHub = () => {
                                                 >
                                                     <Pencil size={16} />
                                                     Edit Client Brand
+                                                </Button>
+
+                                                {/* Delete Client */}
+                                                <Button
+                                                    onClick={() => {
+                                                        if (selectedClientDetails?.client.id) {
+                                                            setClientToDelete(selectedClientDetails.client.id);
+                                                        }
+                                                    }}
+                                                    className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-red-600 bg-red-50 hover:bg-red-600 hover:text-white border border-red-100 transition-all duration-300 shadow-sm hover:shadow-md group"
+                                                >
+                                                    <Trash2 size={16} className="text-red-500 group-hover:text-white transition-colors" />
+                                                    Delete Client
                                                 </Button>
 
                                                 <Card className="p-6 bg-background/50 backdrop-blur-sm border-background/40 shadow-sm rounded-3xl flex flex-col gap-4">

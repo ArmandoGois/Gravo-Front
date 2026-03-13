@@ -368,7 +368,7 @@ export const ChatHub = () => {
 
     const isImageMessage = (content: string | MessageContentPayload): boolean => {
         if (typeof content === 'object' && content !== null) {
-
+            // Si el objeto ya dice que es imagen, confiamos ciegamente
             if (content.type === 'image') return true;
         }
         const text = typeof content === 'string' ? content : content.text;

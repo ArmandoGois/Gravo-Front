@@ -306,13 +306,6 @@ export const ChatHub = () => {
         }
     };
 
-    // const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    //     if (e.key === 'Enter' && !e.shiftKey) {
-    //         e.preventDefault();
-    //         handleSendMessage();
-    //     }
-    // };
-
     const handleToggleEditImageMode = () => {
         setIsEditImageMode(!isEditImageMode);
         if (!isEditImageMode) {
@@ -578,6 +571,7 @@ export const ChatHub = () => {
                                     selectConversation(null);
                                     setModels([]);
                                     setIsPopoverOpen(false);
+                                    handleTabChange('chat');
                                 }}
                             >
                                 <div className="flex items-center">
@@ -600,7 +594,6 @@ export const ChatHub = () => {
                             </div>
 
 
-                            {/* MENU DE NAVEGACIÓN UNIFICADO */}
                             <div className={`w-full flex flex-col gap-1 bg-background rounded-2xl   px-1 mb-4 mt-2 transition-all duration-300 ${isAsideOpen ? 'items-stretch' : 'items-center'}`}>
 
                                 {/*New Chat */}
@@ -1247,7 +1240,7 @@ export const ChatHub = () => {
                                         <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">
                                             {filteredConversations.length > 0 ? (
                                                 <>
-                                                    <h2 className="font-semibold text-logo-color tracking-wide mb-3 pl-2 uppercase text-3xl">Jump back in!</h2>
+                                                    <h2 className="font-semibold text-logo-color tracking-wide mb-3 pl-2 uppercase text-4xl">Jump back in!</h2>
                                                     <div className="flex gap-3 2xl:gap-4 w-full overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:h-4 [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-thumb]:rounded-full">
                                                         {filteredConversations.slice(0, 10).map((conversation) => (
                                                             <Card
@@ -1466,7 +1459,7 @@ export const ChatHub = () => {
                                                         setTimeout(() => setShowModelAlert(false), 2000);
                                                     }
                                                 }}
-                                                className={`mt-1 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                                className={`mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
                                             >
                                                 <Paperclip size={17} />
                                             </div>

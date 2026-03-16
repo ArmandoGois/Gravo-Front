@@ -19,13 +19,11 @@ export const TextMessage = ({ content }: TextMessageProps) => {
     const text = typeof content === 'string' ? content : content.text;
 
     return (
-        // Añadimos 'prose-headings', 'prose-p', etc para forzar herencia de colores
         <div className="prose prose-sm max-w-none wrap-break-word text-current dark:prose-invert prose-p:text-current prose-headings:text-current prose-strong:text-current prose-li:text-current prose-code:text-current prose-a:text-blue-500">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
                 components={{
-                    // 1. CÓDIGO (Estilo visual VSCode - Ligero)
                     code({ inline, className, children, node, ...props }: any) {
                         const match = /language-(\w+)/.exec(className || '');
                         const isMultiLine = !inline && match;
@@ -48,7 +46,6 @@ export const TextMessage = ({ content }: TextMessageProps) => {
                         );
                     },
 
-                    // 2. IMÁGENES (Protección contra URLs vacías)
                     img({ node, ...props }: ComponentPropsWithoutRef<'img'> & { node?: object }) {
                         if (!props.src) return null;
                         return (
@@ -64,7 +61,6 @@ export const TextMessage = ({ content }: TextMessageProps) => {
                         );
                     },
 
-                    // 3. TABLAS (Estilo limpio)
                     table({ node, ...props }: any) {
                         return <div className="overflow-x-auto my-4 rounded-lg border border-current/20 not-prose"><table className="min-w-full divide-y divide-current/20 text-sm" {...props} /></div>;
                     },
@@ -72,7 +68,6 @@ export const TextMessage = ({ content }: TextMessageProps) => {
                     th({ node, ...props }: any) { return <th className="px-4 py-3 font-semibold uppercase opacity-80" {...props} />; },
                     td({ node, ...props }: any) { return <td className="px-4 py-2 border-t border-current/10" {...props} />; },
 
-                    // 4. ELEMENTOS TEXTO
                     a({ node, ...props }: any) { return <a {...props} target="_blank" rel="noopener noreferrer" className="underline font-medium hover:opacity-80" />; },
                     p({ node, ...props }: any) { return <p className="mb-2 last:mb-0 leading-relaxed" {...props} />; }
                 }}

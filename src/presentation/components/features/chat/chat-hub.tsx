@@ -38,6 +38,7 @@ const TextMessage = dynamic(
 );
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+import type { ClientSuggestion } from '@/domain/dtos/client-search.dto';
 import { MessageContentPayload } from '@/domain/entities/message.entity';
 import { useConversationUIStore } from "@/infrastructure/stores/conversation-ui.store";
 import { useMessageUIStore } from "@/infrastructure/stores/message-ui.store";
@@ -50,6 +51,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { useAuth } from '@/presentation/hooks/use-auth';
+import { useClientSearch } from '@/presentation/hooks/use-client-search';
 import { useClients } from '@/presentation/hooks/use-clients';
 import { useConversationMessages } from "@/presentation/hooks/use-conversation-messages";
 import { useConversations } from "@/presentation/hooks/use-conversations";
@@ -67,8 +69,6 @@ import { Textarea } from '../../ui/textarea';
 import { CreateClientModal } from '../clients/create-client-modal';
 import { SearchModal } from '../conversation/search-conversation';
 
-
-
 const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -83,8 +83,6 @@ export const ChatHub = () => {
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
     const [isAsideOpen, setAsideOpen] = useState(true);
     const [isSearchChatActive, setIsSearchChatActive] = useState(false);
-    const [memoryValue, setMemoryValue] = useState(10);
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
@@ -98,7 +96,15 @@ export const ChatHub = () => {
     const [isEditImageMode, setIsEditImageMode] = useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
     const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+    const [isEditBrandModalOpen, setIsEditBrandModalOpen] = useState(false);
+    const [clientToEditId, setClientToEditId] = useState<string | null>(null);
+    const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 
+    // Mentions States
+    const [showMentions, setShowMentions] = useState(false);
+    const [mentionQuery, setMentionQuery] = useState("");
+    const [cursorPosition, setCursorPosition] = useState(0);
+    const [selectedIndex, setSelectedIndex] = useState(0);
 
     const [searchTerm] = useState("");
 
@@ -115,6 +121,9 @@ export const ChatHub = () => {
     const { isLoading: isLoadingMessages } = useConversationMessages(activeSidebarTab === 'chat');
     const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
 
+    // Mentions Hook
+    const { suggestions } = useClientSearch(mentionQuery, showMentions);
+
     // Clients Hook - Extracted everything needed for details
     const {
         clients,
@@ -127,9 +136,6 @@ export const ChatHub = () => {
         deleteClient,
         isDeleting
     } = useClients();
-    const [isEditBrandModalOpen, setIsEditBrandModalOpen] = useState(false);
-    const [clientToEditId, setClientToEditId] = useState<string | null>(null);
-    const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 
     //Hooks for actions   
     const { createConversation, isCreating } = useCreateConversation(() => {
@@ -230,6 +236,46 @@ export const ChatHub = () => {
         }
     }, [inputValue]);
 
+    // Input Change Handler with Mentions Logic
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        const cursor = e.target.selectionStart || 0;
+        setInputValue(value);
+        setCursorPosition(cursor);
+
+        // Buscar el @ más reciente antes del cursor
+        const textBeforeCursor = value.slice(0, cursor);
+        const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_-]*)$/);
+
+        if (mentionMatch) {
+            setMentionQuery(mentionMatch[1]);
+            setShowMentions(true);
+            setSelectedIndex(0); // Reset index on new query
+        } else {
+            setShowMentions(false);
+        }
+    };
+
+    const insertMention = (suggestion: ClientSuggestion) => {
+        const textBeforeCursor = inputValue.slice(0, cursorPosition);
+        const textAfterCursor = inputValue.slice(cursorPosition);
+
+        const mentionStart = textBeforeCursor.lastIndexOf("@");
+        const newText =
+            `${textBeforeCursor.slice(0, mentionStart)
+            }@${suggestion.slug} ${textAfterCursor}`;
+
+        setInputValue(newText);
+        setShowMentions(false);
+
+        // Re-focus textarea
+        setTimeout(() => {
+            textareaRef.current?.focus();
+            const newPosition = mentionStart + suggestion.slug.length + 2;
+            textareaRef.current?.setSelectionRange(newPosition, newPosition);
+        }, 0);
+    };
+
     const handleSendMessage = async () => {
         if (!inputValue.trim() && selectedFiles.length === 0) return;
 
@@ -283,8 +329,6 @@ export const ChatHub = () => {
             return;
         }
 
-
-
         if (isImageMode && !isEditImageMode) {
             const imageModelId = activeModels[0].id;
 
@@ -306,6 +350,32 @@ export const ChatHub = () => {
 
         } else {
             sendMessage(textToSend);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (showMentions) {
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setSelectedIndex((i) => Math.min(i + 1, suggestions.length - 1));
+                return;
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setSelectedIndex((i) => Math.max(i - 1, 0));
+                return;
+            } else if (e.key === "Enter" && suggestions.length > 0) {
+                e.preventDefault();
+                insertMention(suggestions[selectedIndex]);
+                return;
+            } else if (e.key === "Escape") {
+                setShowMentions(false);
+                return;
+            }
+        }
+
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
         }
     };
 
@@ -542,8 +612,6 @@ export const ChatHub = () => {
                 </div>
             )}
 
-
-
             <div className="w-full h-dvh max-w-full flex flex-col gap-0 overflow-hidden">
 
                 {/* Main Card */}
@@ -575,7 +643,6 @@ export const ChatHub = () => {
                                 onClick={() => {
                                     selectConversation(null);
                                     setModels([]);
-                                    setIsPopoverOpen(false);
                                     handleTabChange('chat');
                                 }}
                             >
@@ -599,6 +666,7 @@ export const ChatHub = () => {
                             </div>
 
 
+                            {/* MENU DE NAVEGACIÓN UNIFICADO */}
                             <div className={`w-full flex flex-col gap-1 bg-background rounded-2xl   px-1 mb-4 mt-2 transition-all duration-300 ${isAsideOpen ? 'items-stretch' : 'items-center'}`}>
 
                                 {/*New Chat */}
@@ -864,6 +932,7 @@ export const ChatHub = () => {
                         </div>
                     )}
 
+                    {/* Navbar Superior del Usuario */}
                     <div className="absolute top-4 right-4 lg:top-5 lg:right-6 z-70">
                         <div className="flex items-center gap-3">
                             <div className='relative'>
@@ -1491,7 +1560,41 @@ export const ChatHub = () => {
                                 {/* Input Area */}
                                 <div className="w-full h-auto px-4 md:px-8 2xl:px-16 pb-0 z-40 flex justify-center shrink-0 mb-2 2xl:mb-2">
 
-                                    <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60 transition-all duration-200">
+                                    <Card className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl bg-background/80 backdrop-blur-2xl rounded-3xl 2xl:rounded-4xl shadow-2xl border border-white/60 transition-all duration-200 relative">
+
+                                        {/* Mentions Dropdown */}
+                                        {showMentions && suggestions.length > 0 && (
+                                            <div className="absolute bottom-[calc(100%+8px)] left-4 w-64 bg-background border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2">
+                                                <div className="max-h-64 overflow-y-auto">
+                                                    {suggestions.map((suggestion, index) => (
+                                                        <div
+                                                            key={suggestion.id}
+                                                            className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${index === selectedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                                                            onClick={() => insertMention(suggestion)}
+                                                        >
+                                                            <div className="w-8 h-8 rounded-full bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                                                                {suggestion.logo_url ? (
+                                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                                    <img src={suggestion.logo_url} alt={suggestion.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <Building2 size={14} className="text-gray-400" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col overflow-hidden">
+                                                                <span className="text-sm font-semibold text-gray-800 truncate">{suggestion.name}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs text-secondary-blue font-mono">@{suggestion.slug}</span>
+                                                                    {suggestion.industry && (
+                                                                        <span className="text-[10px] text-gray-400 truncate border-l border-gray-300 pl-2">{suggestion.industry}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {imagePreviews.length > 0 && (
                                             <div className="flex gap-3 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-bottom-2">
                                                 {imagePreviews.map((preview, index) => (
@@ -1523,15 +1626,15 @@ export const ChatHub = () => {
                                                         setTimeout(() => setShowModelAlert(false), 2000);
                                                     }
                                                 }}
-                                                className={`mt-2 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
+                                                className={`mt-1 cursor-pointer transition-colors ${isImageMode ? 'text-black hover:text-secondary-blue' : 'text-gray-300 cursor-not-allowed'}`}
                                             >
                                                 <Paperclip size={17} />
                                             </div>
-
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={handleToggleImageMode}
+
                                                 className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all ${isImageMode
                                                     ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
                                                     : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
@@ -1539,7 +1642,6 @@ export const ChatHub = () => {
                                                 <ImageIcon size={14} className={isImageMode ? 'text-white' : 'text-gray-600'} />
                                                 Image
                                             </Button>
-
                                             {isImageMode && (
                                                 <Button
                                                     size="sm"
@@ -1554,56 +1656,49 @@ export const ChatHub = () => {
                                                     Edit
                                                 </Button>
                                             )}
-
-                                            <Button
-                                                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                                                className={`h-8 rounded-full border text-xs font-bold gap-2 shadow-sm transition-all relative ${isPopoverOpen
-                                                    ? 'bg-secondary-blue text-white hover:bg-secondary-blue border-border'
-                                                    : 'bg-background/80 border-border text-gray-600 hover:bg-background shadow-sm'
-                                                    }`}
-                                            >
-                                                <MessageSquare size={18} className={isPopoverOpen ? 'text-white' : 'text-gray-600'} />
-                                                <span className="text-sm font-medium">Memory ({memoryValue})</span>
-                                                <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180 text-white' : 'text-gray-600'}`} />
-
-                                                {isPopoverOpen && (
-                                                    <div className="absolute bottom-full mb-2 left-0 w-80 p-4 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 text-left cursor-default" onClick={e => e.stopPropagation()}>
-                                                        <div className="flex justify-between items-center mb-4">
-                                                            <span className="text-gray-700 font-medium">Chat memory</span>
-                                                            <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-12 text-center">
-                                                                {memoryValue}
-                                                            </div>
-                                                        </div>
-                                                        <input
-                                                            type="range"
-                                                            min="0"
-                                                            max="500"
-                                                            value={memoryValue}
-                                                            onChange={(e) => setMemoryValue(parseInt(e.target.value))}
-                                                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
-                                                        />
-                                                        <p className="mt-3 text-xs text-black leading-relaxed">
-                                                            Sends the last {memoryValue} messages from your conversation each request.
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </Button>
                                         </div>
 
-
-                                        <div className="flex items-end gap-3 px-4 pt-1 pb-4 relative">
-
-                                            <input
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                className="hidden"
-                                                ref={fileInputRef}
-                                                onChange={handleFileSelect}
-                                                // eslint-disable-next-line no-param-reassign
-                                                onClick={(e) => (e.currentTarget.value = '')}
+                                        <div className="w-full px-4 relative">
+                                            <Textarea
+                                                ref={textareaRef}
+                                                value={inputValue}
+                                                onChange={handleInputChange}
+                                                onKeyDown={handleKeyDown}
+                                                disabled={isBusy}
+                                                rows={1}
+                                                className="w-full bg-white border border-gray-200/60 shadow-sm px-5 py-3.5 text-base 2xl:text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80 resize-none max-h-50 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
+                                                placeholder={
+                                                    isEditImageMode
+                                                        ? "Describe the edit you want to make..."
+                                                        : isImageMode
+                                                            ? "Describe the image you want to generate..."
+                                                            : "Start a new message or type @ to mention a client..."
+                                                }
                                             />
+                                        </div>
 
+                                        <div className="flex justify-between items-center px-2 pt-2 pb-1">
+                                            <div className="flex h-auto items-center gap-8 pb-0 text-gray-400">
+
+                                                {/* Basic Tools */}
+                                                <div className=" pl-1 pt-1 flex items-center gap-6">
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileSelect}
+                                                        // eslint-disable-next-line no-param-reassign
+                                                        onClick={(e) => (e.currentTarget.value = '')}
+                                                    />
+                                                </div>
+
+
+                                                <div className="relative" >
+
+                                                </div>
+                                            </div>
                                             {showModelAlert && (
                                                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                                     <div className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full backdrop-blur-md border border-destructive shadow-lg">
@@ -1613,33 +1708,6 @@ export const ChatHub = () => {
                                                     </div>
                                                 </div>
                                             )}
-
-                                            <div className="flex-1">
-                                                <Textarea
-                                                    ref={textareaRef}
-                                                    value={inputValue}
-                                                    onChange={(e) => setInputValue(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                                            e.preventDefault();
-                                                            handleSendMessage();
-                                                        } else if (e.key === 'Enter' && e.shiftKey) {
-                                                            return;
-                                                        }
-                                                    }}
-                                                    disabled={isBusy}
-                                                    rows={1}
-                                                    className="w-full bg-white border border-gray-200/60 shadow-sm px-5 py-3.5 text-base 2xl:text-lg placeholder:text-gray-400 focus-visible:ring-0 text-logo-color rounded-2xl transition-all focus:border-gray-300 hover:border-gray-300/80 resize-none max-h-50 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
-                                                    placeholder={
-                                                        isEditImageMode
-                                                            ? "Describe the edit you want to make..."
-                                                            : isImageMode
-                                                                ? "Describe the image you want to generate..."
-                                                                : "Start a new message..."
-                                                    }
-                                                />
-                                            </div>
-
                                             <Button
                                                 onClick={handleSendMessage}
                                                 disabled={isBusy}
@@ -1689,8 +1757,8 @@ export const ChatHub = () => {
                 }}
                 initialStep={1}
                 clientIdToEdit={clientToEditId}
-                initialClientData={selectedClientDetails?.client || null} // <-- Pass the selected client data
-                isEditingOnlyOneStep={true} // <-- Ensure it saves and closes instead of going to step 2
+                initialClientData={selectedClientDetails?.client || null}
+                isEditingOnlyOneStep={true}
                 onSuccess={() => {
                     loadClients();
                     if (clientToEditId) loadClientDetails(clientToEditId);

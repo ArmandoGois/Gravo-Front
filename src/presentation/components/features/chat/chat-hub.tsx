@@ -32,10 +32,6 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-const TextMessage = dynamic(
-    () => import('@/presentation/components/features/message/text-message').then(mod => mod.TextMessage),
-    { ssr: false, loading: () => <span className="opacity-50">Loading message...</span> }
-);
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import type { ClientSuggestion } from '@/domain/dtos/client-search.dto';
@@ -69,6 +65,11 @@ import { Textarea } from '../../ui/textarea';
 import { CreateClientModal } from '../clients/create-client-modal';
 import { SearchModal } from '../conversation/search-conversation';
 
+const TextMessage = dynamic(
+    () => import('@/presentation/components/features/message/text-message').then(mod => mod.TextMessage),
+    { ssr: false, loading: () => <span className="opacity-50">Loading message...</span> }
+);
+
 const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -83,9 +84,11 @@ export const ChatHub = () => {
     const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
     const [isAsideOpen, setAsideOpen] = useState(true);
     const [isSearchChatActive, setIsSearchChatActive] = useState(false);
+    const [memoryValue, setMemoryValue] = useState(10);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [showModelAlert, setShowModelAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState("Select a model first"); //default alert message
+    const [alertMessage, setAlertMessage] = useState("Select a model first");
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
     const [isImageMode, setIsImageMode] = useState(false);
     const [activeSidebarTab, setActiveSidebarTab] = useState<'chat' | 'image' | 'clients'>('chat');
@@ -94,6 +97,7 @@ export const ChatHub = () => {
     const [conversationToRename, setConversationToRename] = useState<{ id: string, title: string } | null>(null);
     const [newTitleInput, setNewTitleInput] = useState("");
     const [isEditImageMode, setIsEditImageMode] = useState(false);
+
     const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
     const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
     const [isEditBrandModalOpen, setIsEditBrandModalOpen] = useState(false);
@@ -119,7 +123,7 @@ export const ChatHub = () => {
     const { models: availableModels } = useModels();
     const { isLoading: isLoadingChats } = useConversations();
     const { isLoading: isLoadingMessages } = useConversationMessages(activeSidebarTab === 'chat');
-    const { imageHistory, isLoading: isLoadingImages } = useImageHistory();
+    const { imageHistory, isLoading: isLoadingImages, refetch: refetchImageHistory } = useImageHistory();
 
     // Mentions Hook
     const { suggestions } = useClientSearch(mentionQuery, showMentions);
@@ -170,6 +174,12 @@ export const ChatHub = () => {
         }
     }, [activeSidebarTab, loadClients]);
 
+    useEffect(() => {
+        if (!isBusy && activeSidebarTab === 'image') {
+            refetchImageHistory();
+        }
+    }, [isBusy, activeSidebarTab, refetchImageHistory]);
+
     const isImageModel = useCallback((modelId: string) => {
         const model = availableModels.find(m => m.id === modelId);
         return model?.type === 'image';
@@ -219,12 +229,20 @@ export const ChatHub = () => {
         selectConversation(null);
         clearSelectedClient(); // Clear selected client if user navigates away
         setMessages([]);
-        setModels([]);
 
-        if (tab === 'chat') {
+        if (tab === 'chat' || tab === 'clients') {
             setIsImageMode(false);
+            setModels([]);
         } else if (tab === 'image') {
             setIsImageMode(true);
+
+            const defaultImageModel = availableModels.find(m => m.type === 'image');
+            if (defaultImageModel) {
+                setModels([defaultImageModel]);
+            } else {
+                setModels([]);
+                console.warn("No image generation models found in the API.");
+            }
         }
     };
 
@@ -262,8 +280,7 @@ export const ChatHub = () => {
 
         const mentionStart = textBeforeCursor.lastIndexOf("@");
         const newText =
-            `${textBeforeCursor.slice(0, mentionStart)
-            }@${suggestion.slug} ${textAfterCursor}`;
+            `${textBeforeCursor.slice(0, mentionStart)}@${suggestion.slug} ${textAfterCursor}`;
 
         setInputValue(newText);
         setShowMentions(false);
@@ -300,17 +317,19 @@ export const ChatHub = () => {
         setSelectedFiles([]);
         setImagePreviews([]);
 
-        const currentId = selectedConversationId || "temp-new-chat";
+        const isNewConversation = !selectedConversationId;
 
-        if (!selectedConversationId) {
-            selectConversation(currentId);
+        if (isNewConversation && !isImageMode) {
+            selectConversation("temp-new-chat");
         }
+
+        const localUiId = selectedConversationId || crypto.randomUUID();
 
         const tempUserMessage = {
             id: crypto.randomUUID(),
             role: "user" as const,
             content: textToSend,
-            conversation_id: currentId,
+            conversation_id: localUiId,
             created_at: new Date().toISOString()
         };
 
@@ -318,9 +337,7 @@ export const ChatHub = () => {
 
         if (isEditImageMode && isImageMode) {
             try {
-                editImage({
-                    prompt: textToSend,
-                });
+                editImage({ prompt: textToSend });
             } catch (e) {
                 setAlertMessage("Could not find an image to edit context.");
                 console.error("Edit image error:", e);
@@ -344,7 +361,7 @@ export const ChatHub = () => {
             generateImage({
                 prompt: textToSend,
                 modelId: imageModelId,
-                conversationId: currentId,
+                conversationId: isNewConversation ? undefined : selectedConversationId,
                 reference_images: referenceImages
             });
 
@@ -438,7 +455,6 @@ export const ChatHub = () => {
 
     const isImageMessage = (content: string | MessageContentPayload): boolean => {
         if (typeof content === 'object' && content !== null) {
-
             if (content.type === 'image') return true;
         }
         const text = typeof content === 'string' ? content : content.text;
@@ -575,7 +591,6 @@ export const ChatHub = () => {
                 items={sourceConversations}
             />
 
-
             {/* Menu for rename and delete */}
             {isRenameModalOpen && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
@@ -643,6 +658,7 @@ export const ChatHub = () => {
                                 onClick={() => {
                                     selectConversation(null);
                                     setModels([]);
+                                    setIsPopoverOpen(false);
                                     handleTabChange('chat');
                                 }}
                             >
@@ -1369,7 +1385,7 @@ export const ChatHub = () => {
 
                                 <div className="flex-1 overflow-y-auto px-4 md:px-8 2xl:px-16 pt-14 2xl:pt-20 pb-8 2xl:pb-24 mt-20 2xl:mt-24 scrollbar-hide [&::-webkit-scrollbar]:hidden! [-ms-overflow-style:none] [scrollbar-width:none]">
                                     {/* A: No chat selected -> Cards */}
-                                    {!selectedConversationId ? (
+                                    {!selectedConversationId && messages.length === 0 ? (
                                         <div className="w-full max-w-4xl 2xl:max-w-5xl mx-auto flex flex-col justify-center h-full pb-4 animate-in fade-in zoom-in-95 duration-300">
                                             {filteredConversations.length > 0 ? (
                                                 <>
@@ -1696,7 +1712,36 @@ export const ChatHub = () => {
 
 
                                                 <div className="relative" >
+                                                    <div
+                                                        onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                                                        className="flex items-center gap-2 cursor-pointer hover:text-gray-600 transition-colors text-black "
+                                                    >
+                                                        <MessageSquare size={18} />
+                                                        <span className="text-sm font-medium">Memory ({memoryValue})</span>
+                                                        <ChevronDown size={14} className={`transition-transform ${isPopoverOpen ? 'rotate-180' : ''}`} />
+                                                    </div>
 
+                                                    {isPopoverOpen && (
+                                                        <div className="absolute bottom-full mb-2 left-0 w-80 p-4 bg-background rounded-xl shadow-2xl border border-gray-100 z-50 text-left cursor-default" onClick={e => e.stopPropagation()}>
+                                                            <div className="flex justify-between items-center mb-4">
+                                                                <span className="text-gray-700 font-medium">Chat memory</span>
+                                                                <div className="bg-gray-100 px-3 py-1 text-black rounded-md text-sm font-mono min-w-12 text-center">
+                                                                    {memoryValue}
+                                                                </div>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="0"
+                                                                max="500"
+                                                                value={memoryValue}
+                                                                onChange={(e) => setMemoryValue(parseInt(e.target.value))}
+                                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-blue"
+                                                            />
+                                                            <p className="mt-3 text-xs text-black leading-relaxed">
+                                                                Sends the last {memoryValue} messages from your conversation each request.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             {showModelAlert && (
@@ -1757,8 +1802,8 @@ export const ChatHub = () => {
                 }}
                 initialStep={1}
                 clientIdToEdit={clientToEditId}
-                initialClientData={selectedClientDetails?.client || null}
-                isEditingOnlyOneStep={true}
+                initialClientData={selectedClientDetails?.client || null} // <-- Pass the selected client data
+                isEditingOnlyOneStep={true} // <-- Ensure it saves and closes instead of going to step 2
                 onSuccess={() => {
                     loadClients();
                     if (clientToEditId) loadClientDetails(clientToEditId);
